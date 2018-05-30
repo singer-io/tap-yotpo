@@ -41,14 +41,19 @@ class Client(object):
         return self.session.send(request.prepare())
 
     def url(self, version, raw_path):
-        path = raw_path.replace(":api_key", self.api_key).replace(":token", self.token)
+        path = raw_path \
+                .replace(":api_key", self.api_key) \
+                .replace(":token", self.token)
+
         if version == 'v1':
             return _join(BASE_URL_V1, path)
         else:
             return _join(BASE_URL, path)
 
     def create_get_request(self, version, path, **kwargs):
-        return requests.Request(method="GET", url=self.url(version, path), **kwargs)
+        return requests.Request(method="GET",
+                                url=self.url(version, path),
+                                **kwargs)
 
     @backoff.on_exception(backoff.expo,
                           RateLimitException,
@@ -58,7 +63,7 @@ class Client(object):
         with metrics.http_request_timer(tap_stream_id) as timer:
             response = self.prepare_and_send(request)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
-        if response.status_code in [429, 503]:
+        if response.status_code in [429, 503, 504]:
             raise RateLimitException()
         if response.status_code == 404:
             return None
