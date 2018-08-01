@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name="tap-yotpo",
-    version="0.2.0",
+    version="1.0.0",
     description="Singer.io tap for extracting data from the Yotpo API",
     author="Stitch",
     url="http://singer.io",
