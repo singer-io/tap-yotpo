@@ -10,7 +10,7 @@ setup(
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_yotpo"],
     install_requires=[
-        "singer-python==5.0.4",
+        "singer-python==5.8.1",
         "requests==2.20.0",
     ],
     entry_points="""
