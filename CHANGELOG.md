@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1
+  * Add explicit dependency for pendulum
+
 ## 1.1.0
   * Update stream selection to use metadata rather than deprecated annotated-schema [#4](https://github.com/singer-io/tap-yotpo/pull/4)
 
