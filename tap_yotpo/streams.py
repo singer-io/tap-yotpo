@@ -185,6 +185,13 @@ class Emails(Paginated):
 
         return True
 
+def format_product_reviews(records, domain_key, name):
+    return [
+        {'domain_key': domain_key,
+         'name': name,
+         **record}
+            for record in records
+    ]
 
 class ProductReviews(Paginated):
     def get_params(self, ctx, page):
@@ -203,6 +210,21 @@ class ProductReviews(Paginated):
             product_id = product['external_product_id']
             path = self.path.format(product_id=product_id)
             self._sync(ctx, path, product_id=product_id)
+
+    def get_from_parent(self, response):
+
+        parent = response['response']['products']
+
+        if parent:
+            parent = parent[0]
+            return parent.get('domain_key'), parent.get('name')
+        return None, None
+
+    def format_response(self, response):
+        records = response['response'].get(self.collection_key, [])
+        domain_key, name = self.get_from_parent(response)
+        return self.custom_formatter(records, domain_key, name)
+
 
     def on_batch_complete(self, ctx, records, product_id=None):
         if len(records) == 0:
@@ -271,7 +293,8 @@ all_streams = [
         "widget/:api_key/products/{product_id}/reviews.json",
         collection_key="reviews",
         version='v1',
-        pluck_results=True
+        pluck_results=True,
+        custom_formatter=format_product_reviews
     )
 ]
 all_stream_ids = [s.tap_stream_id for s in all_streams]

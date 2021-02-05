@@ -6,6 +6,12 @@
     "id": {
       "type": "integer"
     },
+    "domain_key": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"
