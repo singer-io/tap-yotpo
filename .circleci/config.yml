@@ -31,8 +31,6 @@ jobs:
                      --password=$SANDBOX_PASSWORD \
                      --client-id=50 \
                      tests
-      - slack/notify-on-failure:
-          only_for_branches: master
 
 workflows:
   version: 2
