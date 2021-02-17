@@ -3,7 +3,7 @@ from singer import bookmarks as bks_
 from .http import Client
 
 
-class Context(object):
+class Context():
     """Represents a collection of global objects necessary for performing
     discovery or for running syncs. Notably, it contains
 
@@ -30,10 +30,9 @@ class Context(object):
     @catalog.setter
     def catalog(self, catalog):
         self._catalog = catalog
-        self.selected_stream_ids = set(
-            [s.tap_stream_id for s in catalog.streams
-             if s.is_selected()]
-        )
+        self.selected_stream_ids = {s.tap_stream_id
+                                    for s in catalog.streams
+                                    if s.is_selected()}
 
     def get_bookmark(self, path):
         return bks_.get_bookmark(self.state, *path)

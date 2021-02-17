@@ -11,7 +11,7 @@ EMAILS_LOOKBACK_DAYS = 30
 REVIEWS_LOOKBACK_DAYS = 30
 
 
-class Stream(object):
+class Stream():
     def __init__(self, tap_stream_id, pk_fields, path,
                  returns_collection=True,
                  collection_key=None,
