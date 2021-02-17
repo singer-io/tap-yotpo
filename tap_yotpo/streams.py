@@ -16,7 +16,6 @@ class Stream(object):
                  returns_collection=True,
                  collection_key=None,
                  pluck_results=False,
-                 custom_formatter=None,
                  version=None):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
@@ -24,7 +23,6 @@ class Stream(object):
         self.returns_collection = returns_collection
         self.collection_key = collection_key
         self.pluck_results = pluck_results
-        self.custom_formatter = custom_formatter or (lambda x: x)
         self.version = version
 
         self.start_date = None
@@ -53,7 +51,7 @@ class Stream(object):
                 records = response or []
         else:
             records = [] if not response else [response]
-        return self.custom_formatter(records)
+        return records
 
 
 class Paginated(Stream):
