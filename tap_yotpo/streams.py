@@ -11,12 +11,11 @@ EMAILS_LOOKBACK_DAYS = 30
 REVIEWS_LOOKBACK_DAYS = 30
 
 
-class Stream(object):
+class Stream():
     def __init__(self, tap_stream_id, pk_fields, path,
                  returns_collection=True,
                  collection_key=None,
                  pluck_results=False,
-                 custom_formatter=None,
                  version=None):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
@@ -24,7 +23,6 @@ class Stream(object):
         self.returns_collection = returns_collection
         self.collection_key = collection_key
         self.pluck_results = pluck_results
-        self.custom_formatter = custom_formatter or (lambda x: x)
         self.version = version
 
         self.start_date = None
@@ -53,7 +51,7 @@ class Stream(object):
                 records = response or []
         else:
             records = [] if not response else [response]
-        return self.custom_formatter(records)
+        return records
 
 
 class Paginated(Stream):
@@ -185,7 +183,6 @@ class Emails(Paginated):
 
         return True
 
-
 class ProductReviews(Paginated):
     def get_params(self, ctx, page):
         # This endpoint does not support date filtering
@@ -203,6 +200,24 @@ class ProductReviews(Paginated):
             product_id = product['external_product_id']
             path = self.path.format(product_id=product_id)
             self._sync(ctx, path, product_id=product_id)
+
+    def get_from_product(self, response):
+
+        product = response['response']['products']
+
+        if product:
+            product = product[0]
+            return product.get('domain_key'), product.get('name')
+
+        return None, None
+
+    def format_response(self, response):
+        records = response['response'].get(self.collection_key, [])
+        domain_key, name = self.get_from_product(response)
+
+        return [{'domain_key': domain_key, 'name': name, **record}
+                for record in records]
+
 
     def on_batch_complete(self, ctx, records, product_id=None):
         if len(records) == 0:
@@ -270,8 +285,7 @@ all_streams = [
         ["id"],
         "widget/:api_key/products/{product_id}/reviews.json",
         collection_key="reviews",
-        version='v1',
-        pluck_results=True
+        version='v1'
     )
 ]
 all_stream_ids = [s.tap_stream_id for s in all_streams]

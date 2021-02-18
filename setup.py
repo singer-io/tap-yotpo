@@ -14,6 +14,12 @@ setup(
         "requests==2.20.0",
         "pendulum==1.2.0",
     ],
+    extras_require={
+        'dev': [
+            'pylint',
+            'ipdb',
+        ]
+    },
     entry_points="""
     [console_scripts]
     tap-yotpo=tap_yotpo:main
