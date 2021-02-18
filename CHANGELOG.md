@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0
+  * Add the `domain_key` and `name` to the `product_reviews` schema
+
 ## 1.1.1
   * Add explicit dependency for pendulum
 
