@@ -15,6 +15,8 @@ GRANT_TYPE = "client_credentials"
 class RateLimitException(Exception):
     pass
 
+class NotFoundException(Exception):
+    pass
 
 def _join(a, b):
     return a.rstrip("/") + "/" + b.lstrip("/")
@@ -66,7 +68,7 @@ class Client(object):
         if response.status_code in [429, 503, 504]:
             raise RateLimitException()
         if response.status_code == 404:
-            return None
+            raise NotFoundException()
         response.raise_for_status()
         return response.json()
 
