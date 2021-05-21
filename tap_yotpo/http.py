@@ -11,9 +11,74 @@ BASE_URL_V1 = "https://api.yotpo.com/v1"
 
 GRANT_TYPE = "client_credentials"
 
+class YotpoError(Exception):
+    def __init__(self, message=None, response=None):
+        super().__init__(message)
+        self.message = message
+        self.response = response
 
-class RateLimitException(Exception):
+class YotpoBadRequestError(YotpoError):
     pass
+
+class YotpoRateLimitError(YotpoError):
+    pass
+
+class YotpoUnauthorizedError(YotpoError):
+    pass
+
+class YotpoForbiddenError(YotpoError):
+    pass
+
+class YotpoBadGateway(YotpoError):
+    pass
+
+class YotpoNotFoundError(YotpoError):
+    pass
+
+class YotpoTooManyError(YotpoRateLimitError):
+    pass
+
+class YotpoNotAvailableError(YotpoRateLimitError):
+    pass
+
+class YotpoGatewayTimeout(YotpoRateLimitError):
+    pass
+
+
+ERROR_CODE_EXCEPTION_MAPPING = {
+    400: {
+        "raise_exception": YotpoBadRequestError,
+        "message": "A validation exception has occurred."
+    },
+    401: {
+        "raise_exception": YotpoUnauthorizedError,
+        "message": "Invalid authorization credentials."
+    },
+    403: {
+        "raise_exception": YotpoForbiddenError,
+        "message": "User doesn't have permission to access the resource."
+    },
+    404: {
+        "raise_exception": YotpoNotFoundError,
+        "message": "The resource you have specified cannot be found."
+    },
+    429: {
+        "raise_exception": YotpoTooManyError,
+        "message": "The API rate limit for your organisation/application pairing has been exceeded."
+    },
+    502: {
+        "raise_exception": YotpoBadGateway,
+        "message": "Server received an invalid response."
+    },
+    503: {
+        "raise_exception": YotpoNotAvailableError,
+        "message": "API service is currently unavailable."
+    },
+    504: {
+        "raise_exception": YotpoGatewayTimeout,
+        "message": "API service time out, please check Yotpo server."
+    }
+}
 
 
 def _join(a, b):
@@ -56,18 +121,14 @@ class Client(object):
                                 **kwargs)
 
     @backoff.on_exception(backoff.expo,
-                          RateLimitException,
-                          max_tries=10,
+                          (YotpoRateLimitError,YotpoBadRequestError,YotpoBadGateway),
+                          max_tries=3,
                           factor=2)
     def request_with_handling(self, request, tap_stream_id):
         with metrics.http_request_timer(tap_stream_id) as timer:
             response = self.prepare_and_send(request)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
-        if response.status_code in [429, 503, 504]:
-            raise RateLimitException()
-        if response.status_code == 404:
-            return None
-        response.raise_for_status()
+        self.raise_for_error(response)
         return response.json()
 
     def authenticate(self):
@@ -86,3 +147,30 @@ class Client(object):
     def GET(self, version, request_kwargs, *args, **kwargs):
         req = self.create_get_request(version, **request_kwargs)
         return self.request_with_handling(req, *args, **kwargs)
+
+    def raise_for_error(self,resp):
+        try:
+            resp.raise_for_status()
+        except (requests.HTTPError, requests.ConnectionError) as error:
+            try:
+                error_code = resp.status_code
+                # Forming a response message for raising custom exception
+                try:
+                    response_json = resp.json()
+                except Exception:
+                    response_json = {}
+
+                message = "HTTP-error-code: {}, Error: {}".format(
+                    error_code,
+                    response_json.get(
+                        "error", response_json.get(
+                            "Title", response_json.get(
+                                "Detail", ERROR_CODE_EXCEPTION_MAPPING.get(
+                                    error_code, {}).get("message", "Unknown Error")
+                                ))))
+
+                exc = ERROR_CODE_EXCEPTION_MAPPING.get(error_code, {}).get("raise_exception", YotpoError)
+                raise exc(message, resp) from None
+
+            except (ValueError, TypeError):
+                raise YotpoError(error) from None
