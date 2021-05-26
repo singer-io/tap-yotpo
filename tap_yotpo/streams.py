@@ -83,8 +83,13 @@ class Paginated(Stream):
             opts = {"path": path, "params": params}
             resp = ctx.client.GET(self.version, opts, self.tap_stream_id)
             raw_records = self.format_response(resp)
-            records = [transform(record, schema) for record in raw_records]
-
+            records = []
+            for record in raw_records:
+                if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
+                    LOGGER.warning("Record '%s' dropped as id field value is not availble or have empty value", record)
+                else:
+                    transformed_record = transform(record, schema)
+                    records.append(transformed_record)
             if not self.on_batch_complete(ctx, records, product_id):
                 break
 
@@ -247,11 +252,11 @@ class ProductReviews(Paginated):
 
 
 products = Products(
-        "products",
-        ["id"],
-        "apps/:api_key/products?utoken=:token",
-        collection_key='products',
-        version='v1'
+    "products",
+    ["id"],
+    "apps/:api_key/products?utoken=:token",
+    collection_key='products',
+    version='v1'
 )
 
 all_streams = [
