@@ -85,6 +85,7 @@ class Paginated(Stream):
             raw_records = self.format_response(resp)
             records = []
             for record in raw_records:
+                # unsubscribers data with id vaule empty or None will be dropped as id is the primary key. 
                 if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
                     LOGGER.warning("Record '%s' dropped as id field value is not availble or have empty value", record)
                 else:
