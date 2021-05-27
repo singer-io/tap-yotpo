@@ -44,6 +44,7 @@ def discover(ctx):
         mdata = metadata.to_map(mdata)
 
         for field_name in schema_dict['properties'].keys():
+            # Field except primary keys and book mark keys marked as available. 
             mdata = metadata.write(mdata, ('properties', field_name), 'inclusion',
                                    'automatic' if field_name in stream.pk_fields or field_name in stream.book_mark_keys else 'available')
 
