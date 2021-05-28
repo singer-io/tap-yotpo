@@ -77,6 +77,7 @@ class Paginated(Stream):
 
         schema = ctx.catalog.get_stream(self.tap_stream_id).schema.to_dict()
 
+        dropped_event_count=0
         page = 1
         while True:
             params = self.get_params(ctx, page)
@@ -87,7 +88,8 @@ class Paginated(Stream):
             for record in raw_records:
                 # unsubscribers data with id vaule empty or None will be dropped as id is the primary key. 
                 if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
-                    LOGGER.warning("Record '%s' dropped as id field value is not availble or have empty value", record)
+                    LOGGER.debug("Record '%s' dropped as id field value is not available or have empty value", record)
+                    dropped_event_count = dropped_event_count + 1
                 else:
                     transformed_record = transform(record, schema)
                     records.append(transformed_record)
@@ -97,7 +99,9 @@ class Paginated(Stream):
             if len(records) == 0:
                 break
             page += 1
-
+        if dropped_event_count:
+            LOGGER.warning(
+                "%s records dropped for stream unsubscribers because id field value is not available or have empty value",dropped_event_count)
     def sync(self, ctx):
         self._sync(ctx)
 

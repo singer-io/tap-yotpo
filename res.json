@@ -1,0 +1,7 @@
+{"type": "STATE", "value": {"bookmarks": {"products": {"since_date": "2021-05-27"}}, "currently_syncing": "unsubscribers"}}
+{"type": "SCHEMA", "stream": "unsubscribers", "schema": {"type": ["object"], "properties": {"id": {"type": "integer"}, "user_email": {"type": "string"}, "email_type_id": {"type": "number"}, "unsubscirbed_by_name": {"type": "string", "description": "This field is misspelled in the api response!"}}, "additionalProperties": false}, "key_properties": ["id"]}
+{"type": "RECORD", "stream": "unsubscribers", "record": {"id": 109362846.0, "user_email": "dev@stitchdata.com", "email_type_id": 1.0, "unsubscirbed_by_name": "USER"}}
+{"type": "RECORD", "stream": "unsubscribers", "record": {"id": 109314089.0, "user_email": "dshah@talend.com", "email_type_id": 1.0, "unsubscirbed_by_name": "USER"}}
+{"type": "RECORD", "stream": "unsubscribers", "record": {"id": 109350155.0, "user_email": "schovatiya@talend.com", "email_type_id": 1.0, "unsubscirbed_by_name": "USER"}}
+{"type": "RECORD", "stream": "unsubscribers", "record": {"id": 109350121.0, "user_email": "uagrawal@talend.com", "email_type_id": 1.0, "unsubscirbed_by_name": "USER"}}
+{"type": "STATE", "value": {"bookmarks": {"products": {"since_date": "2021-05-27"}, "unsubscribers": {"since_date": "2021-05-27"}}, "currently_syncing": null}}
