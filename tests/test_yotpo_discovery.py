@@ -44,6 +44,8 @@ class YotpoDiscoveryTest(YotpoBaseTest):
 
                 # collecting expected values
                 expected_primary_keys = self.expected_primary_keys()[stream]
+                expected_replication_keys = self.expected_replication_keys()[stream]
+                expected_automatic_fields = expected_primary_keys | expected_replication_keys
 
                 # collecting actual values...
                 schema_and_metadata = menagerie.get_annotated_schema(conn_id, catalog['stream_id'])
@@ -72,12 +74,16 @@ class YotpoDiscoveryTest(YotpoBaseTest):
                     expected_primary_keys, actual_primary_keys,
                 )
 
-                # verify that all fields have inclusion of automatic
+                # verify that primary keys and replication keys
+                # are given the inclusion of automatic in metadata.
+                self.assertSetEqual(expected_automatic_fields, actual_automatic_fields)
+
+                # verify that all other fields have inclusion of available
                 # This assumes there are no unsupported fields for SaaS sources
                 self.assertTrue(
-                    all({item.get("metadata").get("inclusion") == "automatic"
+                    all({item.get("metadata").get("inclusion") == "available"
                          for item in metadata
                          if item.get("breadcrumb", []) != []
                          and item.get("breadcrumb", ["properties", None])[1]
-                         in actual_automatic_fields}),
+                         not in actual_automatic_fields}),
                     msg="Not all non key properties are set to available in metadata")

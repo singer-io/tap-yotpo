@@ -13,7 +13,8 @@ class YotpoBaseTest(unittest.TestCase):
     START_DATE_FORMAT = "%Y-%m-%dT00:00:00Z"
     BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
     LOGGER = singer.get_logger()
-    STARTDATE_KEYS = "created_at"
+    REPLICATION_KEYS = "valid-replication-keys"
+    STARTDATE_KEYS = "start_date_key"
     DATETIME_FMT = {
         "%Y-%m-%dT%H:%M:%SZ",
         "%Y-%m-%d %H:%M:%S",
@@ -38,22 +39,25 @@ class YotpoBaseTest(unittest.TestCase):
         return {
             'emails': {
                 self.PRIMARY_KEYS: {'email_address', 'email_sent_timestamp'},
-                self.STARTDATE_KEYS: {'email_sent_timestamp'}
+                self.STARTDATE_KEYS: {'email_sent_timestamp'},
+                self.REPLICATION_KEYS: {'email_sent_timestamp'}
             },
             'product_reviews': {
                 self.PRIMARY_KEYS: {'id'},
-                self.STARTDATE_KEYS: {'created_at'}
+                self.STARTDATE_KEYS: {'created_at'},
+                self.REPLICATION_KEYS: {'created_at'}
             },
             'products': {
-                self.PRIMARY_KEYS: {'id'}
+                self.PRIMARY_KEYS: {'id'},
+                self.REPLICATION_KEYS: {'updated_at'}
             },
             'reviews': {
                 self.PRIMARY_KEYS: {'id'},
-                self.STARTDATE_KEYS: {'created_at'}
+                self.STARTDATE_KEYS: {'created_at'},
+                self.REPLICATION_KEYS: {'created_at'}
             },
             'unsubscribers': {
-                self.PRIMARY_KEYS: {'id'},
-                self.STARTDATE_KEYS: {'since_date'}
+                self.PRIMARY_KEYS: {'id'}
             }
         }
 
@@ -80,6 +84,14 @@ class YotpoBaseTest(unittest.TestCase):
                 for table, properties
                 in self.expected_metadata().items()}
 
+    def expected_replication_keys(self):
+        """
+        return a dictionary with key of table name
+        and value as a set of replication key fields
+        """
+        return {table: properties.get(self.REPLICATION_KEYS, set())
+                for table, properties
+                in self.expected_metadata().items()}
 
     def get_credentials(self):
         return {'api_key': os.getenv('TAP_YOTPO_API_KEY'),
@@ -88,8 +100,9 @@ class YotpoBaseTest(unittest.TestCase):
 
     def get_properties(self, original: bool = True):
         return_value = {
-            'start_date' : '2021-05-17T00:00:00Z',
-            "reviews_lookback_days": 0
+            'start_date' : '2021-05-26T00:00:00Z',
+            "reviews_lookback_days": 0,
+            "email_stats_lookback_days": 0
         }
         if original:
             return return_value

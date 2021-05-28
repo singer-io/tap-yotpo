@@ -68,10 +68,6 @@ class YotpoStartDateTest(YotpoBaseTest):
         record_count_by_stream_2 = self.run_and_verify_sync(conn_id_2)
         synced_records_2 = runner.get_records_from_target_output()
 
-        # Verify the total number of records replicated in sync 1 is greater than the number
-        # of records replicated in sync 2
-        self.assertGreater(sum(record_count_by_stream_1.values()), sum(record_count_by_stream_2.values()))
-
         for stream in expected_streams:
             with self.subTest(stream=stream):
 
@@ -95,6 +91,10 @@ class YotpoStartDateTest(YotpoBaseTest):
                 primary_keys_sync_2 = set(primary_keys_list_2)
 
                 if self.is_start_date_appling(stream):
+                    # Verify the total number of records replicated in sync 1 is greater than the number
+                    # of records replicated in sync 2
+                    self.assertGreater(sum(record_count_by_stream_1.values()), sum(record_count_by_stream_2.values()))
+
                     # Expected start_date key is one element in set so directly access it
                     start_date_keys_list_1 = [message.get('data').get(next(iter(expected_start_date_keys))) for message in synced_records_1.get(stream).get('messages')
                                             if message.get('action') == 'upsert']
