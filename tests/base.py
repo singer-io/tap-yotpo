@@ -90,9 +90,7 @@ class YotpoBaseTest(unittest.TestCase):
 
     def get_properties(self, original: bool = True):
         return_value = {
-            'start_date': '2021-05-26T00:00:00Z',
-            'reviews_lookback_days': '0',
-            'email_stats_lookback_days': '0'
+            'start_date': '2021-05-26T00:00:00Z'
         }
         if original:
             return return_value
