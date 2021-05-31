@@ -10,10 +10,35 @@ class YotpoStartDateTest(YotpoBaseTest):
     def name():
         return "tap_tester_yotpo_start_date_test"
 
+    st_date = '2021-05-26T00:00:00Z'
+
+    def set_start_date(self, st_date):
+        self.st_date = st_date
+
+    def get_properties(self, original: bool = True):
+        return_value = {
+            'start_date': self.st_date
+        }
+        if original:
+            return return_value
+
+        return_value["start_date"] = self.start_date
+        return return_value
+
     def test_run(self):
+        loockback_stream = {"reviews", "emails"}
+
+        # test for rest of the streams
+        self.start_date_test(self.expected_streams() - loockback_stream)
+
+        # test for "email" and "reviews" stream as they use lookback concept
+        self.set_start_date('2021-06-25T00:00:00Z')
+        self.start_date_test(loockback_stream, '2021-06-25T00:00:00Z', True)
+
+    def start_date_test(self, expected_strs, start_date=None, reduce_epoch=False):
         """Instantiate start date according to the desired data set and run the test"""
 
-        self.start_date_1 = self.get_properties().get('start_date')
+        self.start_date_1 = self.get_properties().get('start_date') if start_date is None else start_date
         self.start_date_2 = self.timedelta_formatted(self.start_date_1, days=1)
 
         start_date_1_epoch = self.dt_to_ts(self.start_date_1)
@@ -21,7 +46,7 @@ class YotpoStartDateTest(YotpoBaseTest):
 
         self.start_date = self.start_date_1
 
-        expected_streams = self.expected_streams()
+        expected_streams = expected_strs
 
         ##########################################################################
         ### First Sync
@@ -106,11 +131,11 @@ class YotpoStartDateTest(YotpoBaseTest):
 
                     # Verify start_date key values are greater than or equal to start date of sync 1
                     for start_date_key_value in start_date_key_sync_1:
-                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), start_date_1_epoch)
+                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), (start_date_1_epoch - 30*24*3600) if reduce_epoch else start_date_1_epoch)
 
                     # Verify start_date key values are greater than or equal to start date of sync 2
                     for start_date_key_value in start_date_key_sync_2:
-                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), start_date_2_epoch)
+                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), (start_date_2_epoch - 30*24*3600) if reduce_epoch else start_date_2_epoch)
 
                     # Verify the number of records replicated in sync 1 is greater than the number
                     # of records replicated in sync 2 for stream
