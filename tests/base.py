@@ -61,20 +61,10 @@ class YotpoBaseTest(unittest.TestCase):
             }
         }
 
-    # def expected_check_streams(self):
-    #     return {
-    #         'products',
-    #         'reviews'
-    #     }
     def expected_streams(self):
         """A set of expected stream names"""
         return set(self.expected_metadata().keys())
 
-    # def expected_pks(self):
-    #     return {
-    #         'products': {"id"},
-    #         'reviews': {"id"}
-    #     }
     def expected_primary_keys(self):
         """
         return a dictionary with key of table name
@@ -100,9 +90,9 @@ class YotpoBaseTest(unittest.TestCase):
 
     def get_properties(self, original: bool = True):
         return_value = {
-            'start_date' : '2021-05-26T00:00:00Z',
-            "reviews_lookback_days": 0,
-            "email_stats_lookback_days": 0
+            'start_date': '2021-05-26T00:00:00Z',
+            'reviews_lookback_days': '0',
+            'email_stats_lookback_days': '0'
         }
         if original:
             return return_value

@@ -9,12 +9,12 @@ class YotpoPaginationTest(YotpoBaseTest):
         return "tap_tester_yotpo_pagination_test"
 
     def test_run(self):
-        # page size for "reviews"
+        # page size for "products"
         page_size = 100
         conn_id = connections.ensure_connection(self)
 
-        # Checking pagination for "reviews" stream
-        expected_streams = ["reviews"]
+        # Checking pagination for "products" stream
+        expected_streams = ["products"]
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
         # table and field selection
