@@ -129,13 +129,15 @@ class YotpoStartDateTest(YotpoBaseTest):
                     start_date_key_sync_1 = set(start_date_keys_list_1)
                     start_date_key_sync_2 = set(start_date_keys_list_2)
 
+                    seconds_30_days = 30*24*3600
+
                     # Verify start_date key values are greater than or equal to start date of sync 1
                     for start_date_key_value in start_date_key_sync_1:
-                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), (start_date_1_epoch - 30*24*3600) if reduce_epoch else start_date_1_epoch)
+                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), (start_date_1_epoch - seconds_30_days) if reduce_epoch else start_date_1_epoch)
 
                     # Verify start_date key values are greater than or equal to start date of sync 2
                     for start_date_key_value in start_date_key_sync_2:
-                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), (start_date_2_epoch - 30*24*3600) if reduce_epoch else start_date_2_epoch)
+                        self.assertGreaterEqual(self.dt_to_ts(start_date_key_value), (start_date_2_epoch - seconds_30_days) if reduce_epoch else start_date_2_epoch)
 
                     # Verify the number of records replicated in sync 1 is greater than the number
                     # of records replicated in sync 2 for stream
