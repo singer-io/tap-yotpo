@@ -11,35 +11,45 @@ BASE_URL_V1 = "https://api.yotpo.com/v1"
 
 GRANT_TYPE = "client_credentials"
 
+
 class YotpoError(Exception):
     def __init__(self, message=None, response=None):
         super().__init__(message)
         self.message = message
         self.response = response
 
+
 class YotpoBadRequestError(YotpoError):
     pass
+
 
 class YotpoRateLimitError(YotpoError):
     pass
 
+
 class YotpoUnauthorizedError(YotpoError):
     pass
+
 
 class YotpoForbiddenError(YotpoError):
     pass
 
+
 class YotpoBadGateway(YotpoError):
     pass
+
 
 class YotpoNotFoundError(YotpoError):
     pass
 
+
 class YotpoTooManyError(YotpoRateLimitError):
     pass
 
+
 class YotpoNotAvailableError(YotpoRateLimitError):
     pass
+
 
 class YotpoGatewayTimeout(YotpoRateLimitError):
     pass
@@ -107,8 +117,8 @@ class Client(object):
 
     def url(self, version, raw_path):
         path = raw_path \
-                .replace(":api_key", self.api_key) \
-                .replace(":token", self.token)
+            .replace(":api_key", self.api_key) \
+            .replace(":token", self.token)
 
         if version == 'v1':
             return _join(BASE_URL_V1, path)
@@ -121,7 +131,7 @@ class Client(object):
                                 **kwargs)
 
     @backoff.on_exception(backoff.expo,
-                          (YotpoRateLimitError,YotpoBadRequestError,YotpoBadGateway),
+                          (YotpoRateLimitError, YotpoBadRequestError, YotpoBadGateway),
                           max_tries=3,
                           factor=2)
     def request_with_handling(self, request, tap_stream_id):
@@ -140,7 +150,7 @@ class Client(object):
 
         request = requests.Request(method="POST", url=AUTH_URL, data=auth_body)
         response = self.prepare_and_send(request)
-        response.raise_for_status()
+        self.raise_for_error(response)
         data = response.json()
         self._token = data['access_token']
 
@@ -148,7 +158,7 @@ class Client(object):
         req = self.create_get_request(version, **request_kwargs)
         return self.request_with_handling(req, *args, **kwargs)
 
-    def raise_for_error(self,resp):
+    def raise_for_error(self, resp):
         try:
             resp.raise_for_status()
         except (requests.HTTPError, requests.ConnectionError) as error:
@@ -162,14 +172,12 @@ class Client(object):
 
                 message = "HTTP-error-code: {}, Error: {}".format(
                     error_code,
-                    response_json.get(
-                        "error", response_json.get(
-                            "Title", response_json.get(
-                                "Detail", ERROR_CODE_EXCEPTION_MAPPING.get(
-                                    error_code, {}).get("message", "Unknown Error")
-                                ))))
+                    response_json.get("status",ERROR_CODE_EXCEPTION_MAPPING.get(
+                        error_code, {})).get("message", "Unknown Error")
+                    )
 
-                exc = ERROR_CODE_EXCEPTION_MAPPING.get(error_code, {}).get("raise_exception", YotpoError)
+                exc = ERROR_CODE_EXCEPTION_MAPPING.get(
+                    error_code, {}).get("raise_exception", YotpoError)
                 raise exc(message, resp) from None
 
             except (ValueError, TypeError):
