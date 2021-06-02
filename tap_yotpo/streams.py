@@ -89,7 +89,7 @@ class Paginated(Stream):
             for record in raw_records:
                 # unsubscribers data with id vaule empty or None will be dropped as id is the primary key. 
                 if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
-                    LOGGER.debug("Record '%s' dropped as id field value is not available or have empty value", record)
+                    LOGGER.warning("Record '%s' dropped as id field value is not available or have empty value", record)
                     dropped_event_count = dropped_event_count + 1
                 else:
                     transformed_record = transform(record, schema)
