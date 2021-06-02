@@ -21,7 +21,7 @@ class TestYotpoStreamChanges(unittest.TestCase):
     @mock.patch("tap_yotpo.streams.Paginated.on_batch_complete", side_effect=mock_on_batch_complete)
     @mock.patch("tap_yotpo.streams.transform")
     def test_sync_of_paginated_class_with_unsubscribe_data_with_empty_id(self,mock_transform,mock_on_batch_complete,mock_records_with_empty_id,mock_get_params):
-        paginated = streams.Paginated("unsubscribers",["id"],"apps/:api_key/unsubscribers?utoken=:token",collection_key='unsubscribers')
+        paginated = streams.Paginated("unsubscribers",["id"],[],"apps/:api_key/unsubscribers?utoken=:token",collection_key='unsubscribers')
         config = {}
         state = {}
         mock_ctx = mock.Mock(context.Context(config,state))
@@ -33,7 +33,7 @@ class TestYotpoStreamChanges(unittest.TestCase):
     @mock.patch("tap_yotpo.streams.Paginated.on_batch_complete", side_effect=mock_on_batch_complete)
     @mock.patch("tap_yotpo.streams.transform")
     def test_sync_of_paginated_class_with_unsubscribe_data_with_id(self,mock_transform,mock_on_batch_complete,mock_records_with_id,mock_get_params):
-        paginated = streams.Paginated("unsubscribers",["id"],"apps/:api_key/unsubscribers?utoken=:token",collection_key='unsubscribers')
+        paginated = streams.Paginated("unsubscribers",["id"],[],"apps/:api_key/unsubscribers?utoken=:token",collection_key='unsubscribers')
         config = {}
         state = {}
         mock_ctx = mock.Mock(context.Context(config,state))
