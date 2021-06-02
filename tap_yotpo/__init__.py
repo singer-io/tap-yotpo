@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os
 import singer
-from singer import utils,  metadata
+from singer import utils, metadata
 from singer.catalog import Catalog, CatalogEntry, Schema
 from . import streams as streams_
 from .context import Context
