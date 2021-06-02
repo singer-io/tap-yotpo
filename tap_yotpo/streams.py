@@ -12,13 +12,14 @@ REVIEWS_LOOKBACK_DAYS = 30
 
 
 class Stream():
-    def __init__(self, tap_stream_id, pk_fields, path,
+    def __init__(self, tap_stream_id, pk_fields, book_mark_keys, path,
                  returns_collection=True,
                  collection_key=None,
                  pluck_results=False,
                  version=None):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
+        self.book_mark_keys = book_mark_keys
         self.path = path
         self.returns_collection = returns_collection
         self.collection_key = collection_key
@@ -83,8 +84,13 @@ class Paginated(Stream):
             opts = {"path": path, "params": params}
             resp = ctx.client.GET(self.version, opts, self.tap_stream_id)
             raw_records = self.format_response(resp)
-            records = [transform(record, schema) for record in raw_records]
-
+            records = []
+            for record in raw_records:
+                if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
+                    LOGGER.warning("Record '%s' dropped as id field value is not availble or have empty value", record)
+                else:
+                    transformed_record = transform(record, schema)
+                    records.append(transformed_record)
             if not self.on_batch_complete(ctx, records, product_id):
                 break
 
@@ -247,11 +253,12 @@ class ProductReviews(Paginated):
 
 
 products = Products(
-        "products",
-        ["id"],
-        "apps/:api_key/products?utoken=:token",
-        collection_key='products',
-        version='v1'
+    "products",
+    ["id"],
+    ["updated_at"],
+    "apps/:api_key/products?utoken=:token",
+    collection_key='products',
+    version='v1'
 )
 
 all_streams = [
@@ -260,6 +267,7 @@ all_streams = [
     Paginated(
         "unsubscribers",
         ["id"],
+        [],
         "apps/:api_key/unsubscribers?utoken=:token",
         collection_key='unsubscribers',
         pluck_results=True
@@ -268,6 +276,7 @@ all_streams = [
     Reviews(
         "reviews",
         ["id"],
+        ["created_at"],
         "apps/:api_key/reviews?utoken=:token",
         collection_key="reviews",
         version='v1'
@@ -276,6 +285,7 @@ all_streams = [
     Emails(
         "emails",
         ["email_address", "email_sent_timestamp"],
+        ["email_sent_timestamp"],
         "analytics/v1/emails/:api_key/export/raw_data?token=:token",
         collection_key="records"
     ),
@@ -283,6 +293,7 @@ all_streams = [
     ProductReviews(
         "product_reviews",
         ["id"],
+        ["created_at"],
         "widget/:api_key/products/{product_id}/reviews.json",
         collection_key="reviews",
         version='v1'

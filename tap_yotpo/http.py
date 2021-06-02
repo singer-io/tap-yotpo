@@ -113,7 +113,7 @@ class Client(object):
     def prepare_and_send(self, request):
         if self.user_agent:
             request.headers["User-Agent"] = self.user_agent
-        return self.session.send(request.prepare())
+        return self.session.send(self.session.prepare_request(request))
 
     def url(self, version, raw_path):
         path = raw_path \
