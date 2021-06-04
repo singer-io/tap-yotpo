@@ -54,6 +54,9 @@ class YotpoNotAvailableError(YotpoRateLimitError):
 class YotpoGatewayTimeout(YotpoRateLimitError):
     pass
 
+class YotpoConnectionError(YotpoError):
+    pass
+
 
 ERROR_CODE_EXCEPTION_MAPPING = {
     400: {
@@ -131,7 +134,7 @@ class Client(object):
                                 **kwargs)
 
     @backoff.on_exception(backoff.expo,
-                          (YotpoRateLimitError, YotpoBadRequestError, YotpoBadGateway),
+                          (YotpoRateLimitError, YotpoBadGateway, YotpoUnauthorizedError, YotpoConnectionError),
                           max_tries=3,
                           factor=2)
     def request_with_handling(self, request, tap_stream_id):
@@ -150,7 +153,7 @@ class Client(object):
 
         request = requests.Request(method="POST", url=AUTH_URL, data=auth_body)
         response = self.prepare_and_send(request)
-        self.raise_for_error(response)
+        self.raise_for_error(response, True)
         data = response.json()
         self._token = data['access_token']
 
@@ -158,12 +161,22 @@ class Client(object):
         req = self.create_get_request(version, **request_kwargs)
         return self.request_with_handling(req, *args, **kwargs)
 
-    def raise_for_error(self, resp):
+    def raise_for_error(self, resp, authentication_call=False):
         try:
             resp.raise_for_status()
-        except (requests.HTTPError, requests.ConnectionError) as error:
+        except requests.ConnectionError as connError:
+            try:
+                response_json = resp.json()
+            except Exception:
+                response_json = {}
+            if not authentication_call and type(connError) is requests.ConnectionError:
+                self.authenticate()
+            raise YotpoConnectionError(response_json.get("message","Connection-error, Error: There is some problem in network. Please check your network connectivity"))
+        except requests.HTTPError as error:
             try:
                 error_code = resp.status_code
+                if not authentication_call and error_code in [401,502]:
+                    self.authenticate()
                 # Forming a response message for raising custom exception
                 try:
                     response_json = resp.json()
@@ -172,9 +185,9 @@ class Client(object):
 
                 message = "HTTP-error-code: {}, Error: {}".format(
                     error_code,
-                    response_json.get("status",ERROR_CODE_EXCEPTION_MAPPING.get(
+                    response_json.get("status", ERROR_CODE_EXCEPTION_MAPPING.get(
                         error_code, {})).get("message", "Unknown Error")
-                    )
+                )
 
                 exc = ERROR_CODE_EXCEPTION_MAPPING.get(
                     error_code, {}).get("raise_exception", YotpoError)

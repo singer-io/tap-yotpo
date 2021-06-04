@@ -5,12 +5,13 @@ from tap_yotpo import http
 
 # mock responce
 class Mockresponse:
-        def __init__(self, resp, status_code, content=[], headers=None, raise_error=False):
+        def __init__(self, resp, status_code, content=[], headers=None, raise_error=False, raise_connection_error=False):
             self.json_data = resp
             self.status_code = status_code
             self.content = content
             self.headers = headers
             self.raise_error = raise_error
+            self.raise_connection_error = raise_connection_error
 
         def prepare(self):
             return (self.json_data, self.status_code, self.content, self.headers, self.raise_error)
@@ -19,7 +20,10 @@ class Mockresponse:
             if not self.raise_error:
                 return self.status_code
 
-            raise requests.HTTPError("mock sample message")
+            if self.raise_connection_error:
+                raise requests.exceptions.ConnectionError("mock connection message")
+            else:
+                raise requests.HTTPError("mock sample message")
 
         def json(self):
             return self.text
@@ -50,6 +54,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
     def mock_prepare_and_send_504(request):
         return Mockresponse("",504,raise_error=True)
 
+    def mock_prepare_and_send_connection_error(request):
+        return Mockresponse("",400,raise_error=True, raise_connection_error=True)
+
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_400)
     def test_request_with_handling_for_400_exceptin_handling(self,mock_prepare_and_send):
         try:
@@ -62,16 +69,46 @@ class TestYotpoErrorHandling(unittest.TestCase):
             expected_error_message = "HTTP-error-code: 400, Error: A validation exception has occurred."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
-            self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_prepare_and_send.call_count,1)
 
-    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
-    def test_request_with_handling_for_401_exceptin_handling(self,mock_prepare_and_send):
+    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_connection_error)
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_connection_error(self,mock_authenticate,mock_prepare_and_send):
         try:
             request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
             mock_client.request_with_handling(request,tap_stream_id)
+        except http.YotpoConnectionError as e:
+            expected_error_message = "Connection-error, Error: There is some problem in network. Please check your network connectivity"
+            # Verifying the message formed for the custom exception
+            self.assertEquals(str(e), expected_error_message)
+            self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
+
+    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_401_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):
+        try:
+            request = None
+            tap_stream_id = "tap_yopto"
+            mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
+            mock_client = http.Client(mock_config)
+            mock_client.request_with_handling(request,tap_stream_id)
+        except http.YotpoUnauthorizedError as e:
+            expected_error_message = "HTTP-error-code: 401, Error: Invalid authorization credentials."
+            # Verifying the message formed for the custom exception
+            self.assertEquals(str(e), expected_error_message)
+            self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
+
+    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
+    def test_authenticate_not_called_again_for_401(self,mock_prepare_and_send):
+        try:
+            mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
+            mock_client = http.Client(mock_config)
+            mock_client.authenticate()
         except http.YotpoUnauthorizedError as e:
             expected_error_message = "HTTP-error-code: 401, Error: Invalid authorization credentials."
             # Verifying the message formed for the custom exception
@@ -121,7 +158,8 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(mock_prepare_and_send.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_502)
-    def test_request_with_handling_for_502_exceptin_handling(self,mock_prepare_and_send):
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_502_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):
         try:
             request = None
             tap_stream_id = "tap_yopto"
@@ -133,6 +171,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_503)
     def test_request_with_handling_for_503_exceptin_handling(self,mock_prepare_and_send):
