@@ -5,7 +5,7 @@ from tap_yotpo import http
 
 # mock responce
 class Mockresponse:
-        def __init__(self, resp, status_code, content=[], headers=None, raise_error=False, raise_connection_error=False):
+        def __init__(self, resp, status_code, content=[], headers=None, raise_error=False):
             self.json_data = resp
             self.status_code = status_code
             self.content = content
@@ -20,10 +20,7 @@ class Mockresponse:
             if not self.raise_error:
                 return self.status_code
 
-            if self.raise_connection_error:
-                raise requests.exceptions.ConnectionError("mock connection message")
-            else:
-                raise requests.HTTPError("mock sample message")
+            raise requests.HTTPError("mock sample message")
 
         def json(self):
             return self.text
@@ -53,9 +50,6 @@ class TestYotpoErrorHandling(unittest.TestCase):
 
     def mock_prepare_and_send_504(request):
         return Mockresponse("",504,raise_error=True)
-
-    def mock_prepare_and_send_connection_error(request):
-        return Mockresponse("",400,raise_error=True, raise_connection_error=True)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_400)
     def test_request_with_handling_for_400_exceptin_handling(self,mock_prepare_and_send):
