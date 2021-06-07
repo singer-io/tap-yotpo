@@ -71,22 +71,6 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
 
-    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_connection_error)
-    @mock.patch("tap_yotpo.http.Client.authenticate")
-    def test_request_with_handling_for_connection_error(self,mock_authenticate,mock_prepare_and_send):
-        try:
-            request = None
-            tap_stream_id = "tap_yopto"
-            mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
-            mock_client.request_with_handling(request,tap_stream_id)
-        except http.YotpoConnectionError as e:
-            expected_error_message = "Connection-error, Error: There is some problem in network. Please check your network connectivity"
-            # Verifying the message formed for the custom exception
-            self.assertEquals(str(e), expected_error_message)
-            self.assertEquals(mock_prepare_and_send.call_count,3)
-            self.assertEquals(mock_authenticate.call_count,3)
-
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
     @mock.patch("tap_yotpo.http.Client.authenticate")
     def test_request_with_handling_for_401_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):

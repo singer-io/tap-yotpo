@@ -54,9 +54,6 @@ class YotpoNotAvailableError(YotpoRateLimitError):
 class YotpoGatewayTimeout(YotpoRateLimitError):
     pass
 
-class YotpoConnectionError(YotpoError):
-    pass
-
 
 ERROR_CODE_EXCEPTION_MAPPING = {
     400: {
@@ -134,14 +131,15 @@ class Client(object):
                                 **kwargs)
 
     @backoff.on_exception(backoff.expo,
-                          (YotpoRateLimitError, YotpoBadGateway, YotpoUnauthorizedError, YotpoConnectionError),
+                          (YotpoRateLimitError, YotpoBadGateway,
+                           YotpoUnauthorizedError),
                           max_tries=3,
                           factor=2)
     def request_with_handling(self, request, tap_stream_id):
         with metrics.http_request_timer(tap_stream_id) as timer:
             response = self.prepare_and_send(request)
             timer.tags[metrics.Tag.http_status_code] = response.status_code
-        self.raise_for_error(response)
+        self.check_status(response)
         return response.json()
 
     def authenticate(self):
@@ -150,10 +148,9 @@ class Client(object):
             "client_secret": self.api_secret,
             "grant_type": GRANT_TYPE
         }
-
         request = requests.Request(method="POST", url=AUTH_URL, data=auth_body)
         response = self.prepare_and_send(request)
-        self.raise_for_error(response, True)
+        self.check_status(response, authentication_call=True)
         data = response.json()
         self._token = data['access_token']
 
@@ -161,37 +158,26 @@ class Client(object):
         req = self.create_get_request(version, **request_kwargs)
         return self.request_with_handling(req, *args, **kwargs)
 
-    def raise_for_error(self, resp, authentication_call=False):
+    def check_status(self, response, authentication_call=False):
+        # Forming a response message for raising custom exception
         try:
-            resp.raise_for_status()
-        except requests.ConnectionError as connError:
-            try:
-                response_json = resp.json()
-            except Exception:
-                response_json = {}
-            if not authentication_call and type(connError) is requests.ConnectionError:
+            response_json = response.json()
+        except Exception:
+            response_json = {}
+        if response.status_code in ERROR_CODE_EXCEPTION_MAPPING.keys():
+            message = "HTTP-error-code: {}, Error: {}".format(
+                response.status_code,
+                response_json.get("status", ERROR_CODE_EXCEPTION_MAPPING.get(
+                    response.status_code, {})).get("message", "Unknown Error")
+            )
+            exc = ERROR_CODE_EXCEPTION_MAPPING.get(
+                response.status_code, {}).get("raise_exception", YotpoError)
+            if not authentication_call and response.status_code in [401, 502]:
                 self.authenticate()
-            raise YotpoConnectionError(response_json.get("message","Connection-error, Error: There is some problem in network. Please check your network connectivity"))
-        except requests.HTTPError as error:
-            try:
-                error_code = resp.status_code
-                if not authentication_call and error_code in [401,502]:
-                    self.authenticate()
-                # Forming a response message for raising custom exception
-                try:
-                    response_json = resp.json()
-                except Exception:
-                    response_json = {}
-
-                message = "HTTP-error-code: {}, Error: {}".format(
-                    error_code,
-                    response_json.get("status", ERROR_CODE_EXCEPTION_MAPPING.get(
-                        error_code, {})).get("message", "Unknown Error")
-                )
-
-                exc = ERROR_CODE_EXCEPTION_MAPPING.get(
-                    error_code, {}).get("raise_exception", YotpoError)
-                raise exc(message, resp) from None
-
-            except (ValueError, TypeError):
-                raise YotpoError(error) from None
+            raise exc(message, response) from None
+        if response.status_code != 200:
+            message = "HTTP-error-code: {}, Error: {}".format(
+                response.status_code,
+                "Unknown Error"
+            )
+            raise YotpoError(message, response) from None
