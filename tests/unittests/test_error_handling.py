@@ -11,7 +11,6 @@ class Mockresponse:
             self.content = content
             self.headers = headers
             self.raise_error = raise_error
-            self.raise_connection_error = raise_connection_error
 
         def prepare(self):
             return (self.json_data, self.status_code, self.content, self.headers, self.raise_error)
