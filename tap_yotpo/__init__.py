@@ -75,7 +75,8 @@ def sync(ctx):
     ctx.write_state()
 
 
-def main_impl():
+@singer.utils.handle_top_exception(LOGGER)
+def main():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     ctx = Context(args.config, args.state)
     ctx.client.authenticate()
@@ -86,14 +87,6 @@ def main_impl():
         ctx.catalog = Catalog.from_dict(args.properties) \
             if args.properties else discover(ctx)
         sync(ctx)
-
-
-def main():
-    try:
-        main_impl()
-    except Exception as exc:
-        LOGGER.critical(exc)
-        raise
 
 
 if __name__ == "__main__":

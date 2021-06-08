@@ -260,7 +260,7 @@ class ProductReviews(Paginated):
 products = Products(
     "products",
     ["id"],
-    ["updated_at"],
+    [],
     "apps/:api_key/products?utoken=:token",
     collection_key='products',
     version='v1'
