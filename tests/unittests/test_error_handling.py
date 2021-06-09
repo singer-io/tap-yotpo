@@ -50,6 +50,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
     def mock_prepare_and_send_504(request):
         return Mockresponse("",504,raise_error=True)
 
+    def mock_prepare_and_send_505(request):
+        return Mockresponse("",505,raise_error=True)
+
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_400)
     def test_request_with_handling_for_400_exceptin_handling(self,mock_prepare_and_send):
         try:
@@ -121,7 +124,8 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(mock_prepare_and_send.call_count,1)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_429)
-    def test_request_with_handling_for_429_exceptin_handling(self,mock_prepare_and_send):
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_429_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):
         try:
             request = None
             tap_stream_id = "tap_yopto"
@@ -133,6 +137,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_502)
     @mock.patch("tap_yotpo.http.Client.authenticate")
@@ -151,7 +156,8 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(mock_authenticate.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_503)
-    def test_request_with_handling_for_503_exceptin_handling(self,mock_prepare_and_send):
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_503_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):
         try:
             request = None
             tap_stream_id = "tap_yopto"
@@ -163,9 +169,11 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_504)
-    def test_request_with_handling_for_504_exceptin_handling(self,mock_prepare_and_send):
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_504_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):
         try:
             request = None
             tap_stream_id = "tap_yopto"
@@ -177,3 +185,20 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
+
+    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_505)
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    def test_request_with_handling_for_505_exceptin_handling(self,mock_authenticate,mock_prepare_and_send):
+        try:
+            request = None
+            tap_stream_id = "tap_yopto"
+            mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
+            mock_client = http.Client(mock_config)
+            mock_client.request_with_handling(request,tap_stream_id)
+        except http.YotpoError as e:
+            expected_error_message = "HTTP-error-code: 505, Error: Unknown Error"
+            # Verifying the message formed for the custom exception
+            self.assertEquals(str(e), expected_error_message)
+            self.assertEquals(mock_prepare_and_send.call_count,1)
+            self.assertEquals(mock_authenticate.call_count,1)

@@ -164,7 +164,7 @@ class Client(object):
             response_json = response.json()
         except Exception:
             response_json = {}
-        if response.status_code in ERROR_CODE_EXCEPTION_MAPPING.keys():
+        if response.status_code != 200:
             message = "HTTP-error-code: {}, Error: {}".format(
                 response.status_code,
                 response_json.get("status", ERROR_CODE_EXCEPTION_MAPPING.get(
@@ -172,12 +172,7 @@ class Client(object):
             )
             exc = ERROR_CODE_EXCEPTION_MAPPING.get(
                 response.status_code, {}).get("raise_exception", YotpoError)
-            if not authentication_call and response.status_code in [401, 502]:
+            # Reauthenticating if it isn't raise while authentication and for all error except some known error
+            if not authentication_call and response.status_code not in [400, 403, 404]:
                 self.authenticate()
             raise exc(message, response) from None
-        if response.status_code != 200:
-            message = "HTTP-error-code: {}, Error: {}".format(
-                response.status_code,
-                "Unknown Error"
-            )
-            raise YotpoError(message, response) from None
