@@ -172,7 +172,7 @@ class Client(object):
             )
             exc = ERROR_CODE_EXCEPTION_MAPPING.get(
                 response.status_code, {}).get("raise_exception", YotpoError)
-            # Reauthenticating if it isn't raise while authentication and for all error except some known error
+            # Re-authenticating if got an authentication error while collecting stream data and response does not have Bad request (400), Forbidden (403) and Not found (404)
             if not authentication_call and response.status_code not in [400, 403, 404]:
                 self.authenticate()
             raise exc(message, response) from None
