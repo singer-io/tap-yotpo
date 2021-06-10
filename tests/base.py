@@ -48,8 +48,7 @@ class YotpoBaseTest(unittest.TestCase):
                 self.REPLICATION_KEYS: {'created_at'}
             },
             'products': {
-                self.PRIMARY_KEYS: {'id'},
-                self.REPLICATION_KEYS: {'updated_at'}
+                self.PRIMARY_KEYS: {'id'}
             },
             'reviews': {
                 self.PRIMARY_KEYS: {'id'},
