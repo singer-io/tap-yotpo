@@ -86,8 +86,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(mock_authenticate.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
-    @mock.patch("tap_yotpo.http.Client.create_get_request")
-    def test_authenticate_not_called_again_for_401(self,mock_create_get_request,mock_prepare_and_send):
+    def test_authenticate_not_called_again_for_401(self,mock_prepare_and_send):
         try:
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
