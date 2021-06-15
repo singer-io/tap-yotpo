@@ -83,7 +83,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
-            self.assertEquals(mock_create_get_request.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,mock_authenticate.call_count)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
     def test_authenticate_not_called_again_for_401(self,mock_prepare_and_send):
@@ -157,7 +157,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
-            self.assertEquals(mock_create_get_request.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,mock_authenticate.call_count)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_503)
     @mock.patch("tap_yotpo.http.Client.authenticate")
@@ -174,7 +174,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
-            self.assertEquals(mock_create_get_request.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,mock_authenticate.call_count)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_504)
     @mock.patch("tap_yotpo.http.Client.authenticate")
@@ -191,7 +191,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
-            self.assertEquals(mock_create_get_request.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,mock_authenticate.call_count)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_505)
     @mock.patch("tap_yotpo.http.Client.authenticate")
@@ -208,4 +208,4 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
             self.assertEquals(mock_authenticate.call_count,1)
-            self.assertEquals(mock_create_get_request.call_count,1)
+            self.assertEquals(mock_create_get_request.call_count,mock_authenticate.call_count)
