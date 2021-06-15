@@ -130,11 +130,6 @@ class Client(object):
                                 url=self.url(version, path),
                                 **kwargs)
 
-    @backoff.on_exception(backoff.expo,
-                          (YotpoRateLimitError, YotpoBadGateway,
-                           YotpoUnauthorizedError),
-                          max_tries=3,
-                          factor=2)
     def request_with_handling(self, request, tap_stream_id):
         with metrics.http_request_timer(tap_stream_id) as timer:
             response = self.prepare_and_send(request)
@@ -154,6 +149,11 @@ class Client(object):
         data = response.json()
         self._token = data['access_token']
 
+    @backoff.on_exception(backoff.expo,
+                          (YotpoRateLimitError, YotpoBadGateway,
+                           YotpoUnauthorizedError),
+                          max_tries=3,
+                          factor=2)
     def GET(self, version, request_kwargs, *args, **kwargs):
         req = self.create_get_request(version, **request_kwargs)
         return self.request_with_handling(req, *args, **kwargs)
@@ -173,6 +173,6 @@ class Client(object):
             exc = ERROR_CODE_EXCEPTION_MAPPING.get(
                 response.status_code, {}).get("raise_exception", YotpoError)
             # Re-authenticating if got an authentication error while collecting stream data and response does not have Bad request (400), Forbidden (403) and Not found (404)
-            if not authentication_call and response.status_code not in [400, 403, 404]:
+            if not authentication_call and response.status_code not in [400, 403, 404, 429]:
                 self.authenticate()
             raise exc(message, response) from None
