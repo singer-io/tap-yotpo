@@ -57,7 +57,6 @@ class TestYotpoErrorHandling(unittest.TestCase):
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_400_exceptin_handling(self,mock_create_get_request,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -67,13 +66,13 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
+            self.assertEquals(mock_create_get_request.call_count,1)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
     @mock.patch("tap_yotpo.http.Client.authenticate")
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_401_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -84,6 +83,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_401)
     def test_authenticate_not_called_again_for_401(self,mock_prepare_and_send):
@@ -101,7 +101,6 @@ class TestYotpoErrorHandling(unittest.TestCase):
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_403_exceptin_handling(self,mock_create_get_request,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -111,12 +110,12 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
+            self.assertEquals(mock_create_get_request.call_count,1)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_404)
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_404_exceptin_handling(self,mock_create_get_request,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -126,13 +125,12 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
+            self.assertEquals(mock_create_get_request.call_count,1)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_429)
-    @mock.patch("tap_yotpo.http.Client.authenticate")
     @mock.patch("tap_yotpo.http.Client.create_get_request")
-    def test_GET_for_429_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
+    def test_GET_for_429_exceptin_handling(self,mock_create_get_request,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -142,14 +140,13 @@ class TestYotpoErrorHandling(unittest.TestCase):
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
-            self.assertEquals(mock_authenticate.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_502)
     @mock.patch("tap_yotpo.http.Client.authenticate")
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_502_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -160,13 +157,13 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_503)
     @mock.patch("tap_yotpo.http.Client.authenticate")
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_503_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -177,13 +174,13 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_504)
     @mock.patch("tap_yotpo.http.Client.authenticate")
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_504_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -194,13 +191,13 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_authenticate.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,3)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_505)
     @mock.patch("tap_yotpo.http.Client.authenticate")
     @mock.patch("tap_yotpo.http.Client.create_get_request")
     def test_GET_for_505_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
         try:
-            request = None
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
             mock_client = http.Client(mock_config)
@@ -211,3 +208,4 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
             self.assertEquals(mock_authenticate.call_count,1)
+            self.assertEquals(mock_create_get_request.call_count,1)
