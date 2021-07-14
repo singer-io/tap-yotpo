@@ -6,16 +6,16 @@
   * Fixes transform error on `unsubscribers` stream [#15](https://github.com/singer-io/tap-yotpo/pull/15)
 
 ## 1.2.0
-  * Add the `domain_key` and `name` to the `product_reviews` schema
+  * Add the `domain_key` and `name` to the `product_reviews` schema [#9](https://github.com/singer-io/tap-yotpo/pull/9)
 
 ## 1.1.1
-  * Add explicit dependency for pendulum
+  * Add explicit dependency for pendulum [#5](https://github.com/singer-io/tap-yotpo/pull/5)
 
 ## 1.1.0
   * Update stream selection to use metadata rather than deprecated annotated-schema [#4](https://github.com/singer-io/tap-yotpo/pull/4)
 
 ## 1.0.1
-  * Update version of `requests` to `2.20.0` in response to CVE 2018-18074
+  * Update version of `requests` to `2.20.0` in response to CVE 2018-18074 
 
 ## 1.0.0
   * Version bump for initial release
