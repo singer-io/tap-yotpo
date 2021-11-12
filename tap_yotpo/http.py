@@ -2,6 +2,7 @@ import requests
 import singer
 from singer import metrics
 import backoff
+from requests import Timeout
 
 LOGGER = singer.get_logger()
 
@@ -10,7 +11,7 @@ BASE_URL = "https://api.yotpo.com"
 BASE_URL_V1 = "https://api.yotpo.com/v1"
 
 GRANT_TYPE = "client_credentials"
-
+REQUEST_TIMEOUT = 300
 
 class YotpoError(Exception):
     def __init__(self, message=None, response=None):
@@ -103,6 +104,13 @@ class Client(object):
         self.session = requests.Session()
         self.base_url = BASE_URL
         self._token = None
+        request_timeout = config.get('request_timeout')
+        # if request_timeout is other than 0,"0" or "" then use request_timeout
+        if request_timeout and float(request_timeout):
+            request_timeout = float(request_timeout)
+        else: # If value is 0,"0" or "" then set default to 300 seconds.
+            request_timeout = REQUEST_TIMEOUT
+        self.request_timeout = request_timeout
 
     @property
     def token(self):
@@ -110,10 +118,12 @@ class Client(object):
             raise RuntimeError("Client is not yet authenticated")
         return self._token
 
+    # backoff for 5 times incase of Timeout
+    @backoff.on_exception(backoff.expo, Timeout, max_tries=5, factor=2)
     def prepare_and_send(self, request):
         if self.user_agent:
             request.headers["User-Agent"] = self.user_agent
-        return self.session.send(self.session.prepare_request(request))
+        return self.session.send(self.session.prepare_request(request), timeout=self.request_timeout)
 
     def url(self, version, raw_path):
         path = raw_path \
