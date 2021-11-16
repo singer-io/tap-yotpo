@@ -118,7 +118,7 @@ class Client(object):
             raise RuntimeError("Client is not yet authenticated")
         return self._token
 
-    # backoff for 5 times incase of Timeout
+    # Backoff for 5 times when a Timeout error occurs when sending the request
     @backoff.on_exception(backoff.expo, Timeout, max_tries=5, factor=2)
     def prepare_and_send(self, request):
         if self.user_agent:
