@@ -2,7 +2,7 @@ from tap_yotpo.http import Client
 import unittest
 from unittest import mock
 from unittest.case import TestCase
-from requests.exceptions import Timeout, ConnectTimeout
+from requests.exceptions import Timeout, ConnectionError
 import datetime
 from tap_yotpo import LOGGER
 
@@ -18,6 +18,19 @@ class TestBackoffError(unittest.TestCase):
         """
         mock_send.side_effect = Timeout
         with self.assertRaises(Timeout):
+            config = {"start_date": "dummy_st", "api_key": "dummy_key", "api_secret": "dummy_secret"}
+            client = Client(config)
+            client.prepare_and_send("request")
+        self.assertEqual(mock_send.call_count, 5)
+
+    @mock.patch('tap_yotpo.http.requests.Session.send')
+    @mock.patch('tap_yotpo.http.requests.Session.prepare_request')
+    def test_backoff_prepare_and_send_connection_error(self, mock_prepare_request, mock_send):
+        """
+        Check whether the request backoffs properly for 5 times in case of Timeout error.
+        """
+        mock_send.side_effect = ConnectionError
+        with self.assertRaises(ConnectionError):
             config = {"start_date": "dummy_st", "api_key": "dummy_key", "api_secret": "dummy_secret"}
             client = Client(config)
             client.prepare_and_send("request")

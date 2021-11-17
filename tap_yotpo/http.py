@@ -2,7 +2,7 @@ import requests
 import singer
 from singer import metrics
 import backoff
-from requests import Timeout
+from requests.exceptions import Timeout, ConnectionError
 
 LOGGER = singer.get_logger()
 
@@ -118,8 +118,8 @@ class Client(object):
             raise RuntimeError("Client is not yet authenticated")
         return self._token
 
-    # Backoff for 5 times when a Timeout error occurs when sending the request
-    @backoff.on_exception(backoff.expo, Timeout, max_tries=5, factor=2)
+    # Backoff for 5 times when a Timeout or Connection error occurs when sending the request
+    @backoff.on_exception(backoff.expo, (Timeout, ConnectionError), max_tries=5, factor=2)
     def prepare_and_send(self, request):
         if self.user_agent:
             request.headers["User-Agent"] = self.user_agent
