@@ -1,4 +1,6 @@
 # Changelog
+## 1.3.1
+  * Request Timeout Implementation
 ## 1.3.0
   * Makes all fields `available` except primary keys and bookmarking keys [#16](https://github.com/singer-io/tap-yotpo/pull/16)
   * Updates error handling of HTTP request [#13](https://github.com/singer-io/tap-yotpo/pull/13)
