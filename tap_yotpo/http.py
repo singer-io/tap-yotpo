@@ -7,7 +7,7 @@ from requests.exceptions import Timeout, ConnectionError
 LOGGER = singer.get_logger()
 
 AUTH_URL = "https://api.yotpo.com/oauth/token"
-BASE_URL = "https://api-cdn.yotpo.com"
+BASE_URL = "https://api.yotpo.com"
 BASE_URL_V1 = "https://api-cdn.yotpo.com/v1"
 
 GRANT_TYPE = "client_credentials"
