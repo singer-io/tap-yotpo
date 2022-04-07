@@ -1,4 +1,6 @@
 # Changelog
+## 1.3.2
+  * Storefront endpoint URL change [#27](https://github.com/singer-io/tap-yotpo/pull/27)
 ## 1.3.1
   * Request Timeout Implementation
 ## 1.3.0
