@@ -36,7 +36,7 @@
       "type": ["number", "null"]
     },
     "sku": {
-      "type": "string"
+      "type": [ "null", "string"]
     },
     "name": {
       "type": "string"
