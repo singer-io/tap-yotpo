@@ -1,4 +1,8 @@
 # Changelog
+
+## 1.3.3
+  * Add null in sku field type in reviews stream to fix transformation issue [#29](https://github.com/singer-io/tap-yotpo/pull/29)
+
 ## 1.3.2
   * Storefront endpoint URL change [#27](https://github.com/singer-io/tap-yotpo/pull/27)
 ## 1.3.1
