@@ -41,6 +41,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
     def mock_prepare_and_send_429(request):
         return Mockresponse("",429,raise_error=True)
 
+    def mock_prepare_and_send_500(request):
+        return Mockresponse("", 500, raise_error=True)
+
     def mock_prepare_and_send_502(request):
         return Mockresponse("",502,raise_error=True)
 
@@ -141,6 +144,24 @@ class TestYotpoErrorHandling(unittest.TestCase):
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,3)
             self.assertEquals(mock_create_get_request.call_count,3)
+
+    @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_500)
+    @mock.patch("tap_yotpo.http.Client.authenticate")
+    @mock.patch("tap_yotpo.http.Client.create_get_request")
+    def test_GET_for_500_exceptin_handling(self,mock_create_get_request,mock_authenticate,mock_prepare_and_send):
+        """To verify that when response get 500 status code then showing proper error message"""
+        try:
+            tap_stream_id = "tap_yopto"
+            mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
+            mock_client = http.Client(mock_config)
+            mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
+        except http.YotpoInternalServerError as e:
+            expected_error_message = "HTTP-error-code: 500, Error: An error has occurred at Yotpo's end."
+            # Verifying the message formed for the custom exception
+            self.assertEquals(str(e), expected_error_message)
+            self.assertEquals(mock_prepare_and_send.call_count,3)
+            self.assertEquals(mock_authenticate.call_count,3)
+            self.assertEquals(mock_create_get_request.call_count,mock_authenticate.call_count)
 
     @mock.patch("tap_yotpo.http.Client.prepare_and_send",side_effect=mock_prepare_and_send_502)
     @mock.patch("tap_yotpo.http.Client.authenticate")
