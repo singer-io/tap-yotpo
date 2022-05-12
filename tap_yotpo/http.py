@@ -166,7 +166,7 @@ class Client(object):
         self._token = data['access_token']
 
     @backoff.on_exception(backoff.expo,
-                          (YotpoRateLimitError, YotpoBadGateway, YotpoInternalServerError,
+                          (YotpoRateLimitError, YotpoBadGateway,
                            YotpoUnauthorizedError),
                           max_tries=3,
                           factor=2)
