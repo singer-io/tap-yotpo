@@ -23,6 +23,8 @@ class YotpoError(Exception):
 class YotpoBadRequestError(YotpoError):
     pass
 
+class YotpoServer5xxError(YotpoError):
+    pass
 
 class YotpoRateLimitError(YotpoError):
     pass
@@ -36,7 +38,7 @@ class YotpoForbiddenError(YotpoError):
     pass
 
 
-class YotpoBadGateway(YotpoError):
+class YotpoBadGateway(YotpoServer5xxError):
     pass
 
 
@@ -48,14 +50,14 @@ class YotpoTooManyError(YotpoRateLimitError):
     pass
 
 
-class YotpoNotAvailableError(YotpoRateLimitError):
+class YotpoNotAvailableError(YotpoServer5xxError):
     pass
 
 
-class YotpoGatewayTimeout(YotpoRateLimitError):
+class YotpoGatewayTimeout(YotpoServer5xxError):
     pass
 
-class YotpoInternalServerError(YotpoRateLimitError):
+class YotpoInternalServerError(YotpoServer5xxError):
     pass
 
 ERROR_CODE_EXCEPTION_MAPPING = {
@@ -166,7 +168,7 @@ class Client(object):
         self._token = data['access_token']
 
     @backoff.on_exception(backoff.expo,
-                          (YotpoRateLimitError, YotpoBadGateway,
+                          (YotpoRateLimitError, YotpoServer5xxError,
                            YotpoUnauthorizedError),
                           max_tries=3,
                           factor=2)
