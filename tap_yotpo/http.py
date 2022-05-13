@@ -82,8 +82,8 @@ ERROR_CODE_EXCEPTION_MAPPING = {
         "message": "The API rate limit for your organisation/application pairing has been exceeded."
     },
     500: {
-      "raise_exception": YotpoInternalServerError,
-      "message": "An error has occurred at Yotpo's end."
+        "raise_exception": YotpoInternalServerError,
+        "message": "An error has occurred at Yotpo's end."
     },
     502: {
         "raise_exception": YotpoBadGateway,
