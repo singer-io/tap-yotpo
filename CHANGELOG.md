@@ -1,5 +1,8 @@
 # Changelog
 
+## 1 3.4
+  * Exception Handling for Error 500 [#31](https://github.com/singer-io/tap-yotpo/pull/31)
+
 ## 1.3.3
   * Add null in sku field type in reviews stream to fix transformation issue [#29](https://github.com/singer-io/tap-yotpo/pull/29)
 
