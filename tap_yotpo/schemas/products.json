@@ -50,10 +50,10 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "number"
+          "type": ["number", "null"]
         },
         "name": {
-          "type": "string"
+          "type": ["string", "null"]
         }
       }
     },
