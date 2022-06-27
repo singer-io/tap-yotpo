@@ -1,5 +1,8 @@
 # Changelog
 
+
+## 1 3.5
+  * Update products schema to accept null values [#31](https://github.com/singer-io/tap-yotpo/pull/33)
 ## 1 3.4
   * Exception Handling for Error 500 [#31](https://github.com/singer-io/tap-yotpo/pull/31)
 
