@@ -1,8 +1,10 @@
 # Changelog
 
-
+## 1 3.6
+  * Unit test cases  [#38](https://github.com/singer-io/tap-yotpo/pull/38)
+  * Add response of unknown errors  [#37](https://github.com/singer-io/tap-yotpo/pull/37)
 ## 1 3.5
-  * Update products schema to accept null values [#31](https://github.com/singer-io/tap-yotpo/pull/33)
+  * Update products schema to accept null values [#33](https://github.com/singer-io/tap-yotpo/pull/33)
 ## 1 3.4
   * Exception Handling for Error 500 [#31](https://github.com/singer-io/tap-yotpo/pull/31)
 
