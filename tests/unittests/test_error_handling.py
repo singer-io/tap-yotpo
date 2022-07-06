@@ -11,6 +11,7 @@ class Mockresponse:
             self.content = content
             self.headers = headers
             self.raise_error = raise_error
+            self.text = {}
 
         def prepare(self):
             return (self.json_data, self.status_code, self.content, self.headers, self.raise_error)
@@ -224,7 +225,7 @@ class TestYotpoErrorHandling(unittest.TestCase):
             mock_client = http.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
         except http.YotpoError as e:
-            expected_error_message = "HTTP-error-code: 505, Error: Unknown Error"
+            expected_error_message = "HTTP-error-code: 505, Error: {}"
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
             self.assertEquals(mock_prepare_and_send.call_count,1)
