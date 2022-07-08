@@ -213,14 +213,15 @@ class ProductReviews(Paginated):
             product_id = product['external_product_id']
             # (Bug-fix) try-except block - Handles if any special character present in the product_id.
             try:
-                if special_character.search(product_id) is not None and 'E+' in product_id:
-                    # Converts exponential to numeric string. Eg - 4.76625E+12 to '4766250000000'.
-                    product_id = str(int(float(product_id)))
-                else:
-                    LOGGER.warning(f"Product-id - {product_id} is neither numeric nor Exponential. Breaking the API endpoint call.")
-                    continue
+                if special_character.search(product_id) is not None:
+                    # Converts exponential value to numeric string. Eg - 4.76625E+12 to '4766250000000'.
+                    if 'E+' in product_id:
+                        product_id = str(int(float(product_id)))
+                    else:
+                        LOGGER.warning(f"Product-id - {product_id} is neither numeric nor Exponential. Processing next product-id")
+                        continue
             except ValueError:
-                LOGGER.warning(f"Product-id contains special character - {product_id}. Breaking the API endpoint call.")
+                LOGGER.warning(f"Product-id contains special character - {product_id}.")
                 continue
             path = self.path.format(product_id=product_id)
             self._sync(ctx, path, product_id=product_id)
