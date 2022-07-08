@@ -1,6 +1,7 @@
 import singer
 from singer import metrics, transform
 import pendulum
+import re
 
 LOGGER = singer.get_logger()
 
@@ -207,8 +208,21 @@ class ProductReviews(Paginated):
         }
 
     def sync(self, ctx):
+        special_character = re.compile('[+/#:]')
         for product in ctx.cache['products']:
             product_id = product['external_product_id']
+            # (Bug-fix) try-except block - Handles if any special character present in the product_id.
+            try:
+                if special_character.search(product_id) is not None:
+                    if 'E+' in product_id:
+                        # Converts exponential to numeric string. Eg - 4.76625E+12 to 
+                        product_id = str(int(float(product_id)))
+                    else:
+                        LOGGER.warning(f"Product-id contains special character - {product_id}. Breaking the API endpoint call.")
+                        continue
+            except ValueError:
+                LOGGER.warning(f"Product-id contains special character - {product_id}. Breaking the API endpoint call.")
+                continue
             path = self.path.format(product_id=product_id)
             self._sync(ctx, path, product_id=product_id)
 
