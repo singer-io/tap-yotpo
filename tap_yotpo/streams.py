@@ -1,5 +1,5 @@
 import singer
-from singer import metrics, transform
+from singer import metrics, transform, metadata
 import pendulum
 import re
 
@@ -87,13 +87,16 @@ class Paginated(Stream):
             resp = ctx.client.GET(self.version, opts, self.tap_stream_id)
             raw_records = self.format_response(resp)
             records = []
+            # Implemented Field Selection logic for streams
+            stream = ctx.catalog.get_stream(self.tap_stream_id)
+            stream_metadata = metadata.to_map(stream.metadata)
             for record in raw_records:
                 # unsubscribers data with id vaule empty or None will be dropped as id is the primary key. 
                 if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
                     LOGGER.warning("Record '%s' dropped as id field value is not available or have empty value", record)
                     dropped_event_count = dropped_event_count + 1
                 else:
-                    transformed_record = transform(record, schema)
+                    transformed_record = transform(record, schema, metadata=stream_metadata)
                     records.append(transformed_record)
             if not self.on_batch_complete(ctx, records, product_id):
                 break
