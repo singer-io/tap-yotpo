@@ -211,21 +211,17 @@ class ProductReviews(Paginated):
         }
 
     def sync(self, ctx):
-        special_character = re.compile('[+/#:]')
         for product in ctx.cache['products']:
             product_id = product['external_product_id']
-            # (Bug-fix) try-except block - Handles if any special character present in the product_id.
-            try:
-                if special_character.search(product_id) is not None:
-                    # Converts exponential value to numeric string. Eg - 4.76625E+12 to '4766250000000'.
-                    if 'E+' in product_id:
-                        product_id = str(int(float(product_id)))
-                    else:
-                        LOGGER.warning(f"Product-id - {product_id} is neither numeric nor Exponential. Processing next product-id")
-                        continue
-            except ValueError:
-                LOGGER.warning(f"Product-id contains special character - {product_id}.")
+
+            """
+            The product_id only supports alphanumeric (a...z, A...Z, 0...9), "_" and "-" characters.
+            If product-id contains any special character then log the warning and proceed further.
+            """
+            if re.match("^[A-Za-z0-9_-]*$", product_id) is None:
+                LOGGER.warning(f"Product-id - {product_id} contains special character. Processing next product-id")
                 continue
+
             path = self.path.format(product_id=product_id)
             self._sync(ctx, path, product_id=product_id)
 
