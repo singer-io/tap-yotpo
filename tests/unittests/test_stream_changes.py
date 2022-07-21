@@ -2,8 +2,6 @@ import unittest
 from unittest import mock
 from tap_yotpo import streams, context
 
-import singer
-LOGGER = singer.get_logger()
 
 def mock_schema(a,b):
         return {}
