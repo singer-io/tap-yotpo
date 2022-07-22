@@ -31,6 +31,9 @@ class TestDataTransforming(unittest.TestCase):
     Checking that in product Stream, url field should accept not accept any value but String or None values
     """
     def test_data_transform_for_products_stream(self):
+        class NonStringDataType(object):
+            def __str__(self):
+                raise TypeError('Can not by stringified')
         ctx = Context({}, {})
         ctx.catalog = discover(ctx)
         schema = ctx.catalog.get_stream('products').schema.to_dict()
@@ -49,7 +52,7 @@ class TestDataTransforming(unittest.TestCase):
     To test that data can transformable to schema.
     Checking that in product Stream, url field should accept None value
     """
-    def test_data_transform_for_products_stream(self):
+    def test_data_transform_for_url_with_none_value_products_stream(self):
         ctx = Context({}, {})
         ctx.catalog = discover(ctx)
         schema = ctx.catalog.get_stream('products').schema.to_dict()
