@@ -1,4 +1,4 @@
-from tap_yotpo.http import Client
+from tap_yotpo.client import Client
 import unittest
 from unittest import mock
 from unittest.case import TestCase

@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 import requests
-from tap_yotpo import http
+from tap_yotpo import client
 
 # mock responce
 class Mockresponse:
@@ -63,9 +63,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoBadRequestError as e:
+        except client.YotpoBadRequestError as e:
             expected_error_message = "HTTP-error-code: 400, Error: A validation exception has occurred."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -79,9 +79,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoUnauthorizedError as e:
+        except client.YotpoUnauthorizedError as e:
             expected_error_message = "HTTP-error-code: 401, Error: Invalid authorization credentials."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -93,9 +93,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
     def test_authenticate_not_called_again_for_401(self,mock_prepare_and_send):
         try:
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.authenticate()
-        except http.YotpoUnauthorizedError as e:
+        except client.YotpoUnauthorizedError as e:
             expected_error_message = "HTTP-error-code: 401, Error: Invalid authorization credentials."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -107,9 +107,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoForbiddenError as e:
+        except client.YotpoForbiddenError as e:
             expected_error_message = "HTTP-error-code: 403, Error: User doesn't have permission to access the resource."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -122,9 +122,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoNotFoundError as e:
+        except client.YotpoNotFoundError as e:
             expected_error_message = "HTTP-error-code: 404, Error: The resource you have specified cannot be found."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -137,9 +137,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoTooManyError as e:
+        except client.YotpoTooManyError as e:
             expected_error_message = "HTTP-error-code: 429, Error: The API rate limit for your organisation/application pairing has been exceeded."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -154,9 +154,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoInternalServerError as e:
+        except client.YotpoInternalServerError as e:
             expected_error_message = "HTTP-error-code: 500, Error: An error has occurred at Yotpo's end."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -171,9 +171,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoBadGateway as e:
+        except client.YotpoBadGateway as e:
             expected_error_message = "HTTP-error-code: 502, Error: Server received an invalid response."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -188,9 +188,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoNotAvailableError as e:
+        except client.YotpoNotAvailableError as e:
             expected_error_message = "HTTP-error-code: 503, Error: API service is currently unavailable."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -205,9 +205,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoGatewayTimeout as e:
+        except client.YotpoGatewayTimeout as e:
             expected_error_message = "HTTP-error-code: 504, Error: API service time out, please check Yotpo server."
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)
@@ -222,9 +222,9 @@ class TestYotpoErrorHandling(unittest.TestCase):
         try:
             tap_stream_id = "tap_yopto"
             mock_config = {"api_key":"mock_key","api_secret":"mock_secret"}
-            mock_client = http.Client(mock_config)
+            mock_client = client.Client(mock_config)
             mock_client.GET('v1',{"path": "apps/:api_key/products?utoken=:token", "params": {"count": 1,"page": 1}},tap_stream_id)
-        except http.YotpoError as e:
+        except client.YotpoError as e:
             expected_error_message = "HTTP-error-code: 505, Error: {}"
             # Verifying the message formed for the custom exception
             self.assertEquals(str(e), expected_error_message)

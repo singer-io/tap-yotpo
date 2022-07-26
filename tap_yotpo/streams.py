@@ -91,7 +91,7 @@ class Paginated(Stream):
             stream = ctx.catalog.get_stream(self.tap_stream_id)
             stream_metadata = metadata.to_map(stream.metadata)
             for record in raw_records:
-                # unsubscribers data with id vaule empty or None will be dropped as id is the primary key. 
+                # unsubscribers data with id value empty or None will be dropped as id is the primary key. 
                 if self.tap_stream_id == "unsubscribers" and record.get('id','') == '':
                     LOGGER.warning("Record '%s' dropped as id field value is not available or have empty value", record)
                     dropped_event_count = dropped_event_count + 1
@@ -105,8 +105,8 @@ class Paginated(Stream):
                 break
             page += 1
         if dropped_event_count:
-            LOGGER.warning(
-                "%s records dropped for stream unsubscribers because id field value is not available or have empty value",dropped_event_count)
+            LOGGER.warning("%s records dropped for stream unsubscribers because id field value is not available or have empty value",dropped_event_count)
+    
     def sync(self, ctx):
         self._sync(ctx)
 
@@ -139,11 +139,8 @@ class Products(Paginated):
 class Reviews(Paginated):
     def get_params(self, ctx, page):
         since_date_raw = self.get_start_date(ctx, 'since_date')
-        lookback_days = ctx.config.get('reviews_lookback_days',
-                                       REVIEWS_LOOKBACK_DAYS)
-        since_date = pendulum.parse(since_date_raw) \
-                             .in_timezone("UTC") \
-                             .add(days=-lookback_days)
+        lookback_days = ctx.config.get('reviews_lookback_days', REVIEWS_LOOKBACK_DAYS)
+        since_date = pendulum.parse(since_date_raw).in_timezone("UTC").add(days=-lookback_days)
 
         return {
             "count": PAGE_SIZE,
@@ -168,14 +165,8 @@ class Reviews(Paginated):
 class Emails(Paginated):
     def get_params(self, ctx, page):
         since_date_raw = self.get_start_date(ctx, 'since_date')
-
-        lookback_days = ctx.config.get('email_stats_lookback_days',
-                                       EMAILS_LOOKBACK_DAYS)
-
-        since_date = pendulum.parse(since_date_raw) \
-                             .in_timezone("UTC") \
-                             .add(days=-lookback_days)
-
+        lookback_days = ctx.config.get('email_stats_lookback_days', EMAILS_LOOKBACK_DAYS)
+        since_date = pendulum.parse(since_date_raw).in_timezone("UTC").add(days=-lookback_days)
         until_date = pendulum.tomorrow().in_timezone("UTC")
 
         return {
@@ -200,9 +191,11 @@ class Emails(Paginated):
 
 class ProductReviews(Paginated):
     def get_params(self, ctx, page):
-        # This endpoint does not support date filtering
-        # Start at the beginning of time, and only sync
-        # records that are more recent than our bookmark
+        """
+        This endpoint does not support date filtering
+        Start at the beginning of time, and only sync
+        records that are more recent than our bookmark
+        """
         return {
             "per_page": PAGE_SIZE,
             "page": page,
@@ -239,8 +232,7 @@ class ProductReviews(Paginated):
         records = response['response'].get(self.collection_key, [])
         domain_key, name = self.get_from_product(response)
 
-        return [{'domain_key': domain_key, 'name': name, **record}
-                for record in records]
+        return [{'domain_key': domain_key, 'name': name, **record} for record in records]
 
 
     def on_batch_complete(self, ctx, records, product_id=None):
@@ -255,8 +247,10 @@ class ProductReviews(Paginated):
         last_record = records[-1]
         max_record_ts = pendulum.parse(last_record['created_at'])
 
-        # if latest in batch is more recent than the current bookmark,
-        # update the bookmark and write out the record
+        """
+        if latest in batch is more recent than the current bookmark,
+        update the bookmark and write out the record
+        """
         if max_record_ts >= current_bookmark:
             self.write_records(records)
             self.update_bookmark(ctx, max_record_ts.to_date_string(),
