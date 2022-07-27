@@ -7,7 +7,7 @@ This tap:
 
 - Pulls raw data from [Yotpo](http://apidocs.yotpo.com/reference)
 - Extracts the following resources:
-  - [products](http://apidocs.yotpo.com/reference#draft-retrieve-all-products)
+  - [products](https://core-api.yotpo.com/v1.0/reference/retrieve-all-products)
   - [reviews](http://apidocs.yotpo.com/reference#retrieve-all-reviews)
   - [emails](http://apidocs.yotpo.com/reference#raw-data)
   - [unsubscribers](http://apidocs.yotpo.com/reference#retrieve-a-list-of-unsubscribers)
