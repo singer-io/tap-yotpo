@@ -214,10 +214,8 @@ class ProductReviews(Paginated):
         for product in ctx.cache['products']:
             product_id = product['external_product_id']
 
-            """
-            The product_id only supports alphanumeric (a...z, A...Z, 0...9), "_" and "-" characters.
-            If product-id contains any special character then log the warning and proceed further.
-            """
+            # The product_id only supports alphanumeric (a...z, A...Z, 0...9), "_" and "-" characters.
+            # If product-id contains any special character then log the warning and proceed further.
             if re.match("^[A-Za-z0-9_-]*$", product_id) is None:
                 LOGGER.warning(f"Product-id - {product_id} contains special character. Processing next product-id")
                 continue
