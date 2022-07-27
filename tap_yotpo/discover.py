@@ -1,7 +1,7 @@
 from singer import metadata
 from singer.catalog import Catalog, CatalogEntry, Schema
 from . import streams as streams_
-from helpers import load_schema
+from tap_yotpo.helpers import load_schema
 
 
 def discover(ctx):

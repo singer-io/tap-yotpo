@@ -1,10 +1,9 @@
-#!/usr/bin/env python3
-import os
 import singer
-from singer import utils #, metadata
-from singer.catalog import Catalog #, CatalogEntry, Schema
-#from . import streams as streams_
-from .context import Context
+from singer import utils
+from singer.catalog import Catalog
+from tap_yotpo.discover import discover
+from tap_yotpo.sync import sync
+from tap_yotpo.context import Context
 
 REQUIRED_CONFIG_KEYS = ["start_date", "api_key", "api_secret"]
 LOGGER = singer.get_logger()

@@ -3,19 +3,18 @@ import singer
 from singer import metrics
 import backoff
 from requests.exceptions import Timeout, ConnectionError
-from exceptions import (YotpoRateLimitError, YotpoServer5xxError,
+from tap_yotpo.exceptions import (YotpoRateLimitError, YotpoServer5xxError,
                        YotpoUnauthorizedError, YotpoError,
                        ERROR_CODE_EXCEPTION_MAPPING)
-from helpers import _join
+from tap_yotpo.helpers import _join
 
 LOGGER = singer.get_logger()
 
-
 class Client(object):
-    
     AUTH_URL = "https://api.yotpo.com/oauth/token"
     BASE_URL = "https://api.yotpo.com"
     BASE_URL_V1 = "https://api-cdn.yotpo.com/v1"
+
     GRANT_TYPE = "client_credentials"
     REQUEST_TIMEOUT = 300
 
@@ -24,14 +23,14 @@ class Client(object):
         self.api_key = config.get("api_key")
         self.api_secret = config.get("api_secret")
         self.session = requests.Session()
-        self.base_url = BASE_URL
+        self.base_url = self.BASE_URL
         self._token = None
         request_timeout = config.get('request_timeout')
         # if request_timeout is other than 0,"0" or "" then use request_timeout
         if request_timeout and float(request_timeout):
             request_timeout = float(request_timeout)
         else: # If value is 0,"0" or "" then set default to 300 seconds.
-            request_timeout = REQUEST_TIMEOUT
+            request_timeout = self.REQUEST_TIMEOUT
         self.request_timeout = request_timeout
 
     @property
@@ -51,9 +50,9 @@ class Client(object):
         path = raw_path.replace(":api_key", self.api_key).replace(":token", self.token)
 
         if version == 'v1':
-            return _join(BASE_URL_V1, path)
+            return _join(self.BASE_URL_V1, path)
         else:
-            return _join(BASE_URL, path)
+            return _join(self.BASE_URL, path)
 
     def create_get_request(self, version, path, **kwargs):
         return requests.Request(method="GET",url=self.url(version, path),**kwargs)
@@ -66,12 +65,11 @@ class Client(object):
         return response.json()
 
     def authenticate(self):
-        auth_body = {
-            "client_id": self.api_key,
-            "client_secret": self.api_secret,
-            "grant_type": GRANT_TYPE
-        }
-        request = requests.Request(method="POST", url=AUTH_URL, data=auth_body)
+        auth_body = {"client_id": self.api_key,
+                    "client_secret": self.api_secret,
+                    "grant_type": self.GRANT_TYPE}
+
+        request = requests.Request(method="POST", url=self.AUTH_URL, data=auth_body)
         response = self.prepare_and_send(request)
         self.check_status(response, authentication_call=True)
         data = response.json()
@@ -79,7 +77,8 @@ class Client(object):
 
     @backoff.on_exception(backoff.expo,
                          (YotpoRateLimitError, YotpoServer5xxError,YotpoUnauthorizedError),
-                         max_tries=3, factor=2)
+                         max_tries=3,
+                         factor=2)
     def GET(self, version, request_kwargs, *args, **kwargs):
         req = self.create_get_request(version, **request_kwargs)
         return self.request_with_handling(req, *args, **kwargs)

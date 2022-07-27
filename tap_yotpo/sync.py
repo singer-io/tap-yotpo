@@ -1,5 +1,5 @@
 from . import streams as streams_
-from helpers import load_and_write_schema
+from tap_yotpo.helpers import load_and_write_schema
 
 def sync(ctx):
     streams_.products.fetch_into_cache(ctx)
