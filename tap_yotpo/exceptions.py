@@ -10,8 +10,10 @@ class YotpoError(Exception):
 class YotpoBadRequestError(YotpoError):
     pass
 
+
 class YotpoServer5xxError(YotpoError):
     pass
+
 
 class YotpoRateLimitError(YotpoError):
     pass
@@ -46,6 +48,7 @@ class YotpoGatewayTimeout(YotpoServer5xxError):
 
 class YotpoInternalServerError(YotpoServer5xxError):
     pass
+
 
 ERROR_CODE_EXCEPTION_MAPPING = {
     400: {

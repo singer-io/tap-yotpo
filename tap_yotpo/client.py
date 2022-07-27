@@ -11,8 +11,6 @@ from helpers import _join
 LOGGER = singer.get_logger()
 
 
-
-
 class Client(object):
     
     AUTH_URL = "https://api.yotpo.com/oauth/token"
@@ -97,10 +95,8 @@ class Client(object):
                                                              ERROR_CODE_EXCEPTION_MAPPING.get(
                                                              response.status_code, {})).get("message", response.text))
             exc = ERROR_CODE_EXCEPTION_MAPPING.get(response.status_code, {}).get("raise_exception", YotpoError)
-            """
-            Re-authenticating if got an authentication error while collecting stream data and 
-            response does not have Bad request (400), Forbidden (403) and Not found (404)
-            """
+            # Re-authenticating if got an authentication error while collecting stream data and 
+            # response does not have Bad request (400), Forbidden (403) and Not found (404)
             if not authentication_call and response.status_code not in [400, 403, 404, 429]:
                 self.authenticate()
             raise exc(message, response) from None

@@ -207,10 +207,8 @@ class ProductReviews(Paginated):
         for product in ctx.cache['products']:
             product_id = product['external_product_id']
 
-            """
-            The product_id only supports alphanumeric (a...z, A...Z, 0...9), "_" and "-" characters.
-            If product-id contains any special character then log the warning and proceed further.
-            """
+            # The product_id only supports alphanumeric (a...z, A...Z, 0...9), "_" and "-" characters.
+            # If product-id contains any special character then log the warning and proceed further.
             if re.match("^[A-Za-z0-9_-]*$", product_id) is None:
                 LOGGER.warning(f"Product-id - {product_id} contains special character. Processing next product-id")
                 continue
@@ -247,10 +245,8 @@ class ProductReviews(Paginated):
         last_record = records[-1]
         max_record_ts = pendulum.parse(last_record['created_at'])
 
-        """
-        if latest in batch is more recent than the current bookmark,
-        update the bookmark and write out the record
-        """
+        # if latest in batch is more recent than the current bookmark,
+        # update the bookmark and write out the record
         if max_record_ts >= current_bookmark:
             self.write_records(records)
             self.update_bookmark(ctx, max_record_ts.to_date_string(),

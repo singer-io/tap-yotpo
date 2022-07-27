@@ -18,11 +18,9 @@ def discover(ctx):
             mdata = metadata.write(mdata, ('properties', field_name), 'inclusion',
                                    'automatic' if field_name in stream.pk_fields or field_name in stream.book_mark_keys else 'available')
 
-        catalog.streams.append(CatalogEntry(
-            stream=stream.tap_stream_id,
-            tap_stream_id=stream.tap_stream_id,
-            key_properties=stream.pk_fields,
-            schema=schema,
-            metadata=metadata.to_list(mdata)
-        ))
+        catalog.streams.append(CatalogEntry(stream=stream.tap_stream_id,
+                                           tap_stream_id=stream.tap_stream_id,
+                                           key_properties=stream.pk_fields,
+                                           schema=schema,
+                                           metadata=metadata.to_list(mdata)))
     return catalog
