@@ -14,10 +14,8 @@ REVIEWS_LOOKBACK_DAYS = 30
 
 class Stream():
     def __init__(self, tap_stream_id, pk_fields, book_mark_keys, path,
-                 returns_collection=True,
-                 collection_key=None,
-                 pluck_results=False,
-                 version=None):
+                returns_collection=True, collection_key=None,
+                pluck_results=False, version=None):
         self.tap_stream_id = tap_stream_id
         self.pk_fields = pk_fields
         self.book_mark_keys = book_mark_keys
