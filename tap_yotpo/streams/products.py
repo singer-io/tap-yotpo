@@ -1,19 +1,19 @@
 from typing import Dict
 
-from .abstracts import IncremetalStream
+from .abstracts import FullTableStream
 
 
-class Products(IncremetalStream):
+class Products(FullTableStream):
     """
     class for products stream
     """
     stream = "products"
     tap_stream_id = "products"
     key_properties = ["id",]
-    replication_key = "updated_at"
-    valid_replication_keys = ["created_at","updated_at"]
+    #replication_key = "updated_at"
+    #valid_replication_keys = ["created_at","updated_at"]
     api_auth_version = "v1"
-    config_start_key = "start_date"
+    #config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/products"
 
     def get_url_endpoint(self) -> str:
@@ -34,10 +34,10 @@ class Products(IncremetalStream):
             params["page"]+=1
             yield from raw_records
 
-    def filter_record(self,record :Dict,state :Dict) ->bool:
-        """
-        Returns boolean if a record should be written
-        """
-        prev_bookmark_val = self.get_bookmark(state)
-        record_bookmark_value = record[self.replication_key]
-        return True if record_bookmark_value > prev_bookmark_val else False
+    # def filter_record(self,record :Dict,state :Dict) ->bool:
+    #     """
+    #     Returns boolean if a record should be written
+    #     """
+    #     prev_bookmark_val = self.get_bookmark(state)
+    #     record_bookmark_value = record[self.replication_key]
+    #     return True if record_bookmark_value > prev_bookmark_val else False

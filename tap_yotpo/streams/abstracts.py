@@ -151,5 +151,10 @@ class FullTableStream(BaseStream):
     replication_key = None
 
     def sync(self,state,schema,stream_metadata,transformer):
-        LOGGER.info("sync called from %s", self.__class__)
-        return state
+        #LOGGER.info("sync called from %s", self.__class__)
+        with metrics.record_counter(self.tap_stream_id) as counter:
+            for record in self.get_records():
+                transformed_record = transformer.transform(record, schema, stream_metadata)
+                write_record(self.tap_stream_id, transformed_record)
+                counter.increment()
+        return state 
