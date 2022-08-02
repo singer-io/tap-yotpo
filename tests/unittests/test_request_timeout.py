@@ -10,8 +10,8 @@ class TestBackoffError(unittest.TestCase):
     '''
     Test that backoff logic works properly.
     '''
-    @mock.patch('tap_yotpo.http.requests.Session.send')
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request')
+    @mock.patch('tap_yotpo.client.requests.Session.send')
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request')
     def test_backoff_prepare_and_send_timeout_error(self, mock_prepare_request, mock_send):
         """
         Check whether the request backoffs properly for 5 times in case of Timeout error.
@@ -23,8 +23,8 @@ class TestBackoffError(unittest.TestCase):
             client.prepare_and_send("request")
         self.assertEqual(mock_send.call_count, 5)
 
-    @mock.patch('tap_yotpo.http.requests.Session.send')
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request')
+    @mock.patch('tap_yotpo.client.requests.Session.send')
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request')
     def test_backoff_prepare_and_send_connection_error(self, mock_prepare_request, mock_send):
         """
         Check whether the request backoffs properly for 5 times in case of Timeout error.
@@ -59,8 +59,8 @@ class TestRequestTimeoutValue(unittest.TestCase):
     '''
     Test that request timeout parameter works properly in various cases
     '''
-    @mock.patch('tap_yotpo.http.requests.Session.send', return_value = MockResponse("", status_code=200))
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request', return_value = "request")
+    @mock.patch('tap_yotpo.client.requests.Session.send', return_value = MockResponse("", status_code=200))
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request', return_value = "request")
     def test_config_provided_request_timeout(self, mock_request, mock_send):
         """ 
             Unit tests to ensure that request timeout is set based on config value
@@ -70,8 +70,8 @@ class TestRequestTimeoutValue(unittest.TestCase):
         client.prepare_and_send("request")
         mock_send.assert_called_with("request", timeout=100.0)
 
-    @mock.patch('tap_yotpo.http.requests.Session.send', return_value = MockResponse("", status_code=200))
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request', return_value = "request")
+    @mock.patch('tap_yotpo.client.requests.Session.send', return_value = MockResponse("", status_code=200))
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request', return_value = "request")
     def test_default_value_request_timeout(self, mock_request, mock_send):
         """ 
             Unit tests to ensure that request timeout is set based default value
@@ -81,8 +81,8 @@ class TestRequestTimeoutValue(unittest.TestCase):
         client.prepare_and_send("request")
         mock_send.assert_called_with("request", timeout=300.0)
 
-    @mock.patch('tap_yotpo.http.requests.Session.send', return_value = MockResponse("", status_code=200))
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request', return_value = "request")
+    @mock.patch('tap_yotpo.client.requests.Session.send', return_value = MockResponse("", status_code=200))
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request', return_value = "request")
     def test_config_provided_empty_request_timeout(self, mock_request, mock_send):
         """ 
             Unit tests to ensure that request timeout is set based on default value if empty value is given in config
@@ -92,8 +92,8 @@ class TestRequestTimeoutValue(unittest.TestCase):
         client.prepare_and_send("request")
         mock_send.assert_called_with("request", timeout=300.0)
         
-    @mock.patch('tap_yotpo.http.requests.Session.send', return_value = MockResponse("", status_code=200))
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request', return_value = "request")
+    @mock.patch('tap_yotpo.client.requests.Session.send', return_value = MockResponse("", status_code=200))
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request', return_value = "request")
     def test_config_provided_string_request_timeout(self, mock_request, mock_send):
         """ 
             Unit tests to ensure that request timeout is set based on config string value
@@ -103,8 +103,8 @@ class TestRequestTimeoutValue(unittest.TestCase):
         client.prepare_and_send("request")
         mock_send.assert_called_with("request", timeout=100.0)
 
-    @mock.patch('tap_yotpo.http.requests.Session.send', return_value = MockResponse("", status_code=200))
-    @mock.patch('tap_yotpo.http.requests.Session.prepare_request', return_value = "request")
+    @mock.patch('tap_yotpo.client.requests.Session.send', return_value = MockResponse("", status_code=200))
+    @mock.patch('tap_yotpo.client.requests.Session.prepare_request', return_value = "request")
     def test_config_provided_float_request_timeout(self, mock_request, mock_send):
         """ 
             Unit tests to ensure that request timeout is set based on config float value

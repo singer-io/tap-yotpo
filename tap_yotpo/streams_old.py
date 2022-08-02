@@ -306,3 +306,4 @@ all_streams = [
     )
 ]
 all_stream_ids = [s.tap_stream_id for s in all_streams]
+STREAMS = {s.tap_stream_id:s for s in all_streams}

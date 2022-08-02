@@ -1,26 +1,22 @@
-from singer import metadata
-from singer.catalog import Catalog, CatalogEntry, Schema
-from . import streams as streams_
-from tap_yotpo.helpers import load_schema
+import json
+from singer.catalog import Catalog
+from tap_yotpo.helpers import get_abs_path
+from tap_yotpo.streams import STREAMS
+
+# def get_schemas() -> tuple[dict,dict]:
+#     """
+#     Builds the singer schema and metadata dictionaries.
+#     """
 
 
-def discover(ctx):
-    catalog = Catalog([])
-    for stream in streams_.all_streams:
-        schema_dict = load_schema(ctx, stream.tap_stream_id)
-        schema = Schema.from_dict(schema_dict)
-        mdata = metadata.get_standard_metadata(schema_dict,
-                                               key_properties=stream.pk_fields)
-        mdata = metadata.to_map(mdata)
-
-        for field_name in schema_dict['properties'].keys():
-            # Field except primary keys and book mark keys marked as available. 
-            mdata = metadata.write(mdata, ('properties', field_name), 'inclusion',
-                                   'automatic' if field_name in stream.pk_fields or field_name in stream.book_mark_keys else 'available')
-
-        catalog.streams.append(CatalogEntry(stream=stream.tap_stream_id,
-                                           tap_stream_id=stream.tap_stream_id,
-                                           key_properties=stream.pk_fields,
-                                           schema=schema,
-                                           metadata=metadata.to_list(mdata)))
-    return catalog
+def discover(client):
+    """
+    TODO: Permission Check
+    """
+    streams = []
+    for stream_name, stream in STREAMS.items():
+        schema_path = get_abs_path(f"schemas/{stream_name}.json")
+        with open(schema_path,encoding="utf-8") as schema_file:
+            schema = json.load(schema_file)
+        streams.append({"stream":stream_name,"tap_stream_id":stream.tap_stream_id,"schema":schema,"metadata":stream.get_metadata(schema)})
+    return Catalog.from_dict({"streams":streams})

@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 from tap_yotpo import streams, context
-
+from singer import metadata
 
 def mock_schema(a,b):
         return {}
@@ -17,7 +17,7 @@ def mock_on_batch_complete(ctx, records,product_id=None):
 
 class TestYotpoStreamChanges(unittest.TestCase):
 
-    @mock.patch("tap_yotpo.metadata.to_map")
+    @mock.patch("tap_yotpo.streams.metadata.to_map")
     @mock.patch("tap_yotpo.streams.Paginated.get_params", side_effect=mock_schema)
     @mock.patch("tap_yotpo.streams.Paginated.format_response", side_effect=mock_records_with_empty_id)
     @mock.patch("tap_yotpo.streams.Paginated.on_batch_complete", side_effect=mock_on_batch_complete)
@@ -31,7 +31,7 @@ class TestYotpoStreamChanges(unittest.TestCase):
         paginated._sync(mock_ctx)
         self.assertEqual(mock_transform.call_count,0)
 
-    @mock.patch("tap_yotpo.metadata.to_map")
+    @mock.patch("tap_yotpo.streams.metadata.to_map")
     @mock.patch("tap_yotpo.streams.Paginated.get_params", side_effect=mock_schema)
     @mock.patch("tap_yotpo.streams.Paginated.format_response", side_effect=mock_records_with_id)
     @mock.patch("tap_yotpo.streams.Paginated.on_batch_complete", side_effect=mock_on_batch_complete)

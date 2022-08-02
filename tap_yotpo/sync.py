@@ -1,18 +1,22 @@
-from . import streams as streams_
-from tap_yotpo.helpers import load_and_write_schema
+import singer
+from . import streams
 
-def sync(ctx):
-    streams_.products.fetch_into_cache(ctx)
+LOGGER = singer.get_logger()
 
-    currently_syncing = ctx.state.get("currently_syncing")
-    start_idx = streams_.all_stream_ids.index(currently_syncing) \
-        if currently_syncing else 0
-    streams = [s for s in streams_.all_streams[start_idx:]
-               if s.tap_stream_id in ctx.selected_stream_ids]
-    for stream in streams:
-        ctx.state["currently_syncing"] = stream.tap_stream_id
-        ctx.write_state()
-        load_and_write_schema(ctx, stream)
-        stream.sync(ctx)
-    ctx.state["currently_syncing"] = None
-    ctx.write_state()
+def sync(client,catalog :singer.Catalog,state):
+    # products = streams.products.fetch_into_cache(ctx)
+    with singer.Transformer() as transformer:
+        for stream in catalog.get_selected_streams(state):
+            tap_stream_id = stream.tap_stream_id
+            stream_schema = stream.schema.to_dict()
+            stream_metadata = singer.metadata.to_map(stream.metadata)
+            stream_obj = streams.STREAMS[tap_stream_id](client)
+            LOGGER.info("Starting sync for stream: %s", tap_stream_id)
+            state = singer.set_currently_syncing(state, tap_stream_id)
+            singer.write_state(state)
+            singer.write_schema(tap_stream_id, stream_schema, stream_obj.key_properties, stream.replication_key)
+            state = stream_obj.sync(state=state, schema=stream_schema, stream_metadata=stream_metadata, transformer=transformer)
+            singer.write_state(state)
+    
+    state = singer.set_currently_syncing(state, None)
+    singer.write_state(state)
