@@ -1,7 +1,7 @@
-from typing import Dict
 
 from .abstracts import FullTableStream
-
+from singer import metrics,write_record,get_logger
+LOGGER = get_logger()
 
 class Products(FullTableStream):
     """
@@ -34,10 +34,18 @@ class Products(FullTableStream):
             params["page"]+=1
             yield from raw_records
 
-    # def filter_record(self,record :Dict,state :Dict) ->bool:
-    #     """
-    #     Returns boolean if a record should be written
-    #     """
-    #     prev_bookmark_val = self.get_bookmark(state)
-    #     record_bookmark_value = record[self.replication_key]
-    #     return True if record_bookmark_value > prev_bookmark_val else False
+    def sync(self,state,schema,stream_metadata,transformer,write_records=True):
+        shared_product_ids = []
+        with metrics.record_counter(self.tap_stream_id) as counter:
+            for record in self.get_records():
+                transformed_record = transformer.transform(record, schema, stream_metadata)
+                if write_records:
+                    write_record(self.tap_stream_id, transformed_record)
+                try:
+                    shared_product_ids.append(record["external_product_id"])
+                except KeyError as _:
+                    LOGGER.warning("Unable to find external product ID")
+                counter.increment()
+        # the product_id's are required for the stream `product_reviews` as it fetches the reviews by product using external_product_id
+        self.client.shared_product_ids = shared_product_ids
+        return state 

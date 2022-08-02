@@ -140,6 +140,14 @@ class IncremetalStream(BaseStream):
                     counter.increment()
         return state     
 
+    # def filter_record(self,record :Dict,state :Dict) ->bool:
+    #     """
+    #     Returns boolean if a record should be written
+    #     """
+    #     prev_bookmark_val = self.get_bookmark(state)
+    #     record_bookmark_value = record[self.replication_key]
+    #     return True if record_bookmark_value > prev_bookmark_val else False
+
 class FullTableStream(BaseStream):
     """
     Base Class for Incremental Stream
@@ -151,7 +159,6 @@ class FullTableStream(BaseStream):
     replication_key = None
 
     def sync(self,state,schema,stream_metadata,transformer):
-        #LOGGER.info("sync called from %s", self.__class__)
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(record, schema, stream_metadata)
