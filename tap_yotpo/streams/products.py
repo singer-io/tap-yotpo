@@ -1,6 +1,6 @@
-
+from typing import List,Dict
 from .abstracts import FullTableStream
-from singer import metrics,write_record,get_logger
+from singer import metrics,write_record,get_logger,Transformer
 LOGGER = get_logger()
 
 class Products(FullTableStream):
@@ -19,36 +19,40 @@ class Products(FullTableStream):
         """
         return self.url_endpoint.replace("STORE_ID", self.client.config["api_key"])
     
-    def get_records(self):
+    def get_records(self) -> List:
         extraction_url =  self.get_url_endpoint()
-        call_next, page_size = True,100
-        params,headers = {"limit":page_size},{}
+        headers,params,call_next = {},{"limit":100},True
         while call_next:
             response =  self.client.get(extraction_url,params,headers,self.api_auth_version)
-            #LOGGER.info("responseeeeeee....... %s",response)
-            raw_records = response.get(self.stream,[])
-            LOGGER.info("raw_records....... %s",response)
-            pagination = response.get("pagination",[])
-            if not raw_records:
-                call_next =  False
-                #pagination["next_page_info"] = None
-            #params["page"]+=1
-            params[""]= pagination["next_page_info"]
 
+            # retrive records from response.products key
+            raw_records = response.get(self.stream,[])
+
+            # retrive pagination from response.pagination.next_page_info key
+            next_param = response.get("pagination",{}).get("next_page_info",None)
+
+            if not raw_records or not next_param:
+                call_next =  False
+
+            params["page_info"]= next_param
             yield from raw_records
 
-    def sync(self,state,schema,stream_metadata,transformer):
+    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer :Transformer) ->Dict:
         shared_product_ids = []
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
+
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
+                
                 try:
-                    shared_product_ids.append(record["external_id"])
+                    # creating a cache of product_ids for `product_reviews` stream
+                    shared_product_ids.append((record["yotpo_id"],record["external_id"]))
                 except KeyError as _:
                     LOGGER.warning("Unable to find external product ID")
-        self.client.shared_product_ids = shared_product_ids
+        
+        self.client.shared_product_ids = sorted(shared_product_ids,key=lambda _:_[0])
         return state
 
     def prefetch_product_ids(self,):
@@ -59,9 +63,11 @@ class Products(FullTableStream):
         if not prod_ids:
             for record in self.get_records():
                 try:
-                    prod_ids.append(record["external_product_id"])
+                    prod_ids.append((record["yotpo_id"],record["external_id"]))
                 except KeyError as _:
                     LOGGER.warning("Unable to find external product ID")
-            self.client.shared_product_ids = prod_ids
+
+            self.client.shared_product_ids = sorted(prod_ids,key=lambda x:x[0])
+            LOGGER.info("shared_product_ids %s:",self.client.shared_product_ids)
         return prod_ids
                 

@@ -17,13 +17,13 @@ class Emails(FullTableStream):
     valid_replication_keys = ["email_sent_timestamp"]
     api_auth_version = "v1"
     config_start_key = "start_date"
-    url_endpoint = "https://api.yotpo.com/analytics/v1/emails/APP_KEY/export/raw_data?token=UTOKEN"
+    url_endpoint = "https://api.yotpo.com/analytics/v1/emails/APP_KEY/export/raw_data"
 
     def get_url_endpoint(self) -> str:
         """
         Returns a formated endpoint using the stream attributes
         """
-        return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"]).replace("UTOKEN",self.client._get_auth_token())
+        return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
 
     def get_records(self):
         extraction_url =  self.get_url_endpoint()

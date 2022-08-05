@@ -1,7 +1,7 @@
-from typing import Dict,Tuple
+from typing import Dict,Tuple,List
 from abc import abstractmethod, ABC
 from singer.metadata import get_standard_metadata
-from singer import get_logger,get_bookmark,metrics,write_record
+from singer import get_logger,get_bookmark,metrics,write_record,Transformer
 
 LOGGER = get_logger()
 
@@ -81,9 +81,18 @@ class BaseStream(ABC):
         """
 
     @abstractmethod
-    def sync(self,*args,**kwargs) ->Dict:
+    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer :Transformer) ->Dict:
         """
-        TODO: Add Documentation
+            Performs a replication sync for the stream
+            Args:
+                state (dict): represents the state file for the tap.
+                schema (dict): Schema of the stream
+                transformer (object): A Object of the singer.transformer class.
+
+            Returns:
+                    bool: The return value. True for success, False otherwise.
+            Docs:
+                https://github.com/singer-io/getting-started/blob/master/docs/SYNC_MODE.md#replication-method
         """
 
     def __init__(self, client=None) -> None:
@@ -123,30 +132,6 @@ class IncremetalStream(BaseStream):
         A wrapper for singer.get_bookmark to deal with compatibility for bookmark values or start values.
         """
         return get_bookmark(state, self.tap_stream_id, self.replication_key, self.client.config.get(self.config_start_key,False))
-        
-    
-    @abstractmethod
-    def filter_record(self,record :Dict,state :Dict) ->bool:
-        """
-        Returns boolean if a record should be written
-        """
-
-    def sync(self, state: dict, schema: dict, stream_metadata: dict, transformer):
-        with metrics.record_counter(self.tap_stream_id) as counter:
-            for record in self.get_records():
-                transformed_record = transformer.transform(record, schema, stream_metadata)
-                if self.filter_record(record,state):
-                    write_record(self.tap_stream_id, transformed_record)
-                    counter.increment()
-        return state     
-
-    # def filter_record(self,record :Dict,state :Dict) ->bool:
-    #     """
-    #     Returns boolean if a record should be written
-    #     """
-    #     prev_bookmark_val = self.get_bookmark(state)
-    #     record_bookmark_value = record[self.replication_key]
-    #     return True if record_bookmark_value > prev_bookmark_val else False
 
 class FullTableStream(BaseStream):
     """
@@ -158,10 +143,10 @@ class FullTableStream(BaseStream):
     valid_replication_keys = None
     replication_key = None
 
-    def sync(self,state,schema,stream_metadata,transformer):
+    def sync(self, state: dict, schema: dict, stream_metadata: dict, transformer):
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
-        return state 
+        return state
