@@ -66,12 +66,12 @@
       "type": ["string", "null"]
     },
     "external_created_at": {
-      "type": "string",
-      "format": ["date-time", "null"]
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "external_updated_at": {
-      "type": "string",
-      "format": ["date-time", "null"]
+      "type": ["string", "null"],
+      "format": "date-time"
     },
     "gtins": {
       "type": ["array", "null"],
@@ -99,14 +99,6 @@
         },
         "updated_at": {
           "type": ["string", "date-time"]
-        }
-      }
-    },
-    "pagination": {
-      "type": "object",
-      "properties": {
-        "next_page_info": {
-          "type": ["string", "null"]
         }
       }
     }
