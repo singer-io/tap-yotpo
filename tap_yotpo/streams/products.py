@@ -1,6 +1,9 @@
-from typing import List,Dict
+from typing import Dict, List
+
+from singer import Transformer, get_logger, metrics, write_record
+
 from .abstracts import FullTableStream
-from singer import metrics,write_record,get_logger,Transformer
+
 LOGGER = get_logger()
 
 class Products(FullTableStream):
@@ -18,7 +21,7 @@ class Products(FullTableStream):
         Returns a formated endpoint using the stream attributes
         """
         return self.url_endpoint.replace("STORE_ID", self.client.config["api_key"])
-    
+
     def get_records(self) -> List:
         extraction_url =  self.get_url_endpoint()
         headers,params,call_next = {},{"limit":100},True
@@ -45,13 +48,13 @@ class Products(FullTableStream):
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
-                
+
                 try:
                     # creating a cache of product_ids for `product_reviews` stream
                     shared_product_ids.append((record["yotpo_id"],record["external_id"]))
                 except KeyError as _:
                     LOGGER.warning("Unable to find external product ID")
-        
+
         self.client.shared_product_ids = sorted(shared_product_ids,key=lambda _:_[0])
         return state
 
@@ -68,6 +71,4 @@ class Products(FullTableStream):
                     LOGGER.warning("Unable to find external product ID")
 
             self.client.shared_product_ids = sorted(prod_ids,key=lambda x:x[0])
-            LOGGER.info("shared_product_ids %s:",self.client.shared_product_ids)
         return prod_ids
-                

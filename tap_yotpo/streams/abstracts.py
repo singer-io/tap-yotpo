@@ -1,7 +1,8 @@
-from typing import Dict,Tuple,List
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
+from typing import Dict, List, Tuple
+
+from singer import Transformer, get_bookmark, get_logger, metrics, write_record
 from singer.metadata import get_standard_metadata
-from singer import get_logger,get_bookmark,metrics,write_record,Transformer
 
 LOGGER = get_logger()
 
@@ -71,7 +72,7 @@ class BaseStream(ABC):
     @abstractmethod
     def url_endpoint(self) -> str:
         """
-        Defines the HTTP endpoint for the stream 
+        Defines the HTTP endpoint for the stream
         """
 
     @abstractmethod
