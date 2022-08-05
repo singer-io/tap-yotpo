@@ -3,7 +3,7 @@
     "object"
   ],
   "properties": {
-    "id": {
+    "yotpo_id": {
       "type": "integer"
     },
     "created_at": {
@@ -14,16 +14,7 @@
       "type": "string",
       "format": "date-time"
     },
-    "average_score": {
-      "type": "number"
-    },
-    "total_reviews": {
-      "type": "number"
-    },
-    "url": {
-      "type": ["null", "string"]
-    },
-    "external_product_id": {
+    "external_id": {
       "type": "string"
     },
     "name": {
@@ -32,51 +23,90 @@
     "description": {
       "type": ["string", "null"]
     },
-    "product_specs": {
-      "type": "array",
+    "status": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "is_valid_url": {
+      "type": "boolean"
+    },
+    "image_url": {
+      "type": ["string", "null"]
+    },
+    "price": {
+      "type": ["integer", "null"]
+    },
+    "compare_at_price": {
+      "type": ["integer", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "inventory_quantity": {
+      "type": ["integer", "null"]
+    },
+    "is_discontinued": {
+      "type": "boolean"
+    },
+    "group_name": {
+      "type": ["string", "null"]
+    },
+    "brand": {
+      "type": ["string", "null"]
+    },
+    "sku": {
+      "type": ["string", "null"]
+    },
+    "mpn": {
+      "type": ["string", "null"]
+    },
+    "handle": {
+      "type": ["string", "null"]
+    },
+    "external_created_at": {
+      "type": "string",
+      "format": ["date-time", "null"]
+    },
+    "external_updated_at": {
+      "type": "string",
+      "format": ["date-time", "null"]
+    },
+    "gtins": {
+      "type": ["array", "null"],
       "items": {
         "type": "object",
         "properties": {
-          "key": {
+          "declared_type": {
             "type": "string"
           },
           "value": {
             "type": "string"
+          },
+          "detected_type": {
+            "type": ["string", "null"]
           }
+
         }
       }
     },
-    "category": {
+    "custom_properties": {
+      "type": ["object", "null"],
+      "properties": {
+        "created_at": {
+          "type": ["string", "date-time"]
+        },
+        "updated_at": {
+          "type": ["string", "date-time"]
+        }
+      }
+    },
+    "pagination": {
       "type": "object",
       "properties": {
-        "id": {
-          "type": ["number", "null"]
-        },
-        "name": {
+        "next_page_info": {
           "type": ["string", "null"]
-        }
-      }
-    },
-    "images": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "original": {
-              "type": "string"
-          },
-          "square": {
-              "type": "string"
-          },
-          "facebook": {
-              "type": "string"
-          },
-          "facebook_square": {
-              "type": "string"
-          },
-          "kind": {
-              "type": "string"
-          }
         }
       }
     }
