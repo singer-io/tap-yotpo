@@ -41,10 +41,9 @@ class ProductReviews(IncremetalStream):
         if self.last_synced:
             for pos,(prod_id,_) in enumerate(shared_product_ids):
                 if prod_id == self.last_synced:
-                    last_sync_index,self.last_synced = pos,False
+                    last_sync_index,self.last_synced = pos+1,False
                     break
-        LOGGER.info("last synec prod at index %s remaining %s",last_sync_index,len(shared_product_ids[last_sync_index:]))
-        for current,(y_prod_id,ext_prod_id) in enumerate(shared_product_ids[last_sync_index:],self.last_synced+1):
+        for current,(y_prod_id,ext_prod_id) in enumerate(shared_product_ids[last_sync_index:],last_sync_index):
             if self.skip_product(ext_prod_id):
                 LOGGER.warning("Product skipped due to malformed external-product id")
                 continue
@@ -73,8 +72,9 @@ class ProductReviews(IncremetalStream):
     def sync(self,state,schema,stream_metadata,transformer):
         max_bookmark_value = singer.get_bookmark(state,self.tap_stream_id,self.replication_key,self.client.config[self.config_start_key])
         self.last_synced = singer.get_bookmark(state,self.tap_stream_id,"last_synced",False)
+        max_created_at = singer.get_bookmark(state,self.tap_stream_id,"last_synced_max_datetime",max_bookmark_value)
 
-        max_created_at,prev_prod_id = max_bookmark_value,None
+        prev_prod_id = None
         for prod_id,domain_key,record in self.get_records():
             record["domain_key"] = domain_key
             transformed_record = transformer.transform(record, schema, stream_metadata)
@@ -88,9 +88,11 @@ class ProductReviews(IncremetalStream):
                 prev_prod_id = prod_id
             elif prev_prod_id != prod_id:
                 state = singer.write_bookmark(state, self.tap_stream_id, "last_synced", prev_prod_id)
+                state = singer.write_bookmark(state, self.tap_stream_id, "last_synced_max_datetime", max_created_at)
                 singer.write_state(state)
                 prev_prod_id = prod_id
         state = singer.clear_bookmark(state, self.tap_stream_id, "last_synced")
+        state = singer.clear_bookmark(state, self.tap_stream_id, "last_synced_max_datetime")
         state = singer.write_bookmark(state, self.tap_stream_id, self.replication_key, max_created_at)
         singer.write_state(state)
         return state
