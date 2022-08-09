@@ -60,15 +60,16 @@ class Products(FullTableStream):
 
     def prefetch_product_ids(self,):
         """
-        Helper method implemented for `product_reviews` to load all product_ids which are required to fetch `product_reviews`
+        Helper method implemented for other streams to load all product_ids which are required to fetch `product_reviews`
         """
         prod_ids =  getattr(self.client,"shared_product_ids",[])
         if not prod_ids:
+            LOGGER.info("Fetching all product records")
             for record in self.get_records():
                 try:
                     prod_ids.append((record["yotpo_id"],record["external_id"]))
                 except KeyError as _:
                     LOGGER.warning("Unable to find external product ID")
 
-            self.client.shared_product_ids = sorted(prod_ids,key=lambda x:x[0])
+            self.client.shared_product_ids = sorted(prod_ids,key=lambda _:_[0])
         return prod_ids
