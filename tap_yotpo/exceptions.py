@@ -34,7 +34,7 @@ class Http503RequestError(ClientError):
 
 
 class Http504RequestError(ClientError):
-     message = "API service time out, please check Yotpo server."
+    message = "API service time out, please check Yotpo server."
 
 
 # ERROR_CODE_EXCEPTION_MAPPING = {

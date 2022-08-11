@@ -1,13 +1,13 @@
 import singer
+from typing import List, Tuple
 from singer import metrics, write_record
-import re
 from .abstracts import IncremetalStream
 from .products import Products
 from singer.utils import strptime_to_utc
 import time
 import math
 LOGGER = singer.get_logger()
-
+from tap_yotpo.helpers import skip_product
 
 class ProductReviews(IncremetalStream):
     """
@@ -35,59 +35,69 @@ class ProductReviews(IncremetalStream):
         """
         return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
 
-    def get_index(self,shared_product_ids,last_synced) ->int:
+    def get_products(self,state) -> Tuple[List, int]:
         """returns index for sync resuming on interuption"""
+        shared_product_ids = Products(self.client).prefetch_product_ids()
+        last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
         if last_synced:
             for pos,(prod_id,_) in enumerate(shared_product_ids):
                 if prod_id == last_synced:
+                    LOGGER.warning("Last Sync was interrupted after product *****%s",str(prod_id)[-4:])
                     last_sync_index = pos
                     break
-        return last_sync_index
+        return shared_product_ids,last_sync_index
 
 
     def get_records(self,prod_id :str,bookmark_date :str):
-        """
-        performs api querying and pagination of response
-        """
+        """performs api querying and pagination of response"""
         params = {"page":1,"per_page": 150,"sort": ["date", "time"],"direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
         bookmark_date = current_max=strptime_to_utc(bookmark_date)
         next_page = True
         filtered_records = []
         while next_page:
+
             response =  self.client.get(extraction_url,params,{},self.api_auth_version)
+
             response = response.get("response",{})
             raw_records = response.get("reviews",[])
             current_page = response.get("pagination",{}).get("page",None)
             total_records = response.get("pagination",{}).get("total",None)
+            max_pages = max(math.ceil(total_records/150),1)
+
+
             if not raw_records:
                 break
+
             LOGGER.info("Page: (%s/%s) Total Records: %s",current_page,max(math.ceil(total_records/150),1),total_records)
+
             for record in raw_records:
                 record_timestamp =  strptime_to_utc(record[self.replication_key])
-                if record_timestamp < bookmark_date:
-                    next_page = False
-                else:
+                if record_timestamp >= bookmark_date:
                     current_max =  max(current_max,record_timestamp)
                     record["domain_key"] = prod_id
                     filtered_records.append(record)
+                else:
+                    next_page = False
+            
             params["page"]+=1
+
+            if params["page"] > max_pages:
+                next_page = False
+
         return (filtered_records,current_max)
 
     def sync(self,state,schema,stream_metadata,transformer):
         start_time = time.time()
         config_start = self.client.config[self.config_start_key]
-        last_synced = singer.get_bookmark(state,self.tap_stream_id,"currently_syncing",False)
-
-        products = Products(self.client).prefetch_product_ids()
-        start_index = self.get_index(products,last_synced)
-        LOGGER.info("STARTING FROM INDEX %s",start_index)
+        products,start_index = self.get_products(state)
+        LOGGER.info("STARTING SYNC FROM INDEX %s",start_index)
         prod_len = len(products)
 
         for index,(yotpo_id,ext_prod_id) in enumerate(products[start_index:],max(start_index,1)):
 
-            if self.skip_product(ext_prod_id):
+            if skip_product(ext_prod_id):
                 LOGGER.info("Skipping Prod *****%s (%s/%s), Reason:Unable to fetch reviews for products with special charecters %s",str(yotpo_id)[-4:],index,prod_len,ext_prod_id)
                 continue
 
@@ -109,5 +119,3 @@ class ProductReviews(IncremetalStream):
 
         return state
 
-    def skip_product(self,prod_id) -> bool:
-        return True if re.match("^[A-Za-z0-9_-]*$", prod_id) is None else False

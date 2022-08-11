@@ -1,5 +1,5 @@
 from .products import Products
-from ._product_reviews import ProductReviews
+from .product_reviews import ProductReviews
 from .unsubscribers import Unsubscribers
 from .reviews import Reviews
 from .emails import Emails

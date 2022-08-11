@@ -44,7 +44,7 @@ class Client:
         }
         response = self.make_request("POST",self.auth_url,data=data)
         self.__utoken = response['access_token']
-        LOGGER.info("Authenticating sucessfull with yotpo api")
+        LOGGER.info("Authenticating successful with yotpo api")
         return self.__utoken
 
 
