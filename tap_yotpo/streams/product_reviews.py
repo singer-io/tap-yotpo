@@ -92,31 +92,30 @@ class ProductReviews(IncremetalStream):
         return (filtered_records,current_max)
 
     def sync(self,state,schema,stream_metadata,transformer) -> Dict:
-        start_time = time.time()
-        config_start = self.client.config[self.config_start_key]
-        products,start_index = self.get_products(state)
-        LOGGER.info("STARTING SYNC FROM INDEX %s",start_index)
-        prod_len = len(products)
+        with metrics.Timer(self.tap_stream_id,None):
+            config_start = self.client.config[self.config_start_key]
+            products,start_index = self.get_products(state)
+            LOGGER.info("STARTING SYNC FROM INDEX %s",start_index)
+            prod_len = len(products)
+            with metrics.Counter(self.tap_stream_id) as counter:
+                for index,(yotpo_id,ext_prod_id) in enumerate(products[start_index:],max(start_index,1)):
 
-        for index,(yotpo_id,ext_prod_id) in enumerate(products[start_index:],max(start_index,1)):
+                    if skip_product(ext_prod_id):
+                        LOGGER.info("Skipping Prod *****%s (%s/%s), Reason:Unable to fetch reviews for products with special charecters %s",str(yotpo_id)[-4:],index,prod_len,ext_prod_id)
+                        continue
 
-            if skip_product(ext_prod_id):
-                LOGGER.info("Skipping Prod *****%s (%s/%s), Reason:Unable to fetch reviews for products with special charecters %s",str(yotpo_id)[-4:],index,prod_len,ext_prod_id)
-                continue
+                    LOGGER.info("Sync for prod *****%s (%s/%s)",str(yotpo_id)[-4:],index,prod_len)
 
-            LOGGER.info("Sync for prod *****%s (%s/%s)",str(yotpo_id)[-4:],index,prod_len)
+                    bookmark_date = singer.get_bookmark(state,self.tap_stream_id,str(yotpo_id),config_start)
+                    records, new_bookmark_date = self.get_records(ext_prod_id,bookmark_date)
 
-            bookmark_date = singer.get_bookmark(state,self.tap_stream_id,str(yotpo_id),config_start)
-            records, new_bookmark_date = self.get_records(ext_prod_id,bookmark_date)
+                    for _ in records:
+                        write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
+                        counter.increment()
 
-            for _ in records:
-                write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
-
-            state = singer.write_bookmark(state, self.tap_stream_id, yotpo_id, new_bookmark_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
-            state = singer.write_bookmark(state, self.tap_stream_id, "currently_syncing", yotpo_id)
-            singer.write_state(state)
-
-        state = singer.clear_bookmark(state, self.tap_stream_id, "currently_syncing")
-        LOGGER.info("Sync Completed in %s seconds",(time.time()-start_time))
+                    state = singer.write_bookmark(state, self.tap_stream_id, yotpo_id, new_bookmark_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
+                    state = singer.write_bookmark(state, self.tap_stream_id, "currently_syncing", yotpo_id)
+                    singer.write_state(state)
+            state = singer.clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state
 

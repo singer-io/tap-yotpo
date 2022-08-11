@@ -1,8 +1,8 @@
-from .abstracts import FullTableStream
+from .abstracts import FullTableStream,UrlEndpointMixin
 from singer import metrics,write_record,get_logger
 LOGGER = get_logger()
 
-class Unsubscribers(FullTableStream):
+class Unsubscribers(FullTableStream,UrlEndpointMixin):
     """
     class for products stream
     """
@@ -11,12 +11,6 @@ class Unsubscribers(FullTableStream):
     key_properties = ["id",]
     api_auth_version = "v1"
     url_endpoint = "https://api.yotpo.com/apps/APP_KEY/unsubscribers"
-
-    def get_url_endpoint(self) -> str:
-        """
-        Returns a formated endpoint using the stream attributes
-        """
-        return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
     
     def get_records(self):
         extraction_url =  self.get_url_endpoint()

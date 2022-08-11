@@ -2,11 +2,11 @@ from typing import Dict, List
 
 from singer import Transformer, get_logger, metrics, write_record
 
-from .abstracts import FullTableStream
+from .abstracts import FullTableStream,UrlEndpointMixin
 
 LOGGER = get_logger()
 
-class Products(FullTableStream):
+class Products(FullTableStream,UrlEndpointMixin):
     """
     class for products stream
     """
@@ -14,13 +14,7 @@ class Products(FullTableStream):
     tap_stream_id = "products"
     key_properties = ["yotpo_id",]
     api_auth_version = "v3"
-    url_endpoint = "https://api.yotpo.com/core/v3/stores/STORE_ID/products"
-
-    def get_url_endpoint(self) -> str:
-        """
-        Returns a formated endpoint using the stream attributes
-        """
-        return self.url_endpoint.replace("STORE_ID", self.client.config["api_key"])
+    url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
     def get_records(self) -> List:
         extraction_url =  self.get_url_endpoint()

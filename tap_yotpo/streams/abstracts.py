@@ -117,6 +117,8 @@ class BaseStream(ABC):
             meta.update({"replication-key":cls.replication_key})
             metadata[0]["metadata"] = meta
         return metadata
+    
+
 
 
 class IncremetalStream(BaseStream):
@@ -127,6 +129,7 @@ class IncremetalStream(BaseStream):
     replication_method = "INCREMENTAL"
     forced_replication_method = "INCREMENTAL"
     config_start_key = None
+
 
     def get_bookmark(self,state :dict,) ->int:
         """
@@ -151,3 +154,15 @@ class FullTableStream(BaseStream):
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
         return state
+
+
+class UrlEndpointMixin:
+    """
+    A mixin for url formatting of URL's
+    """
+    url_endpoint = ""
+    def get_url_endpoint(self) -> str:
+        """
+        Returns a formated endpoint using the stream attributes
+        """
+        return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
