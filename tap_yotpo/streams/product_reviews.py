@@ -1,5 +1,6 @@
+from datetime import datetime
 import singer
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 from singer import metrics, write_record
 from .abstracts import IncremetalStream
 from .products import Products
@@ -28,7 +29,6 @@ class ProductReviews(IncremetalStream):
         self.last_synced :bool  =  False
         self.base_url = self.get_url_endpoint()
 
-
     def get_url_endpoint(self) -> str:
         """
         Returns a formated endpoint using the stream attributes
@@ -36,7 +36,9 @@ class ProductReviews(IncremetalStream):
         return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
 
     def get_products(self,state) -> Tuple[List, int]:
-        """returns index for sync resuming on interuption"""
+        """
+        Returns index for sync resuming on interuption
+        """
         shared_product_ids = Products(self.client).prefetch_product_ids()
         last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
@@ -48,9 +50,10 @@ class ProductReviews(IncremetalStream):
                     break
         return shared_product_ids,last_sync_index
 
-
-    def get_records(self,prod_id :str,bookmark_date :str):
-        """performs api querying and pagination of response"""
+    def get_records(self,prod_id :str,bookmark_date :str) -> Tuple[List, datetime]:
+        """
+        performs api querying and pagination of response
+        """
         params = {"page":1,"per_page": 150,"sort": ["date", "time"],"direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
         bookmark_date = current_max=strptime_to_utc(bookmark_date)
@@ -88,7 +91,7 @@ class ProductReviews(IncremetalStream):
 
         return (filtered_records,current_max)
 
-    def sync(self,state,schema,stream_metadata,transformer):
+    def sync(self,state,schema,stream_metadata,transformer) -> Dict:
         start_time = time.time()
         config_start = self.client.config[self.config_start_key]
         products,start_index = self.get_products(state)
@@ -104,18 +107,16 @@ class ProductReviews(IncremetalStream):
             LOGGER.info("Sync for prod *****%s (%s/%s)",str(yotpo_id)[-4:],index,prod_len)
 
             bookmark_date = singer.get_bookmark(state,self.tap_stream_id,str(yotpo_id),config_start)
-            records,latest_bookmark=self.get_records(ext_prod_id,bookmark_date)
+            records, new_bookmark_date = self.get_records(ext_prod_id,bookmark_date)
 
             for _ in records:
                 write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
 
-            state = singer.write_bookmark(state, self.tap_stream_id, yotpo_id, latest_bookmark.strftime("%Y-%m-%dT%H:%M:%SZ"))
+            state = singer.write_bookmark(state, self.tap_stream_id, yotpo_id, new_bookmark_date.strftime("%Y-%m-%dT%H:%M:%SZ"))
             state = singer.write_bookmark(state, self.tap_stream_id, "currently_syncing", yotpo_id)
             singer.write_state(state)
 
         state = singer.clear_bookmark(state, self.tap_stream_id, "currently_syncing")
-        singer.write_state(state)
         LOGGER.info("Sync Completed in %s seconds",(time.time()-start_time))
-
         return state
 

@@ -4,7 +4,6 @@ from . import streams
 LOGGER = singer.get_logger()
 
 def sync(client,catalog :singer.Catalog,state):
-    # products = streams.products.fetch_into_cache(ctx)
     with singer.Transformer() as transformer:
         for stream in catalog.get_selected_streams(state):
             tap_stream_id = stream.tap_stream_id
