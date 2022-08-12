@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 from singer import Transformer, get_bookmark, get_logger, metrics, write_record
 from singer.metadata import get_standard_metadata
@@ -29,7 +29,9 @@ class BaseStream(ABC):
     @abstractmethod
     def tap_stream_id(self) -> str:
         """
-        The unique identifier for the stream. This is allowed to be different from the name of the stream in order to allow for sources that have duplicate stream names.
+        Unique identifier for the stream.
+        This is allowed to be different from the name of the stream,
+        in order to allow for sources that have duplicate stream names.
         """
 
     @property
@@ -70,7 +72,8 @@ class BaseStream(ABC):
     @property
     def selected_by_default(self) -> bool:
         """
-        Indicates if a node in the schema should be replicated if a user has not expressed any opinion on whether or not to replicate it.
+        Indicates if a node in the schema should be replicated,
+        if a user has not expressed any opinion on whether or not to replicate it.
         """
         return False
 
