@@ -17,13 +17,13 @@ from singer.utils import strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec, skip_product
 
-from .abstracts import IncremetalStream
+from .abstracts import IncremetalStream, UrlEndpointMixin
 from .products import Products
 
 LOGGER = singer.get_logger()
 
 
-class ProductReviews(IncremetalStream):
+class ProductReviews(IncremetalStream, UrlEndpointMixin):
     """
     class for product_reviews stream
     """
@@ -44,12 +44,6 @@ class ProductReviews(IncremetalStream):
         self.sync_prod: bool = True
         self.last_synced: bool = False
         self.base_url = self.get_url_endpoint()
-
-    def get_url_endpoint(self) -> str:
-        """
-        Returns a formated endpoint using the stream attributes
-        """
-        return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
 
     def get_products(self, state) -> Tuple[List, int]:
         """
