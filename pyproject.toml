@@ -11,7 +11,7 @@ ignore = "W504,W601,D203"
 
 [tool.pylint]
 max-line-length = 120
-disable = ["C0330","C0114"]
+disable = ["R0801",]
 
 [tool.isort]
 profile = "black"
