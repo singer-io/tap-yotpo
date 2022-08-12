@@ -1,9 +1,5 @@
-from typing import Dict
-
 import pendulum
 import singer
-from singer import Transformer, get_logger, metrics, write_record
-
 from .abstracts import FullTableStream, UrlEndpointMixin
 
 LOGGER = singer.get_logger()
@@ -45,14 +41,3 @@ class Emails(FullTableStream, UrlEndpointMixin):
                 call_next = False
             params["page"] += 1
             yield from raw_records
-
-    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Sync implementation for `emails` stream
-        """
-        with metrics.record_counter(self.tap_stream_id) as counter:
-            for record in self.get_records():
-                transformed_record = transformer.transform(record, schema, stream_metadata)
-                write_record(self.tap_stream_id, transformed_record)
-                counter.increment()
-        return state

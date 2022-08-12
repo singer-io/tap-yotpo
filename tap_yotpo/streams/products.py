@@ -60,9 +60,7 @@ class Products(FullTableStream, UrlEndpointMixin):
         self.client.shared_product_ids = sorted(shared_product_ids, key=lambda _: _[0])
         return state
 
-    def prefetch_product_ids(
-        self,
-    ) -> List:
+    def prefetch_product_ids(self) -> List:
         """
         Helper method implemented for other streams to load all product_ids.
         eg: products are required to fetch `product_reviews`

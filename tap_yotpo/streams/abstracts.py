@@ -139,10 +139,7 @@ class IncremetalStream(BaseStream):
     forced_replication_method = "INCREMENTAL"
     config_start_key = None
 
-    def get_bookmark(
-        self,
-        state: dict,
-    ) -> int:
+    def get_bookmark(self,state: dict) -> int:
         """
         A wrapper for singer.get_bookmark to deal with compatibility for bookmark values or start values.
         """
@@ -161,13 +158,17 @@ class FullTableStream(BaseStream):
     valid_replication_keys = None
     replication_key = None
 
-    def sync(self, state: dict, schema: dict, stream_metadata: dict, transformer):
+    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
+        """
+        Abstract implementation for `type: Fulltable` stream
+        """
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
         return state
+
 
 
 class UrlEndpointMixin:
