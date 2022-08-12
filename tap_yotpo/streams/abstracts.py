@@ -9,7 +9,13 @@ LOGGER = get_logger()
 
 class BaseStream(ABC):
     """
-    Base class representing generic stream methods and meta-attributes
+    A Base Class providing structure and boilerplate for generic streams
+    and required attributes for any kind of stream
+    ~~~
+    Provides:
+     - Basic Attributes (stream_name,replication_method,key_properties)
+     - Helper methods for catalog genration
+     - `sync` and `get_records` method for performing sync
     """
     @property
     def stream(self) -> str:
@@ -84,16 +90,18 @@ class BaseStream(ABC):
     @abstractmethod
     def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer :Transformer) ->Dict:
         """
-            Performs a replication sync for the stream
+            Performs a replication sync for the stream.
+            ~~~
             Args:
-                state (dict): represents the state file for the tap.
-                schema (dict): Schema of the stream
-                transformer (object): A Object of the singer.transformer class.
-
+             - state (dict): represents the state file for the tap.
+             - schema (dict): Schema of the stream
+             - transformer (object): A Object of the singer.transformer class.
+            
             Returns:
-                    bool: The return value. True for success, False otherwise.
+             - bool: The return value. True for success, False otherwise.
+
             Docs:
-                https://github.com/singer-io/getting-started/blob/master/docs/SYNC_MODE.md#replication-method
+             - https://github.com/singer-io/getting-started/blob/master/docs/SYNC_MODE.md#replication-method
         """
 
     def __init__(self, client=None) -> None:

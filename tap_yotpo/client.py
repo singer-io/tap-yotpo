@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple,Mapping
 from requests import session
 import singer
 import backoff
@@ -25,10 +25,17 @@ def raise_for_error(response: requests.Response):
             raise errors.ClientError(_) from None
 
 class Client:
- 
+    """
+    A Wrapper class with support for V1 & V3 and UGC Yotpo api.
+    ~~~
+    Performs:
+     - Authentication
+     - Response parsing
+     - HTTP Error handling and retry
+    """
     auth_url = "https://api.yotpo.com/oauth/token"
  
-    def __init__(self,config) -> None:
+    def __init__(self,config :Mapping[str,Any]) -> None:
         self.config = config
         self._session = session()
         self.__utoken = None
@@ -42,7 +49,7 @@ class Client:
             "client_secret": self.config["api_secret"],
             "grant_type": "client_credentials"
         }
-        response = self.make_request("POST",self.auth_url,data=data)
+        response = self.__make_request("POST",self.auth_url,data=data)
         self.__utoken = response['access_token']
         LOGGER.info("Authenticating successful with yotpo api")
         return self.__utoken
@@ -59,16 +66,34 @@ class Client:
         return headers,params
     
     @backoff.on_exception(wait_gen=backoff.expo,exception=(errors.Http401RequestError,),jitter=None, max_tries=3)
-    def get(self,endpoint,params,headers,api_auth_version) -> Any:
+    def get(self,endpoint :str,params :Dict,headers :Dict,api_auth_version :Any) -> Any:
+        """
+        Calls the make_request method with a prefixed method type `GET`
+        """
         headers,params = self.authenticate(headers,params,api_auth_version)
-        return self.make_request("GET",endpoint,headers=headers,params=params)
+        return self.__make_request("GET",endpoint,headers=headers,params=params)
 
-    def post(self,endpoint,params,headers,api_auth_version,body)-> Any:
+    def post(self,endpoint :str,params :Dict,headers :Dict,api_auth_version :Any,body :Dict)-> Any:
+        """
+        Calls the make_request method with a prefixed method type `POST`
+        """
         headers,params = self.authenticate(headers,params,api_auth_version)
-        self.make_request("POST",endpoint,headers=headers,params=params,data=body)
+        self.__make_request("POST",endpoint,headers=headers,params=params,data=body)
 
     @backoff.on_exception(wait_gen=backoff.expo,exception=(errors.Http400RequestError,errors.Http429RequestError,errors.Http500RequestError,errors.Http503RequestError,),jitter=None, max_tries=5)
-    def make_request(self,method,endpoint,**kwargs) -> requests.Response or None:
+    def __make_request(self,method,endpoint,**kwargs) -> Optional[Mapping[Any,Any]]:
+        """
+        Performs HTTP Operations
+        Args:
+            method (str): represents the state file for the tap.
+            endpoint (str): url of the resource that needs to be fetched
+            params (dict): A mapping for url params eg: ?name=Avery&age=3
+            headers (dict): A mapping for the headers that need to be sent
+            body (dict): only applicable to post request, body of the request
+
+        Returns:
+            Dict,List,None: Returns a `Json Parsed` HTTP Response or None if exception
+        """
         response = self._session.request(method,endpoint,**kwargs)
         if response.status_code != 200:
             try:

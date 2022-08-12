@@ -1,7 +1,8 @@
 from .abstracts import FullTableStream,UrlEndpointMixin
-from singer import metrics,write_record,get_logger
+from singer import metrics,write_record,get_logger,Transformer
 import singer
-#from .products import Products
+from typing import Dict, List, Tuple
+
 import pendulum
 LOGGER = singer.get_logger()
 
@@ -41,7 +42,10 @@ class Emails(FullTableStream,UrlEndpointMixin):
             params["page"]+=1
             yield from raw_records
 
-    def sync(self,state,schema,stream_metadata,transformer):
+    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer :Transformer) ->Dict:
+        """
+        Sync implementation for `emails` stream
+        """
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(record, schema, stream_metadata)

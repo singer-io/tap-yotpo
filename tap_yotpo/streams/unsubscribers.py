@@ -1,7 +1,9 @@
+from typing import Dict
 from .abstracts import FullTableStream,UrlEndpointMixin
 from singer import metrics,write_record,get_logger
 LOGGER = get_logger()
 from ..helpers import ApiSpec
+from typing import Dict, List, Tuple
 
 class Unsubscribers(FullTableStream,UrlEndpointMixin):
     """
@@ -24,7 +26,10 @@ class Unsubscribers(FullTableStream,UrlEndpointMixin):
             params["page"]+=1
             yield from raw_records
 
-    def sync(self,state,schema,stream_metadata,transformer):
+    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer) -> Dict:
+        """
+        Sync implementation for `unsubscribers` stream
+        """
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(record, schema, stream_metadata)

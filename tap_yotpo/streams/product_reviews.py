@@ -1,7 +1,7 @@
 from datetime import datetime
 import singer
 from typing import Dict, List, Tuple
-from singer import metrics, write_record
+from singer import metrics, write_record,Transformer
 from .abstracts import IncremetalStream
 from .products import Products
 from singer.utils import strptime_to_utc
@@ -90,7 +90,10 @@ class ProductReviews(IncremetalStream):
 
         return (filtered_records,current_max)
 
-    def sync(self,state,schema,stream_metadata,transformer) -> Dict:
+    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer :Transformer) -> Dict:
+        """
+        Sync implementation for `product_reviews` stream
+        """
         with metrics.Timer(self.tap_stream_id,None):
             config_start = self.client.config[self.config_start_key]
             products,start_index = self.get_products(state)

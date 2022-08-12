@@ -35,6 +35,9 @@ class Products(FullTableStream,UrlEndpointMixin):
             yield from raw_records
 
     def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer :Transformer) ->Dict:
+        """
+        Sync implementation for `products` stream
+        """
         shared_product_ids = []
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
@@ -52,9 +55,10 @@ class Products(FullTableStream,UrlEndpointMixin):
         self.client.shared_product_ids = sorted(shared_product_ids,key=lambda _:_[0])
         return state
 
-    def prefetch_product_ids(self,):
+    def prefetch_product_ids(self,) -> List:
         """
-        Helper method implemented for other streams to load all product_ids which are required to fetch `product_reviews`
+        Helper method implemented for other streams to load all product_ids.
+        eg: products are required to fetch `product_reviews`
         """
         prod_ids =  getattr(self.client,"shared_product_ids",[])
         if not prod_ids:
