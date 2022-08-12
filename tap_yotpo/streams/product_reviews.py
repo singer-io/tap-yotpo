@@ -13,7 +13,7 @@ from singer import (
     write_record,
     write_state,
 )
-from singer.utils import strptime_to_utc
+from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec, skip_product
 
@@ -113,9 +113,9 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
             products, start_index = self.get_products(state)
             LOGGER.info("STARTING SYNC FROM INDEX %s", start_index)
             prod_len = len(products)
+
             with metrics.Counter(self.tap_stream_id) as counter:
                 for index, (prod_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
-
                     if skip_product(ext_prod_id):
                         LOGGER.info(
                             "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
@@ -128,16 +128,14 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)
 
-                    old_bmk = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
-                    records, current_bmk = self.get_records(ext_prod_id, old_bmk)
+                    bookmark_date = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
+                    records, max_bookmark = self.get_records(ext_prod_id, bookmark_date)
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    state = write_bookmark(
-                        state, self.tap_stream_id, prod_id, current_bmk.strftime("%Y-%m-%dT%H:%M:%SZ")
-                    )
+                    state = self.write_bookmark(prod_id, strftime(max_bookmark))
                     state = write_bookmark(state, self.tap_stream_id, "currently_syncing", prod_id)
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")

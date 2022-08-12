@@ -23,6 +23,9 @@ class Products(FullTableStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
     def get_records(self) -> List:
+        """
+        performs api querying and pagination of response
+        """
         extraction_url = self.get_url_endpoint()
         headers, params, call_next = {}, {"limit": 100}, True
         while call_next:

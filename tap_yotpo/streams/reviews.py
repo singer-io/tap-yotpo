@@ -1,8 +1,8 @@
 """tap-yotpo reviews stream module"""
 from typing import Dict, List, Optional
 
-from singer import get_bookmark, get_logger, metrics, write_bookmark, write_record
-from singer.utils import strptime_to_utc
+from singer import get_bookmark, get_logger, metrics, write_record
+from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
 from .abstracts import IncremetalStream, UrlEndpointMixin
@@ -29,6 +29,9 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
     def get_records(self, start_date: Optional[str]) -> List:
+        """
+        performs querying and pagination of reviews resource
+        """
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
         params = {"page": 1, "count": 150, "since_updated_at": start_date}
@@ -47,7 +50,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
         Sync implementation for `reviews` stream
         """
         config_start = self.client.config[self.config_start_key]
-        bookmark_date = get_bookmark(state, self.tap_stream_id, self.replication_key, config_start)
+        bookmark_date = self.get_bookmark(self.replication_key, config_start)
         max_updated_at = strptime_to_utc(bookmark_date)
 
         with metrics.Counter(self.tap_stream_id) as counter:
@@ -61,7 +64,5 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
 
-            state = write_bookmark(
-                state, self.tap_stream_id, self.replication_key, max_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ")
-            )
+            state = self.write_bookmark(state, value=strftime(max_updated_at))
         return state
