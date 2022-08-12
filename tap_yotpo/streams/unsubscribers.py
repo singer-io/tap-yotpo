@@ -15,13 +15,12 @@ class Unsubscribers(FullTableStream,UrlEndpointMixin):
     
     def get_records(self):
         extraction_url =  self.get_url_endpoint()
-        call_next, page_size = True, 1000
-        params,headers = {"page":1,"count":page_size},{}
-        while call_next:
-            response =  self.client.get(extraction_url,params,headers,self.api_auth_version)
+        params = {"page":1,"count":1000},
+        while True:
+            response =  self.client.get(extraction_url,params,{},self.api_auth_version)
             raw_records = response.get("response",{}).get(self.stream,[])
             if not raw_records:
-                call_next =  False
+                break
             params["page"]+=1
             yield from raw_records
 
