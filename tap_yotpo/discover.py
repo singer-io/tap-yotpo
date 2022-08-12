@@ -1,3 +1,4 @@
+"""tap-yotpo discover module"""
 import json
 
 from singer.catalog import Catalog

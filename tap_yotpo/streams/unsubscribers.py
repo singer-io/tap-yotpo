@@ -1,3 +1,4 @@
+"""tap-yotpo unsubsrcibers stream module"""
 from singer import get_logger
 
 from ..helpers import ApiSpec

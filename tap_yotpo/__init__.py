@@ -1,3 +1,4 @@
+"""tap-yotpo module"""
 import singer
 from singer import utils
 from singer.catalog import Catalog
@@ -12,6 +13,9 @@ LOGGER = singer.get_logger()
 
 @singer.utils.handle_top_exception(LOGGER)
 def main():
+    """
+    performs sync and discovery
+    """
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     client = Client(args.config)
     if args.discover:

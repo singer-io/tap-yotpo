@@ -1,5 +1,4 @@
-""" exceptions specific to yotpo-client"""
-
+"""tap-yotpo exception classes module"""
 
 class ClientError(Exception):
     """

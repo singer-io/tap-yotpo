@@ -1,3 +1,4 @@
+"""tap-yotpo email stream module"""
 import pendulum
 import singer
 

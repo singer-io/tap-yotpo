@@ -1,3 +1,4 @@
+"""tap-yotpo reviews stream module"""
 from typing import Dict, List, Optional
 
 from singer import get_bookmark, get_logger, metrics, write_bookmark, write_record
@@ -28,6 +29,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
     def get_records(self, start_date: Optional[str]) -> List:
+        # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
         params = {"page": 1, "count": 150, "since_updated_at": start_date}
         call_next = True

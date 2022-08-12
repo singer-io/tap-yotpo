@@ -1,3 +1,4 @@
+"""tap-yotpo abstract stream module"""
 from abc import ABC, abstractmethod
 from typing import Dict, Tuple
 
@@ -174,6 +175,7 @@ class UrlEndpointMixin:
     """
     A mixin for url formatting of URL's
     """
+    # pylint: disable=R0903; Mixin implementation
 
     url_endpoint = ""
 

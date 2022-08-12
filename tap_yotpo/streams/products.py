@@ -1,3 +1,4 @@
+"""tap-yotpo products stream module"""
 from typing import Dict, List
 
 from singer import Transformer, get_logger, metrics, write_record

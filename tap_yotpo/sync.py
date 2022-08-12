@@ -1,3 +1,4 @@
+"""tap-yotpo sync"""
 import singer
 
 from . import streams

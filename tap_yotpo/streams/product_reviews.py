@@ -1,4 +1,5 @@
-import math
+"""tap-yotpo product-reviews stream module"""
+from math import ceil
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -66,6 +67,7 @@ class ProductReviews(IncremetalStream):
         return shared_product_ids, last_sync_index
 
     def get_records(self, prod_id: str, bookmark_date: str) -> Tuple[List, datetime]:
+        # pylint: disable=W0221
         """
         performs api querying and pagination of response
         """
@@ -82,13 +84,13 @@ class ProductReviews(IncremetalStream):
             raw_records = response.get("reviews", [])
             current_page = response.get("pagination", {}).get("page", None)
             total_records = response.get("pagination", {}).get("total", None)
-            max_pages = max(math.ceil(total_records / 150), 1)
+            max_pages = max(ceil(total_records / 150), 1)
 
             if not raw_records:
                 break
 
             LOGGER.info(
-                "Page: (%s/%s) Total Records: %s", current_page, max(math.ceil(total_records / 150), 1), total_records
+                "Page: (%s/%s) Total Records: %s", current_page, max(ceil(total_records / 150), 1), total_records
             )
 
             for record in raw_records:
@@ -111,6 +113,7 @@ class ProductReviews(IncremetalStream):
         """
         Sync implementation for `product_reviews` stream
         """
+        # pylint: disable=R0914
         with metrics.Timer(self.tap_stream_id, None):
             config_start = self.client.config[self.config_start_key]
             products, start_index = self.get_products(state)

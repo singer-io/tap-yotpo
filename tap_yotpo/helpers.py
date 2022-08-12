@@ -1,3 +1,4 @@
+"""tap-yotpo helper functions module"""
 import enum
 import os
 import re

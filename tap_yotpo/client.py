@@ -1,3 +1,4 @@
+"""tap-yotpo client module"""
 from typing import Any, Dict, Mapping, Optional, Tuple
 
 import backoff
@@ -82,7 +83,7 @@ class Client:
         headers, params = self.authenticate(headers, params, api_auth_version)
         return self.__make_request("GET", endpoint, headers=headers, params=params)
 
-    def post(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any, body: Dict) -> Any:
+    def post(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any, body: Dict) -> Any: # pylint: disable=R0913
         """
         Calls the make_request method with a prefixed method type `POST`
         """
