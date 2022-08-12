@@ -16,13 +16,14 @@ class Products(FullTableStream, UrlEndpointMixin):
 
     stream = "products"
     tap_stream_id = "products"
-    key_properties = [
-        "yotpo_id",
-    ]
+    key_properties = ["yotpo_id"]
     api_auth_version = ApiSpec.API_V3
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
     def get_records(self) -> List:
+        """
+        performs api querying and pagination of response
+        """
         extraction_url = self.get_url_endpoint()
         headers, params, call_next = {}, {"limit": 100}, True
         while call_next:
