@@ -1,21 +1,22 @@
-from .abstracts import IncremetalStream,FullTableStream
-from singer import metrics,write_record
+"""tap-yotpo email stream module"""
+import pendulum
 import singer
-#from .products import Products
-#import pendulum
-from singer.utils import strptime_to_utc
+
+from .abstracts import FullTableStream, UrlEndpointMixin
+
 LOGGER = singer.get_logger()
 
 from datetime import datetime
 
 
-class Emails(FullTableStream):
+class Emails(FullTableStream, UrlEndpointMixin):
     """
     class for emails stream
     """
+
     stream = "emails"
     tap_stream_id = "emails"
-    key_properties = ["email_address","email_sent_timestamp"]
+    key_properties = ["email_address", "email_sent_timestamp"]
     replication_key = "email_sent_timestamp"
     valid_replication_keys = ["email_sent_timestamp"]
     api_auth_version = "v1"
