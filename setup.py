@@ -12,7 +12,7 @@ setup(
     install_requires=[
         "singer-python==5.12.1",
         "requests==2.20.0",
-        ],
+    ],
     extras_require={
         "dev": [
             "pylint",

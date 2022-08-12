@@ -1,5 +1,6 @@
 import pendulum
 import singer
+
 from .abstracts import FullTableStream, UrlEndpointMixin
 
 LOGGER = singer.get_logger()

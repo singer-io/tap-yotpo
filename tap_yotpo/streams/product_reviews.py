@@ -5,12 +5,13 @@ from typing import Dict, List, Tuple
 import singer
 from singer import Transformer, metrics, write_record
 from singer.utils import strptime_to_utc
+
 from tap_yotpo.helpers import ApiSpec, skip_product
+
 from .abstracts import IncremetalStream
 from .products import Products
 
 LOGGER = singer.get_logger()
-
 
 
 class ProductReviews(IncremetalStream):
@@ -114,8 +115,11 @@ class ProductReviews(IncremetalStream):
                         LOGGER.info(
                             "Skipping Prod *****%s (%s/%s),\
                             Reason:Unable to fetch reviews for products with special charecters %s",
-                            str(yotpo_id)[-4:],index,
-                            prod_len,ext_prod_id)
+                            str(yotpo_id)[-4:],
+                            index,
+                            prod_len,
+                            ext_prod_id,
+                        )
                         continue
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(yotpo_id)[-4:], index, prod_len)
