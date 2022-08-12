@@ -6,6 +6,9 @@ LOGGER = singer.get_logger()
 
 
 def sync(client, catalog: singer.Catalog, state):
+    """
+    performs sync for selected streams
+    """
     with singer.Transformer() as transformer:
         for stream in catalog.get_selected_streams(state):
             tap_stream_id = stream.tap_stream_id

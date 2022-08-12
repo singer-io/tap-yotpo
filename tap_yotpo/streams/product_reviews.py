@@ -3,7 +3,15 @@ from datetime import datetime
 from typing import Dict, List, Tuple
 
 import singer
-from singer import Transformer, metrics, write_record
+from singer import (
+    Transformer,
+    clear_bookmark,
+    get_bookmark,
+    metrics,
+    write_bookmark,
+    write_record,
+    write_state,
+)
 from singer.utils import strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec, skip_product
@@ -113,8 +121,7 @@ class ProductReviews(IncremetalStream):
 
                     if skip_product(ext_prod_id):
                         LOGGER.info(
-                            "Skipping Prod *****%s (%s/%s),\
-                            Reason:Unable to fetch reviews for products with special charecters %s",
+                            "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
                             str(yotpo_id)[-4:],
                             index,
                             prod_len,
@@ -124,17 +131,17 @@ class ProductReviews(IncremetalStream):
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(yotpo_id)[-4:], index, prod_len)
 
-                    bookmark_date = singer.get_bookmark(state, self.tap_stream_id, str(yotpo_id), config_start)
-                    records, new_bookmark_date = self.get_records(ext_prod_id, bookmark_date)
+                    old_bmk = get_bookmark(state, self.tap_stream_id, str(yotpo_id), config_start)
+                    records, new_bookmark_date = self.get_records(ext_prod_id, old_bmk)
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    state = singer.write_bookmark(
+                    state = write_bookmark(
                         state, self.tap_stream_id, yotpo_id, new_bookmark_date.strftime("%Y-%m-%dT%H:%M:%SZ")
                     )
-                    state = singer.write_bookmark(state, self.tap_stream_id, "currently_syncing", yotpo_id)
-                    singer.write_state(state)
-            state = singer.clear_bookmark(state, self.tap_stream_id, "currently_syncing")
+                    state = write_bookmark(state, self.tap_stream_id, "currently_syncing", yotpo_id)
+                    write_state(state)
+            state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

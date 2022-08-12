@@ -63,7 +63,7 @@ class Client:
         return self.__utoken
 
     def authenticate(
-        self, headers: Optional[dict] = {}, params: Optional[dict] = {}, api_auth_version: Any = ApiSpec.API_V3
+        self, headers: Optional[dict], params: Optional[dict], api_auth_version: Any = ApiSpec.API_V3
     ) -> Tuple[Dict, Dict]:
         """
         Updates Headers and Params based on api version of the stream.
@@ -121,5 +121,9 @@ class Client:
                 LOGGER.info("Authorization Failure, attempting to regenrate token")
                 self._get_auth_token(force=True)
                 raise _
+            except errors.Http404RequestError as _:
+                LOGGER.info("URL Not Found %s", response.url)
+                raise _
+
             return None
         return response.json()

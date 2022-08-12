@@ -54,7 +54,7 @@ class Products(FullTableStream, UrlEndpointMixin):
                 try:
                     # creating a cache of product_ids for `product_reviews` stream
                     shared_product_ids.append((record["yotpo_id"], record["external_id"]))
-                except KeyError as _:
+                except KeyError:
                     LOGGER.warning("Unable to find external product ID")
 
         self.client.shared_product_ids = sorted(shared_product_ids, key=lambda _: _[0])
@@ -71,7 +71,7 @@ class Products(FullTableStream, UrlEndpointMixin):
             for record in self.get_records():
                 try:
                     prod_ids.append((record["yotpo_id"], record["external_id"]))
-                except KeyError as _:
+                except KeyError:
                     LOGGER.warning("Unable to find external product ID")
 
             self.client.shared_product_ids = sorted(prod_ids, key=lambda _: _[0])
