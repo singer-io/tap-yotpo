@@ -1,40 +1,50 @@
-from .abstracts import FullTableStream
-from singer import metrics,write_record,get_logger
+from .abstracts import IncremetalStream,UrlEndpointMixin
+from singer import metrics,write_record,get_logger,get_bookmark,write_bookmark
+from singer.utils import strptime_to_utc
+from ..helpers import ApiSpec
+from typing import Dict, List, Optional
 LOGGER = get_logger()
 
-class Reviews(FullTableStream):
+class Reviews(IncremetalStream,UrlEndpointMixin):
     """
     class for products stream
     """
     stream = "reviews"
     tap_stream_id = "reviews"
     key_properties = ["id",]
-    replication_key = "created_at"
-    api_auth_version = "v1"
-    url_endpoint = "https://api.yotpo.com/apps/APP_KEY/reviews"
+    replication_key = "updated_at"
+    valid_replication_keys = ["updated_at",]
+    config_start_key = "start_date"
+    api_auth_version = ApiSpec.API_V1
+    url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
-    def get_url_endpoint(self) -> str:
-        """
-        Returns a formated endpoint using the stream attributes
-        """
-        return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
-    
-    def get_records(self):
+    def get_records(self,start_date :Optional[str]) -> List:
         extraction_url =  self.get_url_endpoint()
-        call_next, page_size = True, 150
-        params,headers = {"page":1,"count":page_size},{}
+        params = {"page":1,"count":150,"since_updated_at":start_date}
+        call_next = True
         while call_next:
-            response =  self.client.get(extraction_url,params,headers,self.api_auth_version)
-            raw_records = response.get("response",{}).get(self.stream,[])
+            LOGGER.info("Fetching Reviews Page: %s",params["page"])
+            response =  self.client.get(extraction_url,params,{},self.api_auth_version)
+            raw_records = response.get(self.stream,[])
             if not raw_records:
-                call_next =  False
-            params["page"]+=1
+                break
+            params["page"] += 1
             yield from raw_records
 
-    def sync(self,state,schema,stream_metadata,transformer):
-        with metrics.record_counter(self.tap_stream_id) as counter:
-            for record in self.get_records():
+    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer) -> Dict:
+        self.client.__utoken = "asdas"
+        config_start = self.client.config[self.config_start_key]
+        bookmark_date = get_bookmark(state,self.tap_stream_id,self.replication_key,config_start)
+        max_updated_at = strptime_to_utc(bookmark_date)
+        with metrics.Counter(self.tap_stream_id) as counter:
+            for record in self.get_records(bookmark_date):
+                try:
+                    record_bmk_val = strptime_to_utc(record[self.replication_key])
+                    max_updated_at =  max(max_updated_at,record_bmk_val)
+                except TypeError:
+                    LOGGER.info("unable to Find Replication Key for record")
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
+            state = write_bookmark(state, self.tap_stream_id, self.replication_key, max_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
         return state 

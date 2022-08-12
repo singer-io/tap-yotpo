@@ -6,13 +6,14 @@
     "id": {
       "type": "integer"
     },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
+    "title": {
+      "type": ["string", "null"]
     },
-    "updated_at": {
-      "type": "string",
-      "format": "date-time"
+    "content": {
+      "type": "string"
+    },
+    "score": {
+      "type": "number"
     },
     "votes_up": {
       "type": "number"
@@ -20,17 +21,13 @@
     "votes_down": {
       "type": "number"
     },
-    "score": {
-      "type": "number"
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
     },
-    "content": {
-      "type": "string"
-    },
-    "title": {
-      "type": ["string", "null"]
-    },
-    "email": {
-      "type": ["string", "null"]
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
     },
     "sentiment": {
       "type": ["number", "null"]
@@ -41,10 +38,19 @@
     "name": {
       "type": "string"
     },
+    "email": {
+      "type": ["string", "null"]
+    },
     "reviewer_type": {
       "type": "string"
     },
     "deleted": {
+      "type": "boolean"
+    },
+    "archived": {
+      "type": "boolean"
+    },
+    "escalated": {
       "type": "boolean"
     },
     "user_reference": {

@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from singer import Transformer, get_logger, metrics, write_record
-
+from ..helpers import ApiSpec
 from .abstracts import FullTableStream,UrlEndpointMixin
 
 LOGGER = get_logger()
@@ -13,7 +13,7 @@ class Products(FullTableStream,UrlEndpointMixin):
     stream = "products"
     tap_stream_id = "products"
     key_properties = ["yotpo_id",]
-    api_auth_version = "v3"
+    api_auth_version = ApiSpec.API_V3
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
     def get_records(self) -> List:

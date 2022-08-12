@@ -1,9 +1,10 @@
-from typing import Any
+from typing import Any, Dict, Optional, Tuple
 from requests import session
 import singer
 import backoff
 import requests
 from . import exceptions as errors
+from .helpers import ApiSpec
 LOGGER = singer.get_logger()
 
 def raise_for_error(response: requests.Response):
@@ -31,12 +32,11 @@ class Client:
         self.config = config
         self._session = session()
         self.__utoken = None
-        self._get_auth_token(regenerate_token=True)
+        self._get_auth_token(force=True)
 
-    def _get_auth_token(self,regenerate_token=False):
-        if self.__utoken and not regenerate_token:
+    def _get_auth_token(self,force :Optional[bool]=False):
+        if self.__utoken and not force:
             return self.__utoken
-        
         data = {
             "client_id": self.config["api_key"],
             "client_secret": self.config["api_secret"],
@@ -48,14 +48,17 @@ class Client:
         return self.__utoken
 
 
-    def authenticate(self,headers :dict,params :dict,api_auth_version :str):
-        if api_auth_version == "v1":
+    def authenticate(self,headers :Optional[dict] = {},params :Optional[dict] ={},api_auth_version :Any = ApiSpec.API_V3) -> Tuple[Dict,Dict]:
+        """
+        Updates Headers and Params based on api version of the stream.
+        """
+        if api_auth_version == ApiSpec.API_V1:
             params.update({"utoken":self._get_auth_token()})
-        elif api_auth_version == "v3":
+        elif api_auth_version == ApiSpec.API_V3:
             headers.update({"X-Yotpo-Token":self._get_auth_token()})
         return headers,params
     
-    @backoff.on_exception(wait_gen=lambda:1,exception=(errors.Http401RequestError,),jitter=None, max_tries=3)
+    @backoff.on_exception(wait_gen=backoff.expo,exception=(errors.Http401RequestError,),jitter=None, max_tries=3)
     def get(self,endpoint,params,headers,api_auth_version) -> Any:
         headers,params = self.authenticate(headers,params,api_auth_version)
         return self.make_request("GET",endpoint,headers=headers,params=params)
@@ -64,15 +67,16 @@ class Client:
         headers,params = self.authenticate(headers,params,api_auth_version)
         self.make_request("POST",endpoint,headers=headers,params=params,data=body)
 
-    @backoff.on_exception(wait_gen=lambda:60,exception=(errors.Http429RequestError,errors.Http500RequestError,errors.Http503RequestError,),jitter=None, max_tries=3)
+    @backoff.on_exception(wait_gen=backoff.expo,exception=(errors.Http400RequestError,errors.Http429RequestError,errors.Http500RequestError,errors.Http503RequestError,),jitter=None, max_tries=5)
     def make_request(self,method,endpoint,**kwargs) -> requests.Response or None:
         response = self._session.request(method,endpoint,**kwargs)
         if response.status_code != 200:
             try:
                 raise_for_error(response)
             except errors.Http401RequestError as _:
-                self._get_auth_token(regenerate_token=True)
-                raise_for_error(response)
+                LOGGER.info("Authorization Failure, attempting to regenrate token")
+                self._get_auth_token(force=True)
+                raise _
             return None
         return response.json()
 

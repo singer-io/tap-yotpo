@@ -1,6 +1,7 @@
 from .abstracts import FullTableStream,UrlEndpointMixin
 from singer import metrics,write_record,get_logger
 LOGGER = get_logger()
+from ..helpers import ApiSpec
 
 class Unsubscribers(FullTableStream,UrlEndpointMixin):
     """
@@ -9,7 +10,7 @@ class Unsubscribers(FullTableStream,UrlEndpointMixin):
     stream = "unsubscribers"
     tap_stream_id = "unsubscribers"
     key_properties = ["id",]
-    api_auth_version = "v1"
+    api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/apps/APP_KEY/unsubscribers"
     
     def get_records(self):

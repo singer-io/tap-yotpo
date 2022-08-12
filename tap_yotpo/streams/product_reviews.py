@@ -5,10 +5,9 @@ from singer import metrics, write_record
 from .abstracts import IncremetalStream
 from .products import Products
 from singer.utils import strptime_to_utc
-import time
 import math
 LOGGER = singer.get_logger()
-from tap_yotpo.helpers import skip_product
+from tap_yotpo.helpers import skip_product,ApiSpec
 
 class ProductReviews(IncremetalStream):
     """
@@ -19,7 +18,7 @@ class ProductReviews(IncremetalStream):
     key_properties = ["id",]
     replication_key = "created_at"
     valid_replication_keys = ["created_at"]
-    api_auth_version = "v1"
+    api_auth_version = ApiSpec.API_V1
     config_start_key = "start_date"
     url_endpoint = " https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
 
