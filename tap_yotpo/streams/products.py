@@ -16,9 +16,7 @@ class Products(FullTableStream, UrlEndpointMixin):
 
     stream = "products"
     tap_stream_id = "products"
-    key_properties = [
-        "yotpo_id",
-    ]
+    key_properties = ["yotpo_id"]
     api_auth_version = ApiSpec.API_V3
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 

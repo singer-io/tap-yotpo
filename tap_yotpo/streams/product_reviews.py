@@ -9,7 +9,6 @@ from singer import (
     clear_bookmark,
     get_bookmark,
     metrics,
-    write_bookmark,
     write_record,
     write_state,
 )
@@ -30,12 +29,11 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
 
     stream = "product_reviews"
     tap_stream_id = "product_reviews"
-    key_properties = [
-        "id",
-    ]
+    key_properties = ["id"]
     replication_key = "created_at"
     valid_replication_keys = ["created_at"]
     api_auth_version = ApiSpec.API_V1
+    # points to the attribute of the config that marks the first-start-date for the stream
     config_start_key = "start_date"
     url_endpoint = " https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
 
@@ -135,8 +133,8 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    state = self.write_bookmark(prod_id, strftime(max_bookmark))
-                    state = write_bookmark(state, self.tap_stream_id, "currently_syncing", prod_id)
+                    state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
+                    state = self.write_bookmark(state, "currently_syncing", prod_id)
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state
