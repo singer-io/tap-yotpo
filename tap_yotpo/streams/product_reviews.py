@@ -67,7 +67,7 @@ class ProductReviews(IncremetalStream):
             raw_records = response.get("reviews",[])
             current_page = response.get("pagination",{}).get("page",None)
             total_records = response.get("pagination",{}).get("total",None)
-            max_pages = max(math.ceil(total_records/150),1)
+            max_pages = max(math.ceil(total_records/params['per_page']),1)
 
 
             if not raw_records:
