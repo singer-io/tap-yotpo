@@ -1,6 +1,6 @@
 """tap-yotpo product-reviews stream module"""
-from math import ceil
 from datetime import datetime
+from math import ceil
 from typing import Dict, List, Tuple
 
 import singer
@@ -120,31 +120,31 @@ class ProductReviews(IncremetalStream):
             LOGGER.info("STARTING SYNC FROM INDEX %s", start_index)
             prod_len = len(products)
             with metrics.Counter(self.tap_stream_id) as counter:
-                for index, (yotpo_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
+                for index, (prod_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
 
                     if skip_product(ext_prod_id):
                         LOGGER.info(
                             "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
-                            str(yotpo_id)[-4:],
+                            str(prod_id)[-4:],
                             index,
                             prod_len,
                             ext_prod_id,
                         )
                         continue
 
-                    LOGGER.info("Sync for prod *****%s (%s/%s)", str(yotpo_id)[-4:], index, prod_len)
+                    LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)
 
-                    old_bmk = get_bookmark(state, self.tap_stream_id, str(yotpo_id), config_start)
-                    records, new_bookmark_date = self.get_records(ext_prod_id, old_bmk)
+                    old_bmk = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
+                    records, current_bmk = self.get_records(ext_prod_id, old_bmk)
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
                     state = write_bookmark(
-                        state, self.tap_stream_id, yotpo_id, new_bookmark_date.strftime("%Y-%m-%dT%H:%M:%SZ")
+                        state, self.tap_stream_id, prod_id, current_bmk.strftime("%Y-%m-%dT%H:%M:%SZ")
                     )
-                    state = write_bookmark(state, self.tap_stream_id, "currently_syncing", yotpo_id)
+                    state = write_bookmark(state, self.tap_stream_id, "currently_syncing", prod_id)
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

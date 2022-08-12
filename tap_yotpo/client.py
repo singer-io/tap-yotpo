@@ -83,10 +83,11 @@ class Client:
         headers, params = self.authenticate(headers, params, api_auth_version)
         return self.__make_request("GET", endpoint, headers=headers, params=params)
 
-    def post(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any, body: Dict) -> Any: # pylint: disable=R0913
+    def post(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any, body: Dict) -> Any:
         """
         Calls the make_request method with a prefixed method type `POST`
         """
+        # pylint: disable=R0913
         headers, params = self.authenticate(headers, params, api_auth_version)
         self.__make_request("POST", endpoint, headers=headers, params=params, data=body)
 

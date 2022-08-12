@@ -175,6 +175,7 @@ class UrlEndpointMixin:
     """
     A mixin for url formatting of URL's
     """
+
     # pylint: disable=R0903; Mixin implementation
 
     url_endpoint = ""

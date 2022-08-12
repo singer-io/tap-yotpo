@@ -1,5 +1,6 @@
 """tap-yotpo exception classes module"""
 
+
 class ClientError(Exception):
     """
     class representing Genric Http error
