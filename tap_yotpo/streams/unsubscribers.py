@@ -10,28 +10,31 @@ from typing import Dict, List, Tuple
 from ..helpers import ApiSpec
 
 
-class Unsubscribers(FullTableStream,UrlEndpointMixin):
+class Unsubscribers(FullTableStream, UrlEndpointMixin):
     """
     class for products stream
     """
+
     stream = "unsubscribers"
     tap_stream_id = "unsubscribers"
-    key_properties = ["id",]
+    key_properties = [
+        "id",
+    ]
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/apps/APP_KEY/unsubscribers"
 
     def get_records(self):
-        extraction_url =  self.get_url_endpoint()
-        params = {"page":1,"count":1000},
+        extraction_url = self.get_url_endpoint()
+        params = ({"page": 1, "count": 1000},)
         while True:
-            response =  self.client.get(extraction_url,params,{},self.api_auth_version)
-            raw_records = response.get("response",{}).get(self.stream,[])
+            response = self.client.get(extraction_url, params, {}, self.api_auth_version)
+            raw_records = response.get("response", {}).get(self.stream, [])
             if not raw_records:
                 break
-            params["page"]+=1
+            params["page"] += 1
             yield from raw_records
 
-    def sync(self,state :Dict,schema :Dict,stream_metadata :Dict,transformer) -> Dict:
+    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer) -> Dict:
         """
         Sync implementation for `unsubscribers` stream
         """

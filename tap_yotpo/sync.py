@@ -4,7 +4,8 @@ from . import streams
 
 LOGGER = singer.get_logger()
 
-def sync(client,catalog :singer.Catalog,state):
+
+def sync(client, catalog: singer.Catalog, state):
     with singer.Transformer() as transformer:
         for stream in catalog.get_selected_streams(state):
             tap_stream_id = stream.tap_stream_id
@@ -15,7 +16,9 @@ def sync(client,catalog :singer.Catalog,state):
             state = singer.set_currently_syncing(state, tap_stream_id)
             singer.write_state(state)
             singer.write_schema(tap_stream_id, stream_schema, stream_obj.key_properties, stream.replication_key)
-            state = stream_obj.sync(state=state, schema=stream_schema, stream_metadata=stream_metadata, transformer=transformer)
+            state = stream_obj.sync(
+                state=state, schema=stream_schema, stream_metadata=stream_metadata, transformer=transformer
+            )
             singer.write_state(state)
 
     state = singer.set_currently_syncing(state, None)
