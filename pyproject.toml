@@ -7,7 +7,7 @@ include = '\.pyi?$'
 profile = "black"
 max-line-length = 120
 exclude = "build,.git,.tox,./tests/.env,tests"
-ignore = "W504,W601"
+ignore = "W504,W601,D203"
 
 [tool.pylint]
 max-line-length = 120
