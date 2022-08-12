@@ -1,13 +1,17 @@
+import math
 from datetime import datetime
-import singer
 from typing import Dict, List, Tuple
-from singer import metrics, write_record,Transformer
+
+import singer
+from singer import Transformer, metrics, write_record
+from singer.utils import strptime_to_utc
+
 from .abstracts import IncremetalStream
 from .products import Products
-from singer.utils import strptime_to_utc
-import math
+
 LOGGER = singer.get_logger()
-from tap_yotpo.helpers import skip_product,ApiSpec
+from tap_yotpo.helpers import ApiSpec, skip_product
+
 
 class ProductReviews(IncremetalStream):
     """
@@ -82,7 +86,7 @@ class ProductReviews(IncremetalStream):
                     filtered_records.append(record)
                 else:
                     next_page = False
-            
+
             params["page"]+=1
 
             if params["page"] > max_pages:
@@ -120,4 +124,3 @@ class ProductReviews(IncremetalStream):
                     singer.write_state(state)
             state = singer.clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state
-

@@ -1,8 +1,12 @@
-from .abstracts import IncremetalStream,UrlEndpointMixin
-from singer import metrics,write_record,get_logger,get_bookmark,write_bookmark
-from singer.utils import strptime_to_utc
-from ..helpers import ApiSpec
 from typing import Dict, List, Optional
+
+from singer import (get_bookmark, get_logger, metrics, write_bookmark,
+                    write_record)
+from singer.utils import strptime_to_utc
+
+from ..helpers import ApiSpec
+from .abstracts import IncremetalStream, UrlEndpointMixin
+
 LOGGER = get_logger()
 
 class Reviews(IncremetalStream,UrlEndpointMixin):
@@ -51,4 +55,4 @@ class Reviews(IncremetalStream,UrlEndpointMixin):
                 counter.increment()
 
             state = write_bookmark(state, self.tap_stream_id, self.replication_key, max_updated_at.strftime("%Y-%m-%dT%H:%M:%SZ"))
-        return state 
+        return state

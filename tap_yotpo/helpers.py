@@ -1,8 +1,12 @@
 import os
 import re
-from singer import utils,get_logger
+
+from singer import get_logger, utils
+
 LOGGER =  get_logger()
 import enum
+
+
 def _join(a, b):
     return a.rstrip("/") + "/" + b.lstrip("/")
 

@@ -1,9 +1,11 @@
-from .abstracts import FullTableStream,UrlEndpointMixin
-from singer import metrics,write_record,get_logger,Transformer
-import singer
 from typing import Dict, List, Tuple
 
 import pendulum
+import singer
+from singer import Transformer, get_logger, metrics, write_record
+
+from .abstracts import FullTableStream, UrlEndpointMixin
+
 LOGGER = singer.get_logger()
 
 
@@ -51,4 +53,4 @@ class Emails(FullTableStream,UrlEndpointMixin):
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
-        return state 
+        return state

@@ -1,10 +1,10 @@
 import singer
 from singer import utils
 from singer.catalog import Catalog
+
+from tap_yotpo.client import Client
 from tap_yotpo.discover import discover
 from tap_yotpo.sync import sync
-from tap_yotpo.context import Context
-from tap_yotpo.client import Client
 
 REQUIRED_CONFIG_KEYS = ["start_date", "api_key", "api_secret"]
 LOGGER = singer.get_logger()
@@ -17,8 +17,7 @@ def main():
     if args.discover:
         discover(client).dump()
     else:
-        catalog = Catalog.from_dict(args.properties) if args.properties else discover(client)
-        sync(client,catalog,args.state)
+        sync(client,args.catalog or discover(args.config),args.state)
 
 
 if __name__ == "__main__":

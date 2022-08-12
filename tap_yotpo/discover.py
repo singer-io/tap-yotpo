@@ -1,5 +1,7 @@
 import json
+
 from singer.catalog import Catalog
+
 from tap_yotpo.helpers import get_abs_path
 from tap_yotpo.streams import STREAMS
 

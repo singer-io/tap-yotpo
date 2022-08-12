@@ -96,7 +96,7 @@ class BaseStream(ABC):
              - state (dict): represents the state file for the tap.
              - schema (dict): Schema of the stream
              - transformer (object): A Object of the singer.transformer class.
-            
+
             Returns:
              - bool: The return value. True for success, False otherwise.
 
@@ -125,7 +125,7 @@ class BaseStream(ABC):
             meta.update({"replication-key":cls.replication_key})
             metadata[0]["metadata"] = meta
         return metadata
-    
+
 
 
 

@@ -1,9 +1,14 @@
 from typing import Dict
-from .abstracts import FullTableStream,UrlEndpointMixin
-from singer import metrics,write_record,get_logger
+
+from singer import get_logger, metrics, write_record
+
+from .abstracts import FullTableStream, UrlEndpointMixin
+
 LOGGER = get_logger()
-from ..helpers import ApiSpec
 from typing import Dict, List, Tuple
+
+from ..helpers import ApiSpec
+
 
 class Unsubscribers(FullTableStream,UrlEndpointMixin):
     """
@@ -14,7 +19,7 @@ class Unsubscribers(FullTableStream,UrlEndpointMixin):
     key_properties = ["id",]
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/apps/APP_KEY/unsubscribers"
-    
+
     def get_records(self):
         extraction_url =  self.get_url_endpoint()
         params = {"page":1,"count":1000},
@@ -35,4 +40,4 @@ class Unsubscribers(FullTableStream,UrlEndpointMixin):
                 transformed_record = transformer.transform(record, schema, stream_metadata)
                 write_record(self.tap_stream_id, transformed_record)
                 counter.increment()
-        return state 
+        return state

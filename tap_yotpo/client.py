@@ -1,10 +1,13 @@
-from typing import Any, Dict, Optional, Tuple,Mapping
-from requests import session
-import singer
+from typing import Any, Dict, Mapping, Optional, Tuple
+
 import backoff
 import requests
+import singer
+from requests import session
+
 from . import exceptions as errors
 from .helpers import ApiSpec
+
 LOGGER = singer.get_logger()
 
 def raise_for_error(response: requests.Response):
@@ -34,7 +37,7 @@ class Client:
      - HTTP Error handling and retry
     """
     auth_url = "https://api.yotpo.com/oauth/token"
- 
+
     def __init__(self,config :Mapping[str,Any]) -> None:
         self.config = config
         self._session = session()
@@ -64,7 +67,7 @@ class Client:
         elif api_auth_version == ApiSpec.API_V3:
             headers.update({"X-Yotpo-Token":self._get_auth_token()})
         return headers,params
-    
+
     @backoff.on_exception(wait_gen=backoff.expo,exception=(errors.Http401RequestError,),jitter=None, max_tries=3)
     def get(self,endpoint :str,params :Dict,headers :Dict,api_auth_version :Any) -> Any:
         """
@@ -104,4 +107,3 @@ class Client:
                 raise _
             return None
         return response.json()
-

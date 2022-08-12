@@ -1,8 +1,9 @@
 from typing import Dict, List
 
 from singer import Transformer, get_logger, metrics, write_record
+
 from ..helpers import ApiSpec
-from .abstracts import FullTableStream,UrlEndpointMixin
+from .abstracts import FullTableStream, UrlEndpointMixin
 
 LOGGER = get_logger()
 
