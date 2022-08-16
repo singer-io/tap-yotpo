@@ -6,7 +6,7 @@ setup(
     version="1.3.6",
     description="Singer.io tap for extracting data from the Yotpo API",
     author="Stitch",
-    url="http://singer.io",
+    url="https://singer.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_yotpo"],
     install_requires=[

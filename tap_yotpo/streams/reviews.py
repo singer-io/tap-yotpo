@@ -1,6 +1,6 @@
 """tap-yotpo reviews stream module"""
-from typing import Dict, List, Optional
 from datetime import timedelta
+from typing import Dict, Generator, List, Optional
 
 from singer import get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
@@ -25,6 +25,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
+    @Generator
     def get_records(self, start_date: Optional[str]) -> List:
         """
         performs querying and pagination of reviews resource
@@ -46,7 +47,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
         Sync implementation for `reviews` stream
         """
         max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
-        bookmark_date_utc = bookmark_date_utc-timedelta(days=self.client.config.get("reviews_lookback_days", 0))
+        bookmark_date_utc = bookmark_date_utc - timedelta(days=self.client.config.get("reviews_lookback_days", 0))
 
         with metrics.Counter(self.tap_stream_id) as counter:
             for record in self.get_records(strftime(bookmark_date_utc)):
