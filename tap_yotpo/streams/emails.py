@@ -1,5 +1,5 @@
 """tap-yotpo email stream module"""
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List
 
 from singer import Transformer, get_logger, metrics, write_record
@@ -52,10 +52,10 @@ class Emails(IncremetalStream, UrlEndpointMixin):
         """
         with metrics.record_counter(self.tap_stream_id) as counter:
 
-            bookmark_date = self.get_bookmark(state)
-            max_bookmark = bookmark_date_utc = strptime_to_utc(bookmark_date)
+            max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
+            bookmark_date_utc = bookmark_date_utc-timedelta(days=self.client.config.get("email_stats_lookback_days", 0))
 
-            for record in self.get_records(bookmark_date):
+            for record in self.get_records(bookmark_date_utc.strftime("%Y-%m-%d")):
 
                 record_timestamp = strptime_to_utc(record[self.replication_key])
                 if record_timestamp >= bookmark_date_utc:

@@ -1,5 +1,6 @@
 """tap-yotpo reviews stream module"""
 from typing import Dict, List, Optional
+from datetime import timedelta
 
 from singer import get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
@@ -44,13 +45,13 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
         """
         Sync implementation for `reviews` stream
         """
-        bookmark_date = self.get_bookmark(state)
-        max_bookmark = bookmark_date_utc = strptime_to_utc(bookmark_date)
+        max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
+        bookmark_date_utc = bookmark_date_utc-timedelta(days=self.client.config.get("reviews_lookback_days", 0))
+
         with metrics.Counter(self.tap_stream_id) as counter:
-            for record in self.get_records(bookmark_date):
+            for record in self.get_records(strftime(bookmark_date_utc)):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
-                    # LOGGER.info(record_timestamp)
                     if record_timestamp >= bookmark_date_utc:
                         max_bookmark = max(max_bookmark, record_timestamp)
                         transformed_record = transformer.transform(record, schema, stream_metadata)
