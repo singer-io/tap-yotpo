@@ -13,7 +13,7 @@ LOGGER = get_logger()
 
 class Reviews(IncremetalStream, UrlEndpointMixin):
     """
-    class for products stream
+    class for `reviews` stream
     """
 
     stream = "reviews"

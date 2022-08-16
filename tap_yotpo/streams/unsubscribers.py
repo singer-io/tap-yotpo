@@ -9,7 +9,7 @@ LOGGER = get_logger()
 
 class Unsubscribers(FullTableStream, UrlEndpointMixin):
     """
-    class for products stream
+    class for unsubscribers stream
     """
 
     stream = "unsubscribers"
