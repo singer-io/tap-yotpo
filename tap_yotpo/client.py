@@ -48,7 +48,7 @@ class Client:
         self.config = config
         self._session = session()
         self.__utoken = None
-        self._get_auth_token(force=True)
+
 
     def _get_auth_token(self, force: Optional[bool] = False):
         if self.__utoken and not force:

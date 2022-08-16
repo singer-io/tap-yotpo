@@ -25,8 +25,8 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
-    @Generator
-    def get_records(self, start_date: Optional[str]) -> List:
+
+    def get_records(self, start_date: Optional[str]) -> Generator[Dict,None,None]:
         """
         performs querying and pagination of reviews resource
         """

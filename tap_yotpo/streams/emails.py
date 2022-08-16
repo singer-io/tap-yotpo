@@ -1,6 +1,6 @@
 """tap-yotpo email stream module"""
 from datetime import datetime, timedelta
-from typing import Dict, List,Generator
+from typing import Dict, Generator, List
 
 from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strptime_to_utc
@@ -10,6 +10,7 @@ from .abstracts import IncremetalStream, UrlEndpointMixin
 
 LOGGER = get_logger()
 DATE_FORMAT = "%Y-%m-%d"
+
 
 class Emails(IncremetalStream, UrlEndpointMixin):
     """
@@ -25,8 +26,8 @@ class Emails(IncremetalStream, UrlEndpointMixin):
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/analytics/v1/emails/APP_KEY/export/raw_data"
 
-    @Generator
-    def get_records(self, start_date: str) -> List:
+
+    def get_records(self, start_date: str) -> Generator[Dict,None,None]:
         """
         performs querying and pagination of email resource
         """
