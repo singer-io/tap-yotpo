@@ -30,14 +30,13 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
         """
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
-        params = {"page": 1, "count": 150, "since_updated_at": start_date}
-        call_next = True
-        while call_next:
-            LOGGER.info("Fetching Reviews Page: %s", params["page"])
+        params = {"page": 1, "count": 100, "since_updated_at": start_date}
+        while True:
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
             if not raw_records:
                 break
+            LOGGER.info("Fetched Reviews from page: %s", params["page"])
             params["page"] += 1
             yield from raw_records
 
@@ -51,6 +50,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
             for record in self.get_records(bookmark_date):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
+                    # LOGGER.info(record_timestamp)
                     if record_timestamp >= bookmark_date_utc:
                         max_bookmark = max(max_bookmark, record_timestamp)
                         transformed_record = transformer.transform(record, schema, stream_metadata)
