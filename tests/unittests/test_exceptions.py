@@ -1,20 +1,21 @@
 """module to test HTTPexceptions for tap-yotpo"""
-from unittest import TestCase, mock
-from requests import Response,HTTPError
-import json
-from tap_yotpo.client import Client
-import tap_yotpo.exceptions as errors
 import enum
+import json
+from unittest import TestCase, mock
+
+from requests import HTTPError, Response
+
+import tap_yotpo.exceptions as errors
+from tap_yotpo.client import Client
+
 
 class Mockresponse(Response):
-
-    def __init__(self, status_code,response=None,raise_error=True):
+    def __init__(self, status_code, response=None, raise_error=True):
         super().__init__()
         self.status_code = status_code
         self._content = str.encode(json.dumps(response))
         self.encoding = None
         self.raise_error = raise_error
-
 
     def raise_for_status(self):
         if not self.raise_error:
@@ -24,10 +25,10 @@ class Mockresponse(Response):
 
 class HTTPErrorCodeHandling(TestCase):
     """
-    Test cases to verify error is raised with proper message  for get_resource method.
+    Test cases to verify error is raised with proper message for Http Errors.
     """
 
-    client_obj = Client({"api_key": enum.auto(),"api_secret":enum.auto()})
+    client_obj = Client({"api_key": enum.auto(), "api_secret": enum.auto()})
     ENDPOINT = "https://test.com/test"
 
     @mock.patch("time.sleep")
@@ -38,7 +39,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http400RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http400RequestError as _:
                 self.assertEqual(str(_), "Unable to process request")
                 raise _
@@ -51,7 +52,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http401RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http401RequestError as _:
                 self.assertEqual(str(_), "Invalid credentials provided")
                 raise _
@@ -63,7 +64,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http403RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http401RequestError as _:
                 self.assertEqual(str(_), "Insufficient permission to access resource")
                 raise _
@@ -76,7 +77,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http404RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http404RequestError as _:
                 self.assertEqual(str(_), "Resource not found")
                 raise _
@@ -89,7 +90,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http429RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http429RequestError as _:
                 self.assertEqual(str(_), "The API limit exceeded")
                 raise _
@@ -102,7 +103,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http500RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http500RequestError as _:
                 self.assertEqual(str(_), "Server Fault, Unable to process request")
                 raise _
@@ -115,7 +116,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http502RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http502RequestError as _:
                 self.assertEqual(str(_), "Bad Gateway")
                 raise _
@@ -128,7 +129,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http503RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http503RequestError as _:
                 self.assertEqual(str(_), "Service is currently unavailable")
                 raise _
@@ -141,8 +142,7 @@ class HTTPErrorCodeHandling(TestCase):
         """
         with self.assertRaises(errors.Http504RequestError):
             try:
-                self.client_obj.get(self.ENDPOINT,None,None,None)
+                self.client_obj.get(self.ENDPOINT, None, None, None)
             except errors.Http504RequestError as _:
                 self.assertEqual(str(_), "API service time out")
                 raise _
-
