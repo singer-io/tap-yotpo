@@ -1,6 +1,8 @@
 """tap-yotpo unsubsrcibers stream module"""
+from typing import Dict, Iterator
+
 from singer import get_logger
-from typing import Dict, Generator
+
 from ..helpers import ApiSpec
 from .abstracts import FullTableStream, UrlEndpointMixin
 
@@ -18,7 +20,7 @@ class Unsubscribers(FullTableStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/apps/APP_KEY/unsubscribers"
 
-    def get_records(self) -> Generator[Dict,None,None]:
+    def get_records(self) -> Iterator[Dict]:
         extraction_url = self.get_url_endpoint()
         params = {"page": 1, "count": 1000}
         while True:

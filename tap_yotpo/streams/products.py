@@ -1,5 +1,5 @@
 """tap-yotpo products stream module"""
-from typing import Dict, List,Generator
+from typing import Dict, Iterator, List
 
 from singer import Transformer, get_logger, metrics, write_record
 
@@ -20,7 +20,7 @@ class Products(FullTableStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V3
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
-    def get_records(self) -> Generator[Dict,None,None]:
+    def get_records(self) -> Iterator[Dict]:
         """
         performs api querying and pagination of response
         """
