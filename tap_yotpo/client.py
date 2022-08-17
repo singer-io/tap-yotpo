@@ -48,7 +48,6 @@ class Client:
         self.config = config
         self._session = session()
         self.__utoken = None
-        self._get_auth_token(force=True)
 
     def _get_auth_token(self, force: Optional[bool] = False):
         if self.__utoken and not force:
@@ -58,10 +57,17 @@ class Client:
             "client_secret": self.config["api_secret"],
             "grant_type": "client_credentials",
         }
-        response = self.__make_request("POST", self.auth_url, data=data)
-        self.__utoken = response["access_token"]
-        LOGGER.info("Authenticating successful with yotpo api")
-        return self.__utoken
+        # directly using the session object bypassing the self.__make_request
+        # as a authentication failure creates a infinite recursion loop
+        resp = self._session.request("POST", self.auth_url, data=data)
+        if resp.status_code == 200:
+            response = resp.json()
+            self.__utoken = response["access_token"]
+            LOGGER.info("Authenticating successful with yotpo api")
+            return self.__utoken
+        else:
+            LOGGER.info("Authenticating Failed, exiting")
+            raise errors.Http401RequestError
 
     def authenticate(
         self, headers: Optional[dict], params: Optional[dict], api_auth_version: Any = ApiSpec.API_V3
@@ -75,7 +81,7 @@ class Client:
             headers.update({"X-Yotpo-Token": self._get_auth_token()})
         return headers, params
 
-    @backoff.on_exception(wait_gen=backoff.expo, exception=(errors.Http401RequestError,), jitter=None, max_tries=3)
+    @backoff.on_exception(wait_gen=backoff.expo, exception=(errors.Http401RequestError,), jitter=None, max_tries=1)
     def get(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any) -> Any:
         """
         Calls the make_request method with a prefixed method type `GET`
@@ -95,12 +101,15 @@ class Client:
         wait_gen=backoff.expo,
         exception=(
             errors.Http400RequestError,
-            errors.Http429RequestError,
+            errors.Http404RequestError,
             errors.Http500RequestError,
             errors.Http503RequestError,
         ),
         jitter=None,
         max_tries=5,
+    )
+    @backoff.on_exception(
+        wait_gen=backoff.expo, exception=errors.Http429RequestError, jitter=None, max_time=60, max_tries=6
     )
     def __make_request(self, method, endpoint, **kwargs) -> Optional[Mapping[Any, Any]]:
         """
@@ -124,8 +133,7 @@ class Client:
                 self._get_auth_token(force=True)
                 raise _
             except errors.Http404RequestError as _:
-                LOGGER.info("URL Not Found %s", response.url)
+                LOGGER.error("Resource Not Found %s", response.url or "")
                 raise _
-
             return None
         return response.json()

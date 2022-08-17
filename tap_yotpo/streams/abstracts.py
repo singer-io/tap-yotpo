@@ -32,7 +32,7 @@ class BaseStream(ABC):
         """
         TODO: Documentation
         """
-        return None
+        return "UNDEFINED"
 
     @property
     @abstractmethod

@@ -50,7 +50,7 @@ class Http429RequestError(ClientError):
     class representing 429 status code
     """
 
-    message = "The API limit exceeded."
+    message = "The API limit exceeded"
 
 
 class Http500RequestError(ClientError):
@@ -66,7 +66,7 @@ class Http502RequestError(ClientError):
     class representing 502 status code
     """
 
-    message = "Bad Gateway."
+    message = "Bad Gateway"
 
 
 class Http503RequestError(ClientError):

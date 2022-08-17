@@ -8,11 +8,6 @@ from tap_yotpo.streams import STREAMS
 
 from .helpers import ApiSpec
 
-# def get_schemas() -> tuple[dict,dict]:
-#     """
-#     Builds the singer schema and metadata dictionaries.
-#     """
-
 
 def discover(client):
     """
