@@ -1,4 +1,4 @@
-"""tap-yotpo reviews stream module"""
+"""tap-yotpo reviews stream module."""
 from datetime import timedelta
 from typing import Dict, Iterator, Optional
 
@@ -12,9 +12,7 @@ LOGGER = get_logger()
 
 
 class Reviews(IncremetalStream, UrlEndpointMixin):
-    """
-    class for `reviews` stream
-    """
+    """class for `reviews` stream."""
 
     stream = "reviews"
     tap_stream_id = "reviews"
@@ -26,9 +24,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
     def get_records(self, start_date: Optional[str]) -> Iterator[Dict]:
-        """
-        performs querying and pagination of reviews resource
-        """
+        """performs querying and pagination of reviews resource."""
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
         params = {"page": 1, "count": 100, "since_updated_at": start_date}
@@ -42,9 +38,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
             yield from raw_records
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer) -> Dict:
-        """
-        Sync implementation for `reviews` stream
-        """
+        """Sync implementation for `reviews` stream."""
         max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
         bookmark_date_utc = bookmark_date_utc - timedelta(days=self.client.config.get("reviews_lookback_days", 0))
 

@@ -1,4 +1,4 @@
-"""tap-yotpo client module"""
+"""tap-yotpo client module."""
 from typing import Any, Dict, Mapping, Optional, Tuple
 
 import backoff
@@ -13,10 +13,10 @@ LOGGER = singer.get_logger()
 
 
 def raise_for_error(response: requests.Response):
-    """
-    Raises the associated response exception.
-    Takes in a response object, checks the status code, and throws the associated
-    exception based on the status code.
+    """Raises the associated response exception. Takes in a response object,
+    checks the status code, and throws the associated exception based on the
+    status code.
+
     :param resp: requests.Response object
     """
     try:
@@ -72,9 +72,7 @@ class Client:
     def authenticate(
         self, headers: Optional[dict], params: Optional[dict], api_auth_version: Any = ApiSpec.API_V3
     ) -> Tuple[Dict, Dict]:
-        """
-        Updates Headers and Params based on api version of the stream.
-        """
+        """Updates Headers and Params based on api version of the stream."""
         if api_auth_version == ApiSpec.API_V1:
             params.update({"utoken": self._get_auth_token()})
         elif api_auth_version == ApiSpec.API_V3:
@@ -83,16 +81,12 @@ class Client:
 
     @backoff.on_exception(wait_gen=backoff.expo, exception=(errors.Http401RequestError,), jitter=None, max_tries=1)
     def get(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any) -> Any:
-        """
-        Calls the make_request method with a prefixed method type `GET`
-        """
+        """Calls the make_request method with a prefixed method type `GET`"""
         headers, params = self.authenticate(headers, params, api_auth_version)
         return self.__make_request("GET", endpoint, headers=headers, params=params)
 
     def post(self, endpoint: str, params: Dict, headers: Dict, api_auth_version: Any, body: Dict) -> Any:
-        """
-        Calls the make_request method with a prefixed method type `POST`
-        """
+        """Calls the make_request method with a prefixed method type `POST`"""
         # pylint: disable=R0913
         headers, params = self.authenticate(headers, params, api_auth_version)
         self.__make_request("POST", endpoint, headers=headers, params=params, data=body)

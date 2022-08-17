@@ -1,4 +1,4 @@
-"""tap-yotpo streams module"""
+"""tap-yotpo streams module."""
 from .emails import Emails
 from .product_reviews import ProductReviews
 from .products import Products

@@ -1,4 +1,4 @@
-"""tap-yotpo abstract stream module"""
+"""tap-yotpo abstract stream module."""
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Tuple
 
@@ -37,61 +37,49 @@ class BaseStream(ABC):
     @property
     @abstractmethod
     def tap_stream_id(self) -> str:
-        """
-        Unique identifier for the stream.
-        This is allowed to be different from the name of the stream,
-        in order to allow for sources that have duplicate stream names.
+        """Unique identifier for the stream.
+
+        This is allowed to be different from the name of the stream, in
+        order to allow for sources that have duplicate stream names.
         """
 
     @property
     @abstractmethod
     def replication_method(self) -> str:
-        """
-        Defines the sync mode of a stream
-        """
+        """Defines the sync mode of a stream."""
 
     @property
     @abstractmethod
     def replication_key(self) -> str:
-        """
-        Defines the replication key for incremental sync mode of a stream
-        """
+        """Defines the replication key for incremental sync mode of a
+        stream."""
 
     @property
     @abstractmethod
     def valid_replication_keys(self) -> Tuple[str, str]:
-        """
-        Defines the replication key for incremental sync mode of a stream
-        """
+        """Defines the replication key for incremental sync mode of a
+        stream."""
 
     @property
     @abstractmethod
     def forced_replication_method(self) -> str:
-        """
-        Defines the sync mode of a stream
-        """
+        """Defines the sync mode of a stream."""
 
     @property
     @abstractmethod
     def key_properties(self) -> Tuple[str, str]:
-        """
-        List of key properties for stream
-        """
+        """List of key properties for stream."""
 
     @property
     def selected_by_default(self) -> bool:
-        """
-        Indicates if a node in the schema should be replicated,
-        if a user has not expressed any opinion on whether or not to replicate it.
-        """
+        """Indicates if a node in the schema should be replicated, if a user
+        has not expressed any opinion on whether or not to replicate it."""
         return False
 
     @property
     @abstractmethod
     def url_endpoint(self) -> str:
-        """
-        Defines the HTTP endpoint for the stream
-        """
+        """Defines the HTTP endpoint for the stream."""
 
     @abstractmethod
     def get_records(self):
@@ -121,9 +109,7 @@ class BaseStream(ABC):
 
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
-        """
-        Returns a `dict` for generating stream metadata
-        """
+        """Returns a `dict` for generating stream metadata."""
         metadata = get_standard_metadata(
             **{
                 "schema": schema,
@@ -140,32 +126,26 @@ class BaseStream(ABC):
 
 
 class IncremetalStream(BaseStream):
-    """
-    Base Class for Incremental Stream
-    """
+    """Base Class for Incremental Stream."""
 
     replication_method = "INCREMENTAL"
     forced_replication_method = "INCREMENTAL"
     config_start_key = None
 
     def get_bookmark(self, state: dict, key: Any = None) -> int:
-        """
-        A wrapper for singer.get_bookmark to deal with compatibility for bookmark values or start values.
-        """
+        """A wrapper for singer.get_bookmark to deal with compatibility for
+        bookmark values or start values."""
         return get_bookmark(
             state, self.tap_stream_id, key or self.replication_key, self.client.config.get(self.config_start_key, False)
         )
 
     def write_bookmark(self, state: dict, key: Any = None, value: Any = None) -> Dict:
-        """
-        A wrapper for singer.get_bookmark to deal with compatibility for bookmark values or start values.
-        """
+        """A wrapper for singer.get_bookmark to deal with compatibility for
+        bookmark values or start values."""
         return write_bookmark(state, self.tap_stream_id, key or self.replication_key, value)
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Abstract implementation for `type: Incremental` stream
-        """
+        """Abstract implementation for `type: Incremental` stream."""
         current_bookmark_date = self.get_bookmark(state)
         max_bookmark = current_bookmark_date_utc = strptime_to_utc(current_bookmark_date)
 
@@ -183,9 +163,7 @@ class IncremetalStream(BaseStream):
 
 
 class FullTableStream(BaseStream):
-    """
-    Base Class for Incremental Stream
-    """
+    """Base Class for Incremental Stream."""
 
     replication_method = "FULL_TABLE"
     forced_replication_method = "FULL_TABLE"
@@ -193,9 +171,7 @@ class FullTableStream(BaseStream):
     replication_key = None
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Abstract implementation for `type: Fulltable` stream
-        """
+        """Abstract implementation for `type: Fulltable` stream."""
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
                 transformed_record = transformer.transform(record, schema, stream_metadata)
@@ -205,16 +181,12 @@ class FullTableStream(BaseStream):
 
 
 class UrlEndpointMixin:
-    """
-    A mixin for url formatting of URL's
-    """
+    """A mixin for url formatting of URL's."""
 
     # pylint: disable=R0903; Mixin implementation
 
     url_endpoint = ""
 
     def get_url_endpoint(self) -> str:
-        """
-        Returns a formated endpoint using the stream attributes
-        """
+        """Returns a formated endpoint using the stream attributes."""
         return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])

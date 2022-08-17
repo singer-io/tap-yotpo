@@ -1,4 +1,4 @@
-"""tap-yotpo unsubsrcibers stream module"""
+"""tap-yotpo unsubsrcibers stream module."""
 from typing import Dict, Iterator
 
 from singer import get_logger
@@ -10,9 +10,7 @@ LOGGER = get_logger()
 
 
 class Unsubscribers(FullTableStream, UrlEndpointMixin):
-    """
-    class for unsubscribers stream
-    """
+    """class for unsubscribers stream."""
 
     stream = "unsubscribers"
     tap_stream_id = "unsubscribers"

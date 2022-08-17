@@ -1,4 +1,4 @@
-"""tap-yotpo email stream module"""
+"""tap-yotpo email stream module."""
 from datetime import datetime, timedelta
 from typing import Dict, Iterator
 
@@ -13,9 +13,7 @@ DATE_FORMAT = "%Y-%m-%d"
 
 
 class Emails(IncremetalStream, UrlEndpointMixin):
-    """
-    class for emails stream
-    """
+    """class for emails stream."""
 
     stream = "emails"
     tap_stream_id = "emails"
@@ -27,9 +25,7 @@ class Emails(IncremetalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/analytics/v1/emails/APP_KEY/export/raw_data"
 
     def get_records(self, start_date: str) -> Iterator[Dict]:
-        """
-        performs querying and pagination of email resource
-        """
+        """performs querying and pagination of email resource."""
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
         params = {
@@ -48,9 +44,7 @@ class Emails(IncremetalStream, UrlEndpointMixin):
             yield from raw_records
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Sync implementation for `emails` stream
-        """
+        """Sync implementation for `emails` stream."""
 
         max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
         bookmark_date_utc = bookmark_date_utc - timedelta(days=self.client.config.get("email_stats_lookback_days", 0))
