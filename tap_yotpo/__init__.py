@@ -5,7 +5,7 @@ from singer import utils
 from tap_yotpo.client import Client
 from tap_yotpo.sync import sync
 
-from .discover import discover
+from tap_yotpo.discover import discover
 
 REQUIRED_CONFIG_KEYS = ["start_date", "api_key", "api_secret"]
 LOGGER = singer.get_logger()

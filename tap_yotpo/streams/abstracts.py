@@ -10,7 +10,7 @@ from singer import (
     write_bookmark,
     write_record,
 )
-from singer.metadata import get_standard_metadata
+from singer.metadata import get_standard_metadata,write,to_list,to_map
 from singer.utils import strftime, strptime_to_utc
 
 LOGGER = get_logger()
@@ -110,7 +110,7 @@ class BaseStream(ABC):
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
         """Returns a `dict` for generating stream metadata."""
-        metadata = get_standard_metadata(
+        stream_metadata = get_standard_metadata(
             **{
                 "schema": schema,
                 "key_properties": cls.key_properties,
@@ -118,11 +118,14 @@ class BaseStream(ABC):
                 "replication_method": cls.replication_method or cls.forced_replication_method,
             }
         )
+        stream_metadata = to_map(stream_metadata)
         if cls.replication_key is not None:
-            meta = metadata[0]["metadata"]
-            meta.update({"replication-key": cls.replication_key})
-            metadata[0]["metadata"] = meta
-        return metadata
+            stream_metadata = write(stream_metadata, (), "replication-key", cls.replication_key)
+        if cls.valid_replication_keys is not None:
+            for key in cls.valid_replication_keys:
+                stream_metadata = write(stream_metadata,("properties", key),"inclusion","automatic")
+        stream_metadata = to_list(stream_metadata)
+        return stream_metadata
 
 
 class IncremetalStream(BaseStream):
