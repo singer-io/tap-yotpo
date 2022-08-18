@@ -1,4 +1,4 @@
-"""tap-yotpo product-reviews stream module"""
+"""tap-yotpo product-reviews stream module."""
 from datetime import datetime
 from math import ceil
 from typing import Dict, List, Tuple
@@ -23,9 +23,7 @@ LOGGER = singer.get_logger()
 
 
 class ProductReviews(IncremetalStream, UrlEndpointMixin):
-    """
-    class for product_reviews stream
-    """
+    """class for product_reviews stream."""
 
     stream = "product_reviews"
     tap_stream_id = "product_reviews"
@@ -44,9 +42,7 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
         self.base_url = self.get_url_endpoint()
 
     def get_products(self, state) -> Tuple[List, int]:
-        """
-        Returns index for sync resuming on interuption
-        """
+        """Returns index for sync resuming on interuption."""
         shared_product_ids = Products(self.client).prefetch_product_ids()
         last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
@@ -60,9 +56,7 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
 
     def get_records(self, prod_id: str, bookmark_date: str) -> Tuple[List, datetime]:
         # pylint: disable=W0221
-        """
-        performs api querying and pagination of response
-        """
+        """performs api querying and pagination of response."""
         params = {"page": 1, "per_page": 150, "sort": ["date", "time"], "direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
@@ -102,9 +96,7 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
         return (filtered_records, current_max)
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Sync implementation for `product_reviews` stream
-        """
+        """Sync implementation for `product_reviews` stream."""
         # pylint: disable=R0914
         with metrics.Timer(self.tap_stream_id, None):
             config_start = self.client.config[self.config_start_key]

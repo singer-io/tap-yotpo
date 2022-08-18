@@ -1,4 +1,4 @@
-"""tap-yotpo products stream module"""
+"""tap-yotpo products stream module."""
 from typing import Dict, Iterator, List
 
 from singer import Transformer, get_logger, metrics, write_record
@@ -10,9 +10,7 @@ LOGGER = get_logger()
 
 
 class Products(FullTableStream, UrlEndpointMixin):
-    """
-    class for products stream
-    """
+    """class for products stream."""
 
     stream = "products"
     tap_stream_id = "products"
@@ -21,9 +19,7 @@ class Products(FullTableStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
     def get_records(self) -> Iterator[Dict]:
-        """
-        performs api querying and pagination of response
-        """
+        """performs api querying and pagination of response."""
         extraction_url = self.get_url_endpoint()
         headers, params, call_next = {}, {"limit": 100}, True
         while call_next:
@@ -42,9 +38,7 @@ class Products(FullTableStream, UrlEndpointMixin):
             yield from raw_records
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Sync implementation for `products` stream
-        """
+        """Sync implementation for `products` stream."""
         shared_product_ids = []
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
@@ -63,8 +57,8 @@ class Products(FullTableStream, UrlEndpointMixin):
         return state
 
     def prefetch_product_ids(self) -> List:
-        """
-        Helper method implemented for other streams to load all product_ids.
+        """Helper method implemented for other streams to load all product_ids.
+
         eg: products are required to fetch `product_reviews`
         """
         prod_ids = getattr(self.client, "shared_product_ids", [])
