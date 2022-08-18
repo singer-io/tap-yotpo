@@ -1,0 +1,84 @@
+{
+    "type": [
+      "object"
+    ],
+    "properties": {
+      "name": {
+        "type": ["null", "string"]
+      },
+      "external_id": {
+        "type": ["null", "string"]
+      },
+      "email": {
+        "type": ["null", "string"]
+      },
+      "phone_number": {
+        "type": ["null", "string"]
+      },
+      "first_name": {
+        "type": ["null", "string"]
+      },
+      "last_name": {
+        "type": ["null", "string"]
+      },
+      "gender": {
+        "type": ["null", "string"]
+      },
+      "account_created_at": {
+        "type": ["null", "string"],
+        "format": "date-time"
+      },
+      "account_status": {
+        "type": ["null", "string"]
+      },
+      "default_language": {
+        "type": ["null", "string"]
+      },
+      "default_currency": {
+        "type": ["null", "string"]
+      },
+      "accepts_sms_marketing": {
+        "type": ["null", "boolean"]
+      },
+      "accepts_email_marketing": {
+        "type": ["null", "boolean"]
+      },
+      "tags": {
+        "type": ["null", "string"]
+      },
+    "address": {
+      "type": ["null", "object"],
+      "properties": {
+        "address1": {
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "company": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "zip": {
+          "type": ["null", "string"]
+        },
+        "province_code": {
+          "type": ["null", "string"]
+        },
+        "country_code": {
+          "type": ["null", "string"]
+        },
+        "phone_number": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+    },
+    "additionalProperties": false
+  }
+  

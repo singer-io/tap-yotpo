@@ -5,6 +5,7 @@ from .products import Products
 from .reviews import Reviews
 from .unsubscribers import Unsubscribers
 from .collections import Collections
+from .customers import Customers
 
 STREAMS = {
     Emails.tap_stream_id: Emails,
@@ -12,5 +13,6 @@ STREAMS = {
     ProductReviews.tap_stream_id: ProductReviews,
     Reviews.tap_stream_id: Reviews,
     Unsubscribers.tap_stream_id: Unsubscribers,
-    Collections.tap_stream_id: Collections
+    Collections.tap_stream_id: Collections,
+    Customers.tap_stream_id: Customers
 }
