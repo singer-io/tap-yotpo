@@ -10,7 +10,7 @@ from singer import (
     write_bookmark,
     write_record,
 )
-from singer.metadata import get_standard_metadata,write,to_list,to_map
+from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.utils import strftime, strptime_to_utc
 
 LOGGER = get_logger()
@@ -123,7 +123,7 @@ class BaseStream(ABC):
             stream_metadata = write(stream_metadata, (), "replication-key", cls.replication_key)
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
-                stream_metadata = write(stream_metadata,("properties", key),"inclusion","automatic")
+                stream_metadata = write(stream_metadata, ("properties", key), "inclusion", "automatic")
         stream_metadata = to_list(stream_metadata)
         return stream_metadata
 
