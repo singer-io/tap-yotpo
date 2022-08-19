@@ -42,24 +42,24 @@ class YotpoBaseTest(unittest.TestCase):
                 #self.STARTDATE_KEYS: {'email_sent_timestamp'},
                 #self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'}
-            }
+            },
+            'product_reviews': {
+                self.PRIMARY_KEYS: {'id'},
+               # self.STARTDATE_KEYS: {'created_at'},
+                self.REPLICATION_KEYS: {'created_at'}
+            },
+            'products': {
+                self.PRIMARY_KEYS: {'yotpo_id'}
+            },
             # ,
-            # 'product_reviews': {
-            #     self.PRIMARY_KEYS: {'id'},
-            #    # self.STARTDATE_KEYS: {'created_at'},
-            #     self.REPLICATION_KEYS: {'created_at'}
-            # },
-            # 'products': {
-            #     self.PRIMARY_KEYS: {'yotpo_id'}
-            # },
-            # 'reviews': {
-            #     self.PRIMARY_KEYS: {'id'},
-            #    # self.STARTDATE_KEYS: {'updated_at'},
-            #     self.REPLICATION_KEYS: {'updated_at'}
-            # },
-            # 'unsubscribers': {
-            #     self.PRIMARY_KEYS: {'id'}
-            # }
+            'reviews': {
+                self.PRIMARY_KEYS: {'id'},
+               # self.STARTDATE_KEYS: {'updated_at'},
+                self.REPLICATION_KEYS: {'updated_at'}
+            },
+            'unsubscribers': {
+                self.PRIMARY_KEYS: {'id'}
+            }
         }
 
     def expected_streams(self):

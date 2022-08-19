@@ -29,7 +29,10 @@
     "url": {
       "type": ["null", "string"]
     },
-    "is_valid_url": {
+    "store_id": {
+      "type": "string"
+    },    
+    "is_valid_url_format": {
       "type": "boolean"
     },
     "image_url": {
