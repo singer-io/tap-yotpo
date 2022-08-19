@@ -19,7 +19,7 @@ def main():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     client = Client(args.config)
     if args.discover:
-        discover(client).dump()
+        discover(args.config).dump()
     else:
         sync(client, args.catalog or discover(args.config), args.state)
 
