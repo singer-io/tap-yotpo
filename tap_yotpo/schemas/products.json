@@ -95,10 +95,12 @@
       "type": ["object", "null"],
       "properties": {
         "created_at": {
-          "type": ["string", "date-time"]
+          "type": ["string", "null"],
+          "format": "date-time"
         },
         "updated_at": {
-          "type": ["string", "date-time"]
+          "type": ["string", "null"],
+          "format": "date-time"
         }
       }
     }
