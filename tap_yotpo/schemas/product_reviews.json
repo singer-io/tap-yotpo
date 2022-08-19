@@ -9,9 +9,6 @@
     "domain_key": {
       "type": ["string", "null"]
     },
-    "name": {
-      "type": ["string", "null"]
-    },
     "created_at": {
       "type": "string",
       "format": "date-time"
@@ -60,44 +57,6 @@
         },
         "is_social_connected": {
           "type": "number"
-        }
-      }
-    },
-    "images_data": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "original_url": {
-            "type": "string"
-          },
-          "thumb_url": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "comment": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "number"
-        },
-        "content": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "display_name": {
-          "type": "string"
-        },
-        "comments_avatar": {
-          "type": ["string", "null"]
         }
       }
     }
