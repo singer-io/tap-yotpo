@@ -13,7 +13,6 @@ class YotpoDiscoveryTest(YotpoBaseTest):
     def test_run(self):
         """
         Testing that discovery creates the appropriate catalog with valid metadata.
-
         • Verify number of actual streams discovered match expected
         • Verify the stream names discovered were what we expect
         • Verify stream names follow naming convention
@@ -47,6 +46,7 @@ class YotpoDiscoveryTest(YotpoBaseTest):
 
         for stream in streams_to_test:
             with self.subTest(stream=stream):
+
                 # verify there is only 1 top level breadcrumb
                 catalog = next(iter([catalog for catalog in found_catalogs
                                      if catalog["stream_name"] == stream]))
