@@ -3,17 +3,19 @@ import json
 
 from singer.catalog import Catalog
 
-from tap_yotpo.helpers import get_abs_path
+from tap_yotpo.helpers import get_abs_path, ApiSpec
 from tap_yotpo.streams import STREAMS
 
-from .helpers import ApiSpec
+from tap_yotpo.client import Client
 
 
-def discover(client):
+def discover(config = None):
     """
     TODO: Permission Check
     """
-    client.authenticate({}, {}, ApiSpec.API_V3)
+    if config :
+        client = Client(config)
+        client.authenticate({}, {}, ApiSpec.API_V3)
     streams = []
     for stream_name, stream in STREAMS.items():
         schema_path = get_abs_path(f"schemas/{stream_name}.json")
