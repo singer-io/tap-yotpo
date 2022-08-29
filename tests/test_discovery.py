@@ -18,15 +18,6 @@ class YotpoDiscoveryTest(YotpoBaseTest):
         • Verify the stream names discovered were what we expect
         • Verify stream names follow naming convention
           streams should only have lowercase alphas and underscores
-        • verify there is only 1 top level breadcrumb
-        • verify primary key(s)
-        • verify that primary keys are given the inclusion of automatic.
-        • verify that all fields have inclusion of automatic metadata.
-
-        • Verify number of actual streams discovered match expected
-        • Verify the stream names discovered were what we expect
-        • Verify stream names follow naming convention
-          streams should only have lowercase alphas and underscores
         • Verify there is only 1 top level breadcrumb
         • Verify there are no duplicate/conflicting metadata entries.
         • Verify primary key(s) match expectations.
@@ -56,7 +47,7 @@ class YotpoDiscoveryTest(YotpoBaseTest):
 
         for stream in streams_to_test:
             with self.subTest(stream=stream):
-                ##################
+
                 # verify there is only 1 top level breadcrumb
                 catalog = next(iter([catalog for catalog in found_catalogs
                                      if catalog["stream_name"] == stream]))
@@ -83,33 +74,7 @@ class YotpoDiscoveryTest(YotpoBaseTest):
                 actual_automatic_fields = set(item.get("breadcrumb", ["properties", None])[1] for item in metadata
                                               if item.get("metadata").get("inclusion") == "automatic")
                 actual_replication_method = stream_properties[0].get("metadata", {self.REPLICATION_METHOD: None}).get(self.REPLICATION_METHOD)
-
-                #################
-
-                # # Verify ensure the catalog is found for a given stream
-                # catalog = next(iter([catalog for catalog in found_catalogs
-                #                      if catalog["stream_name"] == stream]))
-                # self.assertIsNotNone(catalog)
-
-                # # collecting expected values
-                # expected_primary_keys = self.expected_primary_keys()[stream]
-                # expected_replication_keys = self.expected_replication_keys()[stream]
-                # expected_automatic_fields = expected_primary_keys | expected_replication_keys
-
-                # # collecting actual values...
-                # schema_and_metadata = menagerie.get_annotated_schema(conn_id, catalog['stream_id'])
-                # metadata = schema_and_metadata["metadata"]
-                # stream_properties = [item for item in metadata if item.get("breadcrumb") == []]
-                # actual_primary_keys = set(
-                #     stream_properties[0].get(
-                #         "metadata", {self.PRIMARY_KEYS: []}).get(self.PRIMARY_KEYS, [])
-                # )
-                # actual_automatic_fields = set(
-                #     item.get("breadcrumb", ["properties", None])[1] for item in metadata
-                #     if item.get("metadata").get("inclusion") == "automatic"
-                # )
-                
-
+ 
                 ##########################################################################
                 ### metadata assertions
                 ##########################################################################
@@ -118,29 +83,12 @@ class YotpoDiscoveryTest(YotpoBaseTest):
                 self.assertTrue(len(stream_properties) == 1,
                                 msg="There is NOT only one top level breadcrumb for {}".format(stream) + \
                                 "\nstream_properties | {}".format(stream_properties))
-                #################
+
                 # Verify there are no duplicate/conflicting metadata entries.
                 self.assertEqual(len(actual_fields), len(set(actual_fields)), msg = "duplicates in the metadata entries retrieved")
-                #################
 
                 # verify primary key(s) match expectations
-                self.assertSetEqual(
-                    expected_primary_fields, actual_primary_keys,
-                )
-
-                # # verify that primary keys and replication keys
-                # # are given the inclusion of automatic in metadata.
-                # self.assertSetEqual(expected_automatic_fields, actual_automatic_fields)
-
-                # # verify that all other fields have inclusion of available
-                # # This assumes there are no unsupported fields for SaaS sources
-                # self.assertTrue(
-                #     all({item.get("metadata").get("inclusion") == "available"
-                #          for item in metadata
-                #          if item.get("breadcrumb", []) != []
-                #          and item.get("breadcrumb", ["properties", None])[1]
-                #          not in actual_automatic_fields}),
-                #     msg="Not all non key properties are set to available in metadata")
+                self.assertSetEqual(expected_primary_fields, actual_primary_keys,)
 
                 # Verify the actual replication matches our expected replication method.
                 self.assertEquals(expected_replcation_method, actual_replication_method, msg="Replication method does not match with expectations")
@@ -164,10 +112,9 @@ class YotpoDiscoveryTest(YotpoBaseTest):
                 self.assertTrue(actual_replication_keys.issubset(actual_automatic_fields))
                 
                 # verify that all fields have inclusion of available metadata.
-                self.assertTrue(
-                    all({item.get("metadata").get("inclusion") == "available"
-                         for item in metadata
-                         if item.get("breadcrumb", []) != []
-                         and item.get("breadcrumb", ["properties", None])[1]
-                         not in actual_automatic_fields}),
-                    msg="Not all non key properties are set to available in metadata")
+                self.assertTrue(all({item.get("metadata").get("inclusion") == "available"
+                                    for item in metadata
+                                    if item.get("breadcrumb", []) != []
+                                    and item.get("breadcrumb", ["properties", None])[1]
+                                    not in actual_automatic_fields}),
+                                msg="Not all non key properties are set to available in metadata")
