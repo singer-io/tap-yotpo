@@ -1,4 +1,4 @@
-"""tap-yotpo unsubsrcibers stream module"""
+"""tap-yotpo customers stream module"""
 from typing import Dict, Iterator
 
 from singer import get_logger
@@ -28,12 +28,12 @@ class Customers(FullTableStream, UrlEndpointMixin):
             if params.items():
                 query_string = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
             url = extraction_url + '?' + query_string
-            # print(f"Processing for - {params}")
             response = self.client.get(url, {}, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
             pagination = response.get("pagination", {}).get("next_page_info", None)
-            # if not raw_records:
-            #     break
+
+            # TODO: remove the records having null values for external_id
+            # Raised ticket with yotpo support.
 
             yield from raw_records
 

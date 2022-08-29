@@ -1,6 +1,5 @@
-"""tap-yotpo product-reviews stream module"""
+"""tap-yotpo product-variants stream module"""
 from datetime import datetime
-from math import ceil
 from typing import Dict, List, Tuple
 
 import singer
@@ -14,7 +13,7 @@ from singer import (
 )
 from singer.utils import strftime, strptime_to_utc
 
-from tap_yotpo.helpers import ApiSpec, skip_product
+from tap_yotpo.helpers import ApiSpec
 
 from .abstracts import IncremetalStream, UrlEndpointMixin
 from .products import Products
@@ -63,47 +62,41 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
         """
         performs api querying and pagination of response
         """
-        params = {"limit": 100}
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
-        next_page = True
         filtered_records = []
-        while next_page:
+        params = {}
+        while True:
+            query_string = ''
+            if params.items():
+                query_string = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
+            url = extraction_url + '?' + query_string
 
-            response = self.client.get(extraction_url, params, {}, self.api_auth_version)
+            response = self.client.get(url, params, {}, self.api_auth_version)
 
-            response = response.get("response", {})
-            raw_records = response.get("reviews", [])
-            current_page = response.get("pagination", {}).get("page", None)
-            total_records = response.get("pagination", {}).get("total", None)
-            max_pages = max(ceil(total_records/params["per_page"]), 1)
+            # response = response.get("response", {})
+            raw_records = response.get("variants", [])
+            pagination = response.get("pagination", {}).get("next_page_info", None)
 
             if not raw_records:
                 break
-
-            LOGGER.info(
-                "Page: (%s/%s) Total Records: %s", current_page, max(ceil(total_records / 150), 1), total_records
-            )
 
             for record in raw_records:
                 record_timestamp = strptime_to_utc(record[self.replication_key])
                 if record_timestamp >= bookmark_date:
                     current_max = max(current_max, record_timestamp)
-                    record["domain_key"] = prod_id
                     filtered_records.append(record)
-                else:
-                    next_page = False
 
-            params["page"] += 1
-
-            if params["page"] > max_pages:
-                next_page = False
+            if not pagination:
+                break
+            else:
+                params['page_info'] = pagination
 
         return (filtered_records, current_max)
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
         """
-        Sync implementation for `product_reviews` stream
+        Sync implementation for `product_variants` stream
         """
         # pylint: disable=R0914
         with metrics.Timer(self.tap_stream_id, None):
@@ -114,25 +107,16 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
 
             with metrics.Counter(self.tap_stream_id) as counter:
                 for index, (prod_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
-                    if skip_product(ext_prod_id):
-                        LOGGER.info(
-                            "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
-                            str(prod_id)[-4:],
-                            index,
-                            prod_len,
-                            ext_prod_id,
-                        )
-                        continue
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)
 
                     bookmark_date = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
-                    records, max_bookmark = self.get_records(ext_prod_id, bookmark_date)
+                    records, max_bookmark = self.get_records(str(prod_id), bookmark_date)
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
-
+                    # TODO : No bookmarking for prod_id which are not having any values.
                     state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", prod_id)
                     write_state(state)
