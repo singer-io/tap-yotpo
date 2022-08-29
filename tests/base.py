@@ -14,12 +14,21 @@ class YotpoBaseTest(unittest.TestCase):
     BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
     LOGGER = singer.get_logger()
     REPLICATION_KEYS = "valid-replication-keys"
+    REPLICATION_METHOD = "forced-replication-method"
+    INCREMENTAL = "INCREMENTAL"
+    FULL_TABLE = "FULL_TABLE"
     STARTDATE_KEYS = "start_date_key"
     DATETIME_FMT = {
         "%Y-%m-%dT%H:%M:%SZ",
         "%Y-%m-%d %H:%M:%S",
         "%Y-%m-%dT%H:%M:%S.000000Z"
     }
+
+    def expected_replication_method(self):
+        """return a dictionary with key of table name nd value of replication method"""
+        return {table: properties.get(self.REPLICATION_METHOD, None)
+                for table, properties
+                in self.expected_metadata().items()}
 
     def setUp(self):
         missing_envs = [x for x in [os.getenv('TAP_YOTPO_API_KEY'),
@@ -40,25 +49,29 @@ class YotpoBaseTest(unittest.TestCase):
             'emails': {
                 self.PRIMARY_KEYS: {'email_address'},
                 #self.STARTDATE_KEYS: {'email_sent_timestamp'},
-                #self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'}
             },
             'product_reviews': {
                 self.PRIMARY_KEYS: {'id'},
                # self.STARTDATE_KEYS: {'created_at'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'created_at'}
             },
             'products': {
-                self.PRIMARY_KEYS: {'yotpo_id'}
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
             },
             # ,
             'reviews': {
                 self.PRIMARY_KEYS: {'id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
                # self.STARTDATE_KEYS: {'updated_at'},
                 self.REPLICATION_KEYS: {'updated_at'}
             },
             'unsubscribers': {
-                self.PRIMARY_KEYS: {'id'}
+                self.PRIMARY_KEYS: {'id'},
+                self.REPLICATION_METHOD: self.FULL_TABLE,
             }
         }
 
