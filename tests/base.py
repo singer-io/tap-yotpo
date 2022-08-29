@@ -48,13 +48,11 @@ class YotpoBaseTest(unittest.TestCase):
         return {
             'emails': {
                 self.PRIMARY_KEYS: {'email_address'},
-                #self.STARTDATE_KEYS: {'email_sent_timestamp'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'}
             },
             'product_reviews': {
                 self.PRIMARY_KEYS: {'id'},
-               # self.STARTDATE_KEYS: {'created_at'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'created_at'}
             },
@@ -66,7 +64,6 @@ class YotpoBaseTest(unittest.TestCase):
             'reviews': {
                 self.PRIMARY_KEYS: {'id'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-               # self.STARTDATE_KEYS: {'updated_at'},
                 self.REPLICATION_KEYS: {'updated_at'}
             },
             'unsubscribers': {
