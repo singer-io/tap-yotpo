@@ -10,7 +10,7 @@ jobs:
           command: |
             python3 -mvenv /usr/local/share/virtualenvs/tap-yotpo
             source /usr/local/share/virtualenvs/tap-yotpo/bin/activate
-            pip install -U 'pip<19.2' 'setuptools<51.0.0'
+            pip install -U 'pip==22.2.2' 'setuptools==65.3.0'
             pip install .[dev]
       - run:
           name: 'JSON Validator'
@@ -37,10 +37,6 @@ jobs:
       - run:
           name: 'Integration Tests'
           command: |
-            ls
-            cat /usr/local/share/virtualenvs/tap-yotpo/bin/tap-yotpo
-            source /usr/local/share/virtualenvs/tap-yotpo/bin/activate
-            pip list
             aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
             source dev_env.sh
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
