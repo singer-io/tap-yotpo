@@ -4,7 +4,7 @@ import json
 from singer.catalog import Catalog
 
 from tap_yotpo.helpers import get_abs_path, ApiSpec
-from tap_yotpo.streams import STREAMS
+from .streams import STREAMS
 
 from tap_yotpo.client import Client
 
