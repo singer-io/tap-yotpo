@@ -3,7 +3,7 @@ import singer
 from singer import utils
 
 from tap_yotpo.client import Client
-from .discover import discover
+from tap_yotpo.discover import discover
 from tap_yotpo.sync import sync
 
 REQUIRED_CONFIG_KEYS = ["start_date", "api_key", "api_secret"]
