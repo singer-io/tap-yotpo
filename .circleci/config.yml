@@ -38,7 +38,7 @@ jobs:
           name: 'Integration Tests'
           command: |
             ls
-            cat setup.py
+            cat /usr/local/share/virtualenvs/tap-yotpo/bin/tap-yotpo
             source /usr/local/share/virtualenvs/tap-yotpo/bin/activate
             pip list
             aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
