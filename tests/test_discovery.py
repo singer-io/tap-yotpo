@@ -47,7 +47,6 @@ class YotpoDiscoveryTest(YotpoBaseTest):
 
         for stream in streams_to_test:
             with self.subTest(stream=stream):
-
                 # verify there is only 1 top level breadcrumb
                 catalog = next(iter([catalog for catalog in found_catalogs
                                      if catalog["stream_name"] == stream]))
@@ -83,6 +82,10 @@ class YotpoDiscoveryTest(YotpoBaseTest):
                 self.assertTrue(len(stream_properties) == 1,
                                 msg="There is NOT only one top level breadcrumb for {}".format(stream) + \
                                 "\nstream_properties | {}".format(stream_properties))
+                #################
+                # Verify there are no duplicate/conflicting metadata entries.
+                self.assertEqual(len(actual_fields), len(set(actual_fields)), msg = "duplicates in the metadata entries retrieved")
+                #################
 
                 # Verify there are no duplicate/conflicting metadata entries.
                 self.assertEqual(len(actual_fields), len(set(actual_fields)), msg = "duplicates in the metadata entries retrieved")
