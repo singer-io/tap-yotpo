@@ -157,7 +157,7 @@ class IncremetalStream(BaseStream):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
                 except IndexError as _:
-                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s",_,self.__class__)
+                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
                     continue
                 if record_timestamp >= current_bookmark_date_utc:
                     transformed_record = transformer.transform(record, schema, stream_metadata)
