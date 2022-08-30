@@ -154,12 +154,18 @@ class IncremetalStream(BaseStream):
 
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
-                record_timestamp = strptime_to_utc(record[self.replication_key])
+                try:
+                    record_timestamp = strptime_to_utc(record[self.replication_key])
+                except IndexError as _:
+                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
+                    continue
                 if record_timestamp >= current_bookmark_date_utc:
                     transformed_record = transformer.transform(record, schema, stream_metadata)
                     write_record(self.tap_stream_id, transformed_record)
                     counter.increment()
                     max_bookmark = max(max_bookmark, record_timestamp)
+                else:
+                    LOGGER.warning("Skipping Record Older than the timestamp")
 
             state = self.write_bookmark(state, value=strftime(max_bookmark))
         return state
