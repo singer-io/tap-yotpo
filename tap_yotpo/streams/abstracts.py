@@ -160,7 +160,6 @@ class IncremetalStream(BaseStream):
                     LOGGER.error("Unable to process Record, Exception occured: %s for stream %s",_,self.__class__)
                     continue
                 if record_timestamp >= current_bookmark_date_utc:
-                    LOGGER.info("writing record")
                     transformed_record = transformer.transform(record, schema, stream_metadata)
                     write_record(self.tap_stream_id, transformed_record)
                     counter.increment()
