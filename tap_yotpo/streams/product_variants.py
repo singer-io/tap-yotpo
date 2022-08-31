@@ -60,19 +60,18 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
     def get_records(self, prod_id: str, bookmark_date: str) -> Tuple[List, datetime]:
         # pylint: disable=W0221
         """
-        performs api querying and pagination of response
+        Performs api querying and pagination of response.
+        Retrieves all record and filters within the code, as the API endpoint does not have
+        any query parameter to fetch the latest record from specific date.
         """
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
         filtered_records = []
-        params = {}
+        page_count, params = 1, {}
         while True:
-            query_string = ''
-            if params.items():
-                query_string = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
-            url = extraction_url + '?' + query_string
+            LOGGER.info("Calling Page %s", page_count)
 
-            response = self.client.get(url, params, {}, self.api_auth_version)
+            response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
             # response = response.get("response", {})
             raw_records = response.get("variants", [])
@@ -91,6 +90,7 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
                 break
             else:
                 params['page_info'] = pagination
+            page_count += 1
 
         return (filtered_records, current_max)
 
@@ -116,8 +116,10 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
-                    # TODO : No bookmarking for prod_id which are not having any values.
-                    state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
+
+                    # bookmark value won't be updated for those prod_id which are not having any latest variants records.
+                    if records:
+                        state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", prod_id)
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")

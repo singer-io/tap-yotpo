@@ -23,7 +23,7 @@ LOGGER = singer.get_logger()
 
 class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
     """
-    class for product_variants stream
+    class for Order fulfillments stream
     """
 
     stream = "order_fulfillments"
@@ -68,14 +68,9 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
         page_count, params = 1, {}
         while True:
             LOGGER.info("Calling Page %s", page_count)
-            query_string = ''
-            if params.items():
-                query_string = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
-            url = extraction_url + '?' + query_string
 
-            response = self.client.get(url, params, {}, self.api_auth_version)
+            response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
-            # response = response.get("response", {})
             raw_records = response.get("fulfillments", [])
             pagination = response.get("pagination", {}).get("next_page_info", None)
 
@@ -93,6 +88,7 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
                 break
             else:
                 params['page_info'] = pagination
+            page_count+=1
 
         return (filtered_records, current_max)
 
@@ -112,14 +108,17 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
 
                     LOGGER.info("Sync for order *****%s (%s/%s)", str(order_id)[-4:], index, order_len)
 
+                    # If bookmark value not present in state, refer to the start-date from config
                     bookmark_date = get_bookmark(state, self.tap_stream_id, str(order_id), config_start)
                     records, max_bookmark = self.get_records(str(order_id), bookmark_date)
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
-                    # TODO : No bookmarking for order_id which are not having any values.
-                    state = self.write_bookmark(state, order_id, strftime(max_bookmark))
+
+                    # bookmark value won't be updated for those order_id which are not having any latest fulfillments records.
+                    if records:
+                        state = self.write_bookmark(state, order_id, strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", order_id)
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")

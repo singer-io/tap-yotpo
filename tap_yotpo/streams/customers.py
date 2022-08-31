@@ -21,12 +21,13 @@ class Customers(FullTableStream, UrlEndpointMixin):
 
     def get_records(self) -> Iterator[Dict]:
         extraction_url = self.get_url_endpoint()
-        params = {}
+        page_count, params = 1, {}
         while True:
             query_string = ''
             if params.items():
                 query_string = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
             url = extraction_url + '?' + query_string
+            LOGGER.info("Calling Page %s", page_count)
             response = self.client.get(url, {}, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
             pagination = response.get("pagination", {}).get("next_page_info", None)
@@ -37,3 +38,4 @@ class Customers(FullTableStream, UrlEndpointMixin):
                 break
             else:
                 params['page_info'] = pagination
+            page_count += 1

@@ -3,14 +3,16 @@
       "object"
     ],
     "properties": {
-      "yotpo_id": {
-        "type": ["null", "integer"]
+      "id": {
+        "type": ["null", "integer"],
+        "description": "Actual response displays `id` whereas documentation mentions `yotpo_id`"
       },
       "external_id": {
         "type": ["null", "string"]
       },
-      "yotpo_order_id": {
-        "type": ["null", "string"]
+      "order_id": {
+        "type": ["null", "string"],
+        "description": "Actual response shows `order_id` whereas documentation mentions `yotpo_order_id`"
       },
       "fulfillment_date": {
         "type": ["null", "string"],
