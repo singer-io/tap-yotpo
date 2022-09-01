@@ -59,7 +59,6 @@ class YotpoBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {'yotpo_id'},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
             },
-            # ,
             'reviews': {
                 self.PRIMARY_KEYS: {'id'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
@@ -68,6 +67,30 @@ class YotpoBaseTest(unittest.TestCase):
             'unsubscribers': {
                 self.PRIMARY_KEYS: {'id'},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
+            },
+            'orders': {
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'}
+            },
+            'order_fulfillments': {
+                self.PRIMARY_KEYS: {'id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'}
+            },
+            'product_variants': {
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'}
+            },
+            'customers': {
+                self.PRIMARY_KEYS: set(),
+                self.REPLICATION_METHOD: self.FULL_TABLE,
+            },
+            'collections': {
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'}
             }
         }
 
