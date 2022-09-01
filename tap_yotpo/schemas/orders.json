@@ -139,7 +139,7 @@
             }
         },
         "fulfillments": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
                 "type": "object",
                 "properties": {
@@ -185,7 +185,7 @@
                             }
                         },
                         "fulfilled_items": {
-                            "type": "array",
+                            "type": ["null", "array"],
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -215,7 +215,7 @@
             }
         },
         "line_items": {
-            "type": "array",
+            "type": ["null", "array"],
             "items": {
                 "type": "object",
                 "properties": {
