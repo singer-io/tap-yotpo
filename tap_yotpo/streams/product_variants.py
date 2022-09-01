@@ -1,4 +1,4 @@
-"""tap-yotpo product-variants stream module"""
+"""tap-yotpo product-variants stream module."""
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -15,16 +15,14 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec
 
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 from .products import Products
 
 LOGGER = singer.get_logger()
 
 
-class ProductVariants(IncremetalStream, UrlEndpointMixin):
-    """
-    class for product_variants stream
-    """
+class ProductVariants(IncrementalStream, UrlEndpointMixin):
+    """class for product_variants stream."""
 
     stream = "product_variants"
     tap_stream_id = "product_variants"
@@ -43,9 +41,7 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
         self.base_url = self.get_url_endpoint()
 
     def get_products(self, state) -> Tuple[List, int]:
-        """
-        Returns index for sync resuming on interruption
-        """
+        """Returns index for sync resuming on interruption."""
         shared_product_ids = Products(self.client).prefetch_product_ids()
         last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
@@ -59,10 +55,11 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
 
     def get_records(self, prod_id: str, bookmark_date: str) -> Tuple[List, datetime]:
         # pylint: disable=W0221
-        """
-        Performs api querying and pagination of response.
-        Retrieves all record and filters within the code, as the API endpoint does not have
-        any query parameter to fetch the latest record from specific date.
+        """Performs api querying and pagination of response.
+
+        Retrieves all record and filters within the code, as the API
+        endpoint does not have any query parameter to fetch the latest
+        record from specific date.
         """
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
@@ -89,15 +86,13 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
             if not pagination:
                 break
             else:
-                params['page_info'] = pagination
+                params["page_info"] = pagination
             page_count += 1
 
         return (filtered_records, current_max)
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Sync implementation for `product_variants` stream
-        """
+        """Sync implementation for `product_variants` stream."""
         # pylint: disable=R0914
         with metrics.Timer(self.tap_stream_id, None):
             config_start = self.client.config[self.config_start_key]
@@ -117,10 +112,11 @@ class ProductVariants(IncremetalStream, UrlEndpointMixin):
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    # bookmark value won't be updated for those prod_id which are not having any latest variants records.
+                    # bookmark value won't be updated for those prod_id which are not having any latest
+                    # variants records.
                     if records:
-                        state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
-                    state = self.write_bookmark(state, "currently_syncing", prod_id)
+                        state = self.write_bookmark(state, str(prod_id), strftime(max_bookmark))
+                    state = self.write_bookmark(state, "currently_syncing", str(prod_id))
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

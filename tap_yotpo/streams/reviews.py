@@ -6,12 +6,12 @@ from singer import get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 
 LOGGER = get_logger()
 
 
-class Reviews(IncremetalStream, UrlEndpointMixin):
+class Reviews(IncrementalStream, UrlEndpointMixin):
     """class for `reviews` stream."""
 
     stream = "reviews"

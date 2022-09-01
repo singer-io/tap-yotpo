@@ -1,21 +1,18 @@
-"""tap-yotpo collections stream module"""
-from typing import Dict, List
+"""tap-yotpo collections stream module."""
+from typing import List
+
 import singer
-from singer.utils import strptime_to_utc
 from singer import metrics
+from singer.utils import strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 
 LOGGER = singer.get_logger()
 
-from datetime import datetime
 
-
-class Collections(IncremetalStream, UrlEndpointMixin):
-    """
-    class for collections stream
-    """
+class Collections(IncrementalStream, UrlEndpointMixin):
+    """class for collections stream."""
 
     stream = "collections"
     tap_stream_id = "collections"
@@ -27,9 +24,7 @@ class Collections(IncremetalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/collections"
 
     def get_records(self) -> List:
-        """
-        performs api querying and pagination of response
-        """
+        """performs api querying and pagination of response."""
         extraction_url = self.get_url_endpoint()
         headers, params, call_next = {}, {"limit": 100}, True
         while call_next:
@@ -48,8 +43,9 @@ class Collections(IncremetalStream, UrlEndpointMixin):
 
     def sync(self, state, schema, stream_metadata, transformer):
         with metrics.record_counter(self.tap_stream_id) as counter:
-            bookmark_date = singer.get_bookmark(state, self.tap_stream_id, self.replication_key,
-                                                self.client.config["start_date"])
+            bookmark_date = singer.get_bookmark(
+                state, self.tap_stream_id, self.replication_key, self.client.config["start_date"]
+            )
             current_max_bookmark_date = bookmark_date_to_utc = strptime_to_utc(bookmark_date)
             for record in self.get_records():
                 record_timestamp = strptime_to_utc(record[self.replication_key])
@@ -60,7 +56,7 @@ class Collections(IncremetalStream, UrlEndpointMixin):
                 else:
                     break
 
-            state = singer.write_bookmark(state, self.tap_stream_id,
-                                          self.replication_key, current_max_bookmark_date.strftime("%Y-%m-%d"))
+            state = singer.write_bookmark(
+                state, self.tap_stream_id, self.replication_key, current_max_bookmark_date.strftime("%Y-%m-%d")
+            )
         return state
-

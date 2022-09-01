@@ -16,13 +16,13 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec, skip_product
 
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 from .products import Products
 
 LOGGER = singer.get_logger()
 
 
-class ProductReviews(IncremetalStream, UrlEndpointMixin):
+class ProductReviews(IncrementalStream, UrlEndpointMixin):
     """class for product_reviews stream."""
 
     stream = "product_reviews"
@@ -108,7 +108,7 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
                 for index, (prod_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
                     if skip_product(ext_prod_id):
                         LOGGER.info(
-                            "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
+                            "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special characters %s",
                             str(prod_id)[-4:],
                             index,
                             prod_len,
@@ -125,8 +125,8 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
-                    state = self.write_bookmark(state, "currently_syncing", prod_id)
+                    state = self.write_bookmark(state, str(prod_id), strftime(max_bookmark))
+                    state = self.write_bookmark(state, "currently_syncing", str(prod_id))
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

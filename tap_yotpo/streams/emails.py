@@ -6,13 +6,13 @@ from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 
 LOGGER = get_logger()
 DATE_FORMAT = "%Y-%m-%d"
 
 
-class Emails(IncremetalStream, UrlEndpointMixin):
+class Emails(IncrementalStream, UrlEndpointMixin):
     """class for emails stream."""
 
     stream = "emails"

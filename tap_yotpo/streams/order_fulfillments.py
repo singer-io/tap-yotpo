@@ -1,4 +1,4 @@
-"""tap-yotpo order-fulfillments stream module"""
+"""tap-yotpo order-fulfillments stream module."""
 from datetime import datetime
 from typing import Dict, List, Tuple
 
@@ -15,16 +15,14 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec
 
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 from .orders import Orders
 
 LOGGER = singer.get_logger()
 
 
-class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
-    """
-    class for Order fulfillments stream
-    """
+class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
+    """class for Order fulfillments stream."""
 
     stream = "order_fulfillments"
     tap_stream_id = "order_fulfillments"
@@ -43,9 +41,7 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
         self.base_url = self.get_url_endpoint()
 
     def get_orders(self, state) -> Tuple[List, int]:
-        """
-        Returns index for sync resuming on interruption
-        """
+        """Returns index for sync resuming on interruption."""
         shared_order_ids = Orders(self.client).prefetch_order_ids()
         last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
@@ -59,9 +55,7 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
 
     def get_records(self, order_id: str, bookmark_date: str) -> Tuple[List, datetime]:
         # pylint: disable=W0221
-        """
-        performs api querying and pagination of response
-        """
+        """performs api querying and pagination of response."""
         extraction_url = self.base_url.replace("ORDER_ID", order_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
         filtered_records = []
@@ -87,15 +81,13 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
             if not pagination:
                 break
             else:
-                params['page_info'] = pagination
-            page_count+=1
+                params["page_info"] = pagination
+            page_count += 1
 
         return (filtered_records, current_max)
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """
-        Sync implementation for `order_fulfillments` stream
-        """
+        """Sync implementation for `order_fulfillments` stream."""
         # pylint: disable=R0914
         with metrics.Timer(self.tap_stream_id, None):
             config_start = self.client.config[self.config_start_key]
@@ -116,10 +108,11 @@ class OrderFulfillments(IncremetalStream, UrlEndpointMixin):
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    # bookmark value won't be updated for those order_id which are not having any latest fulfillments records.
+                    # bookmark value won't be updated for those order_id which are not having any latest
+                    # fulfillments records.
                     if records:
-                        state = self.write_bookmark(state, order_id, strftime(max_bookmark))
-                    state = self.write_bookmark(state, "currently_syncing", order_id)
+                        state = self.write_bookmark(state, str(order_id), strftime(max_bookmark))
+                    state = self.write_bookmark(state, "currently_syncing", str(order_id))
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

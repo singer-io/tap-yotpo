@@ -1,4 +1,4 @@
-"""tap-yotpo customers stream module"""
+"""tap-yotpo customers stream module."""
 from typing import Dict, Iterator
 
 from singer import get_logger
@@ -10,9 +10,8 @@ LOGGER = get_logger()
 
 
 class Customers(FullTableStream, UrlEndpointMixin):
-    """
-    class for Customers stream
-    """
+    """class for Customers stream."""
+
     stream = "customers"
     tap_stream_id = "customers"
     key_properties = []
@@ -23,10 +22,10 @@ class Customers(FullTableStream, UrlEndpointMixin):
         extraction_url = self.get_url_endpoint()
         page_count, params = 1, {}
         while True:
-            query_string = ''
+            query_string = ""
             if params.items():
-                query_string = '&'.join(['%s=%s' % (key, value) for (key, value) in params.items()])
-            url = extraction_url + '?' + query_string
+                query_string = "&".join([f"{key}={value}" for (key, value) in params.items()])
+            url = extraction_url + "?" + query_string
             LOGGER.info("Calling Page %s", page_count)
             response = self.client.get(url, {}, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
@@ -37,5 +36,5 @@ class Customers(FullTableStream, UrlEndpointMixin):
             if not pagination:
                 break
             else:
-                params['page_info'] = pagination
+                params["page_info"] = pagination
             page_count += 1
