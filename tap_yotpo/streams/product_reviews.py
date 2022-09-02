@@ -39,7 +39,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
         self.base_url = self.get_url_endpoint()
         super().__init__(client)
 
-    def get_products(self, state) -> Tuple[List, int]:
+    def get_products(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interuption."""
         shared_product_ids = Products(self.client).prefetch_product_ids()
         last_synced = get_bookmark(state, self.tap_stream_id, "currently_syncing", False)

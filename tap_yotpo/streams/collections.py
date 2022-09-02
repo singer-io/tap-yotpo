@@ -46,7 +46,7 @@ class Collections(IncrementalStream, UrlEndpointMixin):
             if not next_param:
                 break
 
-    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer):
+    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
         """Sync implementation for `collections` stream."""
         bookmark_date = self.get_bookmark(state)
         current_max_bookmark_date = bookmark_date_to_utc = strptime_to_utc(bookmark_date)

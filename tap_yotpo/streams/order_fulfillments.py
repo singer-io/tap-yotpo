@@ -38,7 +38,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
         self.base_url = self.get_url_endpoint()
         super().__init__(client)
 
-    def get_orders(self, state) -> Tuple[List, int]:
+    def get_orders(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interruption."""
         shared_order_ids = Orders(self.client).prefetch_order_ids()
         last_synced = get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
@@ -94,6 +94,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
             order_len = len(orders)
 
             with metrics.Counter(self.tap_stream_id) as counter:
+                # pylint: disable=W0612
                 for index, (order_id, ext_order_id) in enumerate(orders[start_index:], max(start_index, 1)):
 
                     LOGGER.info("Sync for order *****%s (%s/%s)", str(order_id)[-4:], index, order_len)

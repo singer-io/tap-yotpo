@@ -101,6 +101,7 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin):
             prod_len = len(products)
 
             with metrics.Counter(self.tap_stream_id) as counter:
+                # pylint: disable=W0612
                 for index, (prod_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)

@@ -12,7 +12,7 @@ from .helpers import ApiSpec
 LOGGER = singer.get_logger()
 
 
-def raise_for_error(response: requests.Response):
+def raise_for_error(response: requests.Response) -> None:
     """Raises the associated response exception. Takes in a response object,
     checks the status code, and throws the associated exception based on the
     status code.
