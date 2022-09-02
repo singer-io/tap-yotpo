@@ -59,7 +59,8 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
         """performs api querying and pagination of response."""
         params = {"page": 1, "per_page": 150, "sort": ["date", "time"], "direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
-        bookmark_date = current_max = strptime_to_utc(bookmark_date)
+        config_start = self.client.config.get(self.config_start_key, False)
+        bookmark_date = current_max = max(strptime_to_utc(bookmark_date),strptime_to_utc(config_start))
         next_page = True
         filtered_records = []
         while next_page:
