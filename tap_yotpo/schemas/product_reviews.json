@@ -7,10 +7,16 @@
       "type": "integer"
     },
     "domain_key": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "name": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "created_at": {
       "type": "string",
@@ -29,19 +35,31 @@
       "type": "string"
     },
     "title": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "verified_buyer": {
       "type": "boolean"
     },
     "source_review_id": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "sentiment": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "product_id": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "user": {
       "type": "object",
@@ -53,7 +71,10 @@
           "type": "string"
         },
         "social_image": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "user_type": {
           "type": "string"
@@ -97,7 +118,10 @@
           "type": "string"
         },
         "comments_avatar": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }
