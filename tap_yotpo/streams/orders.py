@@ -30,7 +30,7 @@ class Orders(IncrementalStream, UrlEndpointMixin):
             LOGGER.info("Calling Page %s", page_count)
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
-            # retrive records from response.Orders key
+            # retrive records from response.orders key
             raw_records = response.get(self.stream, [])
 
             # retrive pagination from response.pagination.next_page_info key
@@ -39,7 +39,6 @@ class Orders(IncrementalStream, UrlEndpointMixin):
             if not raw_records:
                 LOGGER.warning("No records found on Page %s", page_count)
                 break
-
             params["page_info"] = next_param
             page_count += 1
             yield from raw_records
@@ -47,7 +46,7 @@ class Orders(IncrementalStream, UrlEndpointMixin):
                 break
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """Sync implementation for `product_reviews` stream."""
+        """Sync implementation for `orders` stream."""
         current_bookmark_date = self.get_bookmark(state)
         max_bookmark = current_bookmark_date_utc = strptime_to_utc(current_bookmark_date)
 
@@ -59,12 +58,12 @@ class Orders(IncrementalStream, UrlEndpointMixin):
                     LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
                     continue
                 if record_timestamp >= current_bookmark_date_utc:
-                    transformed_record = transformer.transform(record, schema, stream_metadata)
-                    write_record(self.tap_stream_id, transformed_record)
-                    counter.increment()
+                    write_record(self.tap_stream_id, transformer.transform(record, schema, stream_metadata))
                     max_bookmark = max(max_bookmark, record_timestamp)
+                    counter.increment()
                 else:
                     LOGGER.warning("Skipping Record Older than the timestamp")
+
             state = self.write_bookmark(state, value=strftime(max_bookmark))
         return state
 

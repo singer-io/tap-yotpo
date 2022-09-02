@@ -3,11 +3,11 @@ from datetime import datetime
 from math import ceil
 from typing import Dict, List, Tuple
 
-import singer
 from singer import (
     Transformer,
     clear_bookmark,
     get_bookmark,
+    get_logger,
     metrics,
     write_record,
     write_state,
@@ -19,7 +19,7 @@ from tap_yotpo.helpers import ApiSpec, skip_product
 from .abstracts import IncrementalStream, UrlEndpointMixin
 from .products import Products
 
-LOGGER = singer.get_logger()
+LOGGER = get_logger()
 
 
 class ProductReviews(IncrementalStream, UrlEndpointMixin):
@@ -36,15 +36,13 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     url_endpoint = " https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
 
     def __init__(self, client=None) -> None:
-        super().__init__(client)
-        self.sync_prod: bool = True
-        self.last_synced: bool = False
         self.base_url = self.get_url_endpoint()
+        super().__init__(client)
 
     def get_products(self, state) -> Tuple[List, int]:
         """Returns index for sync resuming on interuption."""
         shared_product_ids = Products(self.client).prefetch_product_ids()
-        last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
+        last_synced = get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
         if last_synced:
             for pos, (prod_id, _) in enumerate(shared_product_ids):
@@ -99,7 +97,6 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
         """Sync implementation for `product_reviews` stream."""
         # pylint: disable=R0914
         with metrics.Timer(self.tap_stream_id, None):
-            config_start = self.client.config[self.config_start_key]
             products, start_index = self.get_products(state)
             LOGGER.info("STARTING SYNC FROM INDEX %s", start_index)
             prod_len = len(products)
@@ -118,7 +115,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)
 
-                    bookmark_date = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
+                    bookmark_date = self.get_bookmark(state, str(prod_id))
                     records, max_bookmark = self.get_records(ext_prod_id, bookmark_date)
 
                     for _ in records:

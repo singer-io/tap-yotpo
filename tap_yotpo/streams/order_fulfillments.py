@@ -35,15 +35,13 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/orders/ORDER_ID/fulfillments"
 
     def __init__(self, client=None) -> None:
-        super().__init__(client)
-        self.sync_prod: bool = True
-        self.last_synced: bool = False
         self.base_url = self.get_url_endpoint()
+        super().__init__(client)
 
     def get_orders(self, state) -> Tuple[List, int]:
         """Returns index for sync resuming on interruption."""
         shared_order_ids = Orders(self.client).prefetch_order_ids()
-        last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
+        last_synced = get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
         if last_synced:
             for pos, (order_id, _) in enumerate(shared_order_ids):

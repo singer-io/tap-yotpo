@@ -1,5 +1,6 @@
 """tap-yotpo customers stream module."""
 from typing import Dict, Iterator
+from urllib.parse import unquote
 
 from singer import get_logger
 
@@ -22,12 +23,7 @@ class Customers(FullTableStream, UrlEndpointMixin):
         extraction_url = self.get_url_endpoint()
         page_count, params = 1, {}
         while True:
-            query_string = ""
-            if params.items():
-                query_string = "&".join([f"{key}={value}" for (key, value) in params.items()])
-            url = extraction_url + "?" + query_string
-            LOGGER.info("Calling Page %s", page_count)
-            response = self.client.get(url, {}, {}, self.api_auth_version)
+            response = self.client.get(extraction_url, params, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
             pagination = response.get("pagination", {}).get("next_page_info", None)
 
@@ -36,5 +32,6 @@ class Customers(FullTableStream, UrlEndpointMixin):
             if not pagination:
                 break
             else:
-                params["page_info"] = pagination
+                # pagination breaks if the page-param is not urldecoded
+                params["page_info"] = unquote(pagination)
             page_count += 1

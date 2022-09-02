@@ -2,11 +2,11 @@
 from datetime import datetime
 from typing import Dict, List, Tuple
 
-import singer
 from singer import (
     Transformer,
     clear_bookmark,
     get_bookmark,
+    get_logger,
     metrics,
     write_record,
     write_state,
@@ -18,7 +18,7 @@ from tap_yotpo.helpers import ApiSpec
 from .abstracts import IncrementalStream, UrlEndpointMixin
 from .products import Products
 
-LOGGER = singer.get_logger()
+LOGGER = get_logger()
 
 
 class ProductVariants(IncrementalStream, UrlEndpointMixin):
@@ -43,7 +43,7 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin):
     def get_products(self, state) -> Tuple[List, int]:
         """Returns index for sync resuming on interruption."""
         shared_product_ids = Products(self.client).prefetch_product_ids()
-        last_synced = singer.get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
+        last_synced = get_bookmark(state, self.tap_stream_id, "currently_syncing", False)
         last_sync_index = 0
         if last_synced:
             for pos, (prod_id, _) in enumerate(shared_product_ids):

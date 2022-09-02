@@ -1,14 +1,14 @@
 """tap-yotpo collections stream module."""
-from typing import List
+from typing import Dict, List
 
-import singer
-from singer import metrics
+from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strptime_to_utc
 
 from ..helpers import ApiSpec
 from .abstracts import IncrementalStream, UrlEndpointMixin
 
-LOGGER = singer.get_logger()
+LOGGER = get_logger()
+DATE_FORMAT = "%Y-%m-%d"
 
 
 class Collections(IncrementalStream, UrlEndpointMixin):
@@ -26,37 +26,45 @@ class Collections(IncrementalStream, UrlEndpointMixin):
     def get_records(self) -> List:
         """performs api querying and pagination of response."""
         extraction_url = self.get_url_endpoint()
-        headers, params, call_next = {}, {"limit": 100}, True
-        while call_next:
-            response = self.client.get(extraction_url, params, headers, self.api_auth_version)
+        page_count, params = 1, {}
+        while True:
+            LOGGER.info("Calling Page %s", page_count)
+            response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
+            # retrive records from response.collections key
             raw_records = response.get(self.stream, [])
 
             # retrieve pagination from response.pagination.next_page_info key
             next_param = response.get("pagination", {}).get("next_page_info", None)
 
-            if not raw_records or not next_param:
-                call_next = False
-
+            if not raw_records:
+                LOGGER.warning("No records found on Page %s", page_count)
+                break
             params["page_info"] = next_param
+            page_count += 1
             yield from raw_records
+            if not next_param:
+                break
 
-    def sync(self, state, schema, stream_metadata, transformer):
+    def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer):
+        """Sync implementation for `collections` stream."""
+        bookmark_date = self.get_bookmark(state)
+        current_max_bookmark_date = bookmark_date_to_utc = strptime_to_utc(bookmark_date)
+
         with metrics.record_counter(self.tap_stream_id) as counter:
-            bookmark_date = singer.get_bookmark(
-                state, self.tap_stream_id, self.replication_key, self.client.config["start_date"]
-            )
-            current_max_bookmark_date = bookmark_date_to_utc = strptime_to_utc(bookmark_date)
             for record in self.get_records():
-                record_timestamp = strptime_to_utc(record[self.replication_key])
+                try:
+                    record_timestamp = strptime_to_utc(record[self.replication_key])
+                except KeyError as _:
+                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
+                    continue
                 if record_timestamp >= bookmark_date_to_utc:
-                    singer.write_record(self.tap_stream_id, transformer.transform(record, schema, stream_metadata))
+                    write_record(self.tap_stream_id, transformer.transform(record, schema, stream_metadata))
                     current_max_bookmark_date = max(current_max_bookmark_date, record_timestamp)
                     counter.increment()
                 else:
+                    LOGGER.warning("Skipping Record Older than the timestamp")
                     break
 
-            state = singer.write_bookmark(
-                state, self.tap_stream_id, self.replication_key, current_max_bookmark_date.strftime("%Y-%m-%d")
-            )
+            state = self.write_bookmark(state, value=current_max_bookmark_date.strftime(DATE_FORMAT))
         return state
