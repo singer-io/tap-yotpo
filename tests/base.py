@@ -3,6 +3,8 @@ import os
 import time
 from datetime import timedelta
 from datetime import datetime as dt
+import dateutil.parser
+import pytz
 
 from tap_tester import connections, menagerie, runner
 from tap_tester.logger import LOGGER
@@ -10,7 +12,7 @@ from tap_tester.logger import LOGGER
 class YotpoBaseTest(unittest.TestCase):
 
     PRIMARY_KEYS = "table-key-properties"
-    START_DATE_FORMAT = "%Y-%m-%dT00:00:00Z"
+    START_DATE_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
     BOOKMARK_COMPARISON_FORMAT = "%Y-%m-%dT00:00:00+00:00"
     REPLICATION_KEYS = "valid-replication-keys"
     REPLICATION_METHOD = "forced-replication-method"
@@ -123,7 +125,9 @@ class YotpoBaseTest(unittest.TestCase):
 
     def get_properties(self, original: bool = True):
         return_value = {
-            'start_date': '2021-05-26T00:00:00Z'
+            'start_date': '2022-07-01T00:00:00Z',
+            'email_stats_lookback_days': 30,
+            'reviews_lookback_days': 30
         }
         if original:
             return return_value
@@ -270,15 +274,17 @@ class YotpoBaseTest(unittest.TestCase):
     def timedelta_formatted(self, dtime, days=0):
         try:
             date_stripped = dt.strptime(dtime, self.START_DATE_FORMAT)
+            LOGGER.info("........date_stripped : %s, type : %s",date_stripped, type(date_stripped))
             return_date = date_stripped + timedelta(days=days)
-
+            LOGGER.info("........return_date : %s, type : %s",return_date, type(return_date))
             return dt.strftime(return_date, self.START_DATE_FORMAT)
 
         except ValueError:
             try:
                 date_stripped = dt.strptime(dtime, self.BOOKMARK_COMPARISON_FORMAT)
+                LOGGER.info(">>>>>>>>>> date_stripped : %s, type : %s",date_stripped, type(date_stripped))
                 return_date = date_stripped + timedelta(days=days)
-
+                LOGGER.info(">>>>>>>>>> return_date : %s, type : %s",return_date, type(return_date))
                 return dt.strftime(return_date, self.BOOKMARK_COMPARISON_FORMAT)
 
             except ValueError:
@@ -296,3 +302,32 @@ class YotpoBaseTest(unittest.TestCase):
                 return date_stripped
             except ValueError:
                 continue
+
+    # def calculated_states_by_stream(self, current_state):
+    #     timedelta_by_stream = {stream: [0,0,0,5]  # {stream_name: [days, hours, minutes, seconds], ...}
+    #                            for stream in self.expected_streams()}
+        
+    #     stream_to_calculated_state = {stream: "" for stream in current_state['bookmarks'].keys()}
+    #     for stream, state in current_state['bookmarks'].items():
+    #         state_key, state_value = next(iter(state.keys())), next(iter(state.values()))
+    #         state_as_datetime = dateutil.parser.parse(state_value)
+
+    #         days, hours, minutes, seconds = timedelta_by_stream[stream]
+    #         calculated_state_as_datetime = state_as_datetime - timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+
+    #         state_format = '%Y-%m-%dT%H:%M:%S-00:00'
+    #         calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+
+    #         stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}
+
+    #     return stream_to_calculated_state
+
+    def convert_state_to_utc(self, date_str):
+        """
+        Convert a saved bookmark value of the form '2020-08-25T13:17:36-07:00' to
+        a string formatted utc datetime,
+        in order to compare aginast json formatted datetime values
+        """
+        date_object = dateutil.parser.parse(date_str)
+        date_object_utc = date_object.astimezone(tz=pytz.UTC)
+        return dt.strftime(date_object_utc, "%Y-%m-%dT%H:%M:%SZ")

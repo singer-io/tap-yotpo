@@ -18,9 +18,6 @@
       "url": {
         "type": ["null", "string"]
       },
-      "is_valid_url": {
-        "type": ["null", "boolean"]
-      },
       "image_url": {
         "type": ["null", "string"]
       },
