@@ -35,8 +35,8 @@ class YotpoBookMarkTest(YotpoBaseTest):
         expected_streams = self.expected_streams() 
         expected_replication_keys = self.expected_replication_keys()
         expected_replication_methods = self.expected_replication_method()
-        expected_email_lookback_window = -1 * int(self.get_properties()['email_stats_lookback_days'])  # lookback window
-        expected_review_lookback_window = -1 * int(self.get_properties()['reviews_lookback_days']) 
+        expected_email_lookback_window = -1 * int(self.get_properties()['email_stats_lookback_days'])  # lookback window for emails stream
+        expected_review_lookback_window = -1 * int(self.get_properties()['reviews_lookback_days'])     # lookback window for reviews stream
         ##########################################################################
         # First Sync
         ##########################################################################
@@ -55,8 +55,6 @@ class YotpoBookMarkTest(YotpoBaseTest):
         first_sync_record_count = self.run_and_verify_sync(conn_id)
         first_sync_records = runner.get_records_from_target_output()
         first_sync_bookmarks = menagerie.get_state(conn_id)
-
-        LOGGER.info("bbbbbbb first_sync_bookmarks: %s",first_sync_bookmarks)
 
         ##########################################################################
         # Update State Between Syncs
@@ -165,13 +163,13 @@ class YotpoBookMarkTest(YotpoBaseTest):
 
                         if stream == 'emails' :
                             simulated_bookmark_minus_lookback = self.timedelta_formatted(simulated_bookmark_value,
-                                                                            days=expected_email_lookback_window) 
+                                                    days=expected_email_lookback_window) 
                         elif stream == 'reviews' :
                             simulated_bookmark_minus_lookback = self.timedelta_formatted(simulated_bookmark_value,
                                                                             days=expected_review_lookback_window)
                         else :
                             simulated_bookmark_minus_lookback = simulated_bookmark_value
-                            
+
                         # Verify the first sync sets a bookmark of the expected form
                         self.assertIsNotNone(first_bookmark_key_value)
                         self.assertIsNotNone(first_bookmark_value)
