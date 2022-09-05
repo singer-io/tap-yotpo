@@ -81,6 +81,10 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin):
                 record_timestamp = strptime_to_utc(record[self.replication_key])
                 if record_timestamp >= bookmark_date:
                     current_max = max(current_max, record_timestamp)
+
+                    # Adding yotpo_product_id in record
+                    if "yotpo_product_id" not in record.keys():
+                        record["yotpo_product_id"] = int(prod_id)
                     filtered_records.append(record)
 
             if not pagination:

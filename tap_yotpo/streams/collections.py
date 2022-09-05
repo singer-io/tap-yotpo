@@ -3,12 +3,12 @@ from typing import Dict, List
 
 from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strptime_to_utc
+from singer.utils import strftime
 
 from ..helpers import ApiSpec
 from .abstracts import IncrementalStream, UrlEndpointMixin
 
 LOGGER = get_logger()
-DATE_FORMAT = "%Y-%m-%d"
 
 
 class Collections(IncrementalStream, UrlEndpointMixin):
@@ -49,7 +49,8 @@ class Collections(IncrementalStream, UrlEndpointMixin):
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
         """Sync implementation for `collections` stream."""
         bookmark_date = self.get_bookmark(state)
-        current_max_bookmark_date = bookmark_date_to_utc = strptime_to_utc(bookmark_date)
+        config_start = self.client.config.get(self.config_start_key, False)
+        current_max_bookmark_date = bookmark_date_to_utc = max(strptime_to_utc(bookmark_date),strptime_to_utc(config_start))
 
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records():
@@ -64,7 +65,6 @@ class Collections(IncrementalStream, UrlEndpointMixin):
                     counter.increment()
                 else:
                     LOGGER.warning("Skipping Record Older than the timestamp")
-                    break
 
-            state = self.write_bookmark(state, value=current_max_bookmark_date.strftime(DATE_FORMAT))
+            state = self.write_bookmark(state, value=strftime(current_max_bookmark_date))
         return state

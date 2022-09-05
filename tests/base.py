@@ -85,10 +85,6 @@ class YotpoBaseTest(unittest.TestCase):
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'updated_at'}
             },
-            'customers': {
-                self.PRIMARY_KEYS: set(),
-                self.REPLICATION_METHOD: self.FULL_TABLE,
-            },
             'collections': {
                 self.PRIMARY_KEYS: {'yotpo_id'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
@@ -311,7 +307,7 @@ class YotpoBaseTest(unittest.TestCase):
         for stream, state in current_state['bookmarks'].items():
             #days, hours, minutes, seconds = '
             state_format = '%Y-%m-%dT%H:%M:%S-00:00'
-            if stream == 'product_reviews' :
+            if stream in ['product_reviews','order_fulfillments','product_variants'] :
                 new_state = {}
                 for state_key in state.keys() :
                     state_value = next(iter(state.values()))
