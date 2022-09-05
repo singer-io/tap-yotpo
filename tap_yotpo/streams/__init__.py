@@ -1,6 +1,5 @@
 """tap-yotpo streams module."""
 from .collections import Collections
-from .customers import Customers
 from .emails import Emails
 from .order_fulfillments import OrderFulfillments
 from .orders import Orders
@@ -12,7 +11,6 @@ from .unsubscribers import Unsubscribers
 
 STREAMS = {
     Collections.tap_stream_id: Collections,
-    Customers.tap_stream_id: Customers,
     Emails.tap_stream_id: Emails,
     OrderFulfillments.tap_stream_id: OrderFulfillments,
     Orders.tap_stream_id: Orders,
