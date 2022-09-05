@@ -33,11 +33,12 @@
         "string"
       ]
     },
-    "is_valid_url": {
+    "is_valid_url_format": {
       "type": [
         "null",
         "boolean"
-      ]
+      ],
+      "description": "Actual response shows `is_valid_url_format` whereas documentation mentions `is_valid_url`"
     },
     "image_url": {
       "type": [
@@ -140,6 +141,13 @@
         "string"
       ],
       "format": "date-time"
+    },
+    "yotpo_product_id": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "description": "Actual response shows `yotpo_product_id` whereas documentation does not mentions it"
     }
   },
   "additionalProperties": false

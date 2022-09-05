@@ -64,7 +64,6 @@ class Collections(IncrementalStream, UrlEndpointMixin):
                     counter.increment()
                 else:
                     LOGGER.warning("Skipping Record Older than the timestamp")
-                    break
 
             state = self.write_bookmark(state, value=current_max_bookmark_date.strftime(DATE_FORMAT))
         return state

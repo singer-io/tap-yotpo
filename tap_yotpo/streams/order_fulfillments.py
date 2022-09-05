@@ -35,8 +35,8 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/orders/ORDER_ID/fulfillments"
 
     def __init__(self, client=None) -> None:
-        self.base_url = self.get_url_endpoint()
         super().__init__(client)
+        self.base_url = self.get_url_endpoint()
 
     def get_orders(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interruption."""

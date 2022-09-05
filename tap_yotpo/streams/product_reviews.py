@@ -36,8 +36,8 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     url_endpoint = " https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
 
     def __init__(self, client=None) -> None:
-        self.base_url = self.get_url_endpoint()
         super().__init__(client)
+        self.base_url = self.get_url_endpoint()
 
     def get_products(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interuption."""
