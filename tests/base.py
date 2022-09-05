@@ -303,24 +303,40 @@ class YotpoBaseTest(unittest.TestCase):
             except ValueError:
                 continue
 
-    # def calculated_states_by_stream(self, current_state):
-    #     timedelta_by_stream = {stream: [0,0,0,5]  # {stream_name: [days, hours, minutes, seconds], ...}
-    #                            for stream in self.expected_streams()}
+    def calculated_states_by_stream(self, current_state):
+        timedelta_by_stream = {stream: [0,0,0,5]  # {stream_name: [days, hours, minutes, seconds], ...}
+                               for stream in self.expected_streams()}
         
-    #     stream_to_calculated_state = {stream: "" for stream in current_state['bookmarks'].keys()}
-    #     for stream, state in current_state['bookmarks'].items():
-    #         state_key, state_value = next(iter(state.keys())), next(iter(state.values()))
-    #         state_as_datetime = dateutil.parser.parse(state_value)
+        stream_to_calculated_state = {stream: "" for stream in current_state['bookmarks'].keys()}
+        for stream, state in current_state['bookmarks'].items():
+            #days, hours, minutes, seconds = '
+            state_format = '%Y-%m-%dT%H:%M:%S-00:00'
+            if stream == 'product_reviews' :
+                new_state = {}
+                for state_key in state.keys() :
+                    state_value = next(iter(state.values()))
+                    #LOGGER.info("kkkkkkkkkkkkkk state_key : %s, state_value: %s", state_key, state_value)
+                    state_as_datetime = dateutil.parser.parse(state_value)
+                    calculated_state_as_datetime = state_as_datetime - timedelta(*timedelta_by_stream[stream])
 
-    #         days, hours, minutes, seconds = timedelta_by_stream[stream]
-    #         calculated_state_as_datetime = state_as_datetime - timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
 
-    #         state_format = '%Y-%m-%dT%H:%M:%S-00:00'
-    #         calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+                    calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+                    new_state[state_key] = calculated_state_formatted
+                stream_to_calculated_state[stream] = new_state
+            else :
+                #LOGGER.info("iiiiiiiiiiiiiiii stream : %s, state: %s", stream, state)
+                state_key, state_value = next(iter(state.keys())), next(iter(state.values()))
+                #LOGGER.info("jjjjjjjjjjjjjjjj state_key : %s, state_value: %s", state_key, state_value)
+                state_as_datetime = dateutil.parser.parse(state_value)
 
-    #         stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}
+                days, hours, minutes, seconds = timedelta_by_stream[stream]
+                calculated_state_as_datetime = state_as_datetime - timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
 
-    #     return stream_to_calculated_state
+                calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+
+                stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}               
+
+        return stream_to_calculated_state
 
     def convert_state_to_utc(self, date_str):
         """
