@@ -4,6 +4,7 @@ from typing import Dict, Iterator
 
 from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strptime_to_utc
+from singer.utils import strftime as strftime_from_framework
 
 from ..helpers import ApiSpec
 from .abstracts import IncrementalStream, UrlEndpointMixin
@@ -47,7 +48,7 @@ class Emails(IncrementalStream, UrlEndpointMixin):
         """Sync implementation for `emails` stream."""
 
         max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
-        bookmark_date_utc = bookmark_date_utc - timedelta(days=self.client.config.get("email_stats_lookback_days", 0))
+        bookmark_date_utc = bookmark_date_utc - timedelta(days=int(self.client.config.get("email_stats_lookback_days", 0)))
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records(bookmark_date_utc.strftime(DATE_FORMAT)):
                 record_timestamp = strptime_to_utc(record[self.replication_key])
@@ -57,5 +58,5 @@ class Emails(IncrementalStream, UrlEndpointMixin):
                     counter.increment()
                 else:
                     break
-            state = self.write_bookmark(state, value=max_bookmark.strftime(DATE_FORMAT))
+            state = self.write_bookmark(state, value=strftime_from_framework(max_bookmark))
         return state
