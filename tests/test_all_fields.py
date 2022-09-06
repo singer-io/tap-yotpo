@@ -1,5 +1,5 @@
 from tap_tester import connections, runner, menagerie
-from tap_tester.logger import LOGGER
+
 from base import YotpoBaseTest
 
 class YotpoAllFields(YotpoBaseTest):
@@ -27,8 +27,7 @@ class YotpoAllFields(YotpoBaseTest):
         test_catalogs_all_fields = [catalog for catalog in found_catalogs
                                     if catalog.get('tap_stream_id') in expected_streams]
 
-        self.perform_and_verify_table_and_field_selection(
-            conn_id, test_catalogs_all_fields)
+        self.perform_and_verify_table_and_field_selection(conn_id, test_catalogs_all_fields)
 
         # Grab metadata after performing table-and-field selection to set expectations
         # used for asserting all fields are replicated
@@ -54,8 +53,7 @@ class YotpoAllFields(YotpoBaseTest):
 
                 # Expected values
                 expected_all_keys = stream_to_all_catalog_fields[stream]
-                expected_automatic_keys = expected_automatic_fields.get(
-                    stream, set())
+                expected_automatic_keys = expected_automatic_fields.get(stream, set())
 
                 # Verify that more than just the automatic fields are replicated for each stream.
                 self.assertTrue(expected_automatic_keys.issubset(
@@ -67,10 +65,6 @@ class YotpoAllFields(YotpoBaseTest):
                 for message in messages['messages']:
                     if message['action'] == 'upsert':
                         actual_all_keys.update(message['data'].keys())
-
-                LOGGER.info("stream.......:%s",stream)
-                LOGGER.info("expected_all_keys...:%s",expected_all_keys)
-                LOGGER.info("actual_all_keys...:%s",actual_all_keys)
                 
                 # Verify all fields for each stream are replicated
                 self.assertSetEqual(expected_all_keys, actual_all_keys)

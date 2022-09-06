@@ -25,7 +25,7 @@ class YotpoAutomaticFields(YotpoBaseTest):
         that 251 (or more) records have been posted for that stream.
         """
 
-        expected_streams = self.expected_streams()
+        expected_streams = self.expected_streams() 
 
         # instantiate connection
         conn_id = connections.ensure_connection(self)
@@ -37,9 +37,7 @@ class YotpoAutomaticFields(YotpoBaseTest):
         test_catalogs_automatic_fields = [catalog for catalog in found_catalogs
                                           if catalog.get('stream_name') in expected_streams]
 
-        self.perform_and_verify_table_and_field_selection(
-            conn_id, test_catalogs_automatic_fields, select_all_fields=False,
-        )
+        self.perform_and_verify_table_and_field_selection(conn_id, test_catalogs_automatic_fields, select_all_fields=False,)
 
         # run initial sync
         record_count_by_stream = self.run_and_verify_sync(conn_id)

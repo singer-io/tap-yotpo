@@ -1,6 +1,5 @@
 import unittest
 import os
-import time
 from datetime import timedelta
 from datetime import datetime as dt
 import dateutil.parser
@@ -48,7 +47,7 @@ class YotpoBaseTest(unittest.TestCase):
         """The expected streams and metadata about the streams"""
         return {
             'emails': {
-                self.PRIMARY_KEYS: {'email_address'},
+                self.PRIMARY_KEYS: {'email_address','email_type','email_sent_timestamp'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'}
             },
@@ -151,19 +150,10 @@ class YotpoBaseTest(unittest.TestCase):
         return_value["start_date"] = self.start_date
         return return_value
 
-    def expected_start_date_keys(self):
-        """
-        return a dictionary with key of table name
-        and value as a set of start_date key fields
-        """
-        return {table: properties.get(self.STARTDATE_KEYS, set())
-                for table, properties
-                in self.expected_metadata().items()}
-
     def expected_automatic_fields(self):
         auto_fields = {}
         for k, v in self.expected_metadata().items():
-            auto_fields[k] = v.get(self.PRIMARY_KEYS, set())
+            auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set())
         return auto_fields
 
 
@@ -301,19 +291,6 @@ class YotpoBaseTest(unittest.TestCase):
 
             except ValueError:
                 return Exception("Datetime object is not of the format: {}".format(self.START_DATE_FORMAT))
-
-    def is_start_date_appling(self, stream):
-        if self.expected_metadata().get(stream).get(self.STARTDATE_KEYS,None) is None:
-            return False 
-        return True
-
-    def dt_to_ts(self, dtime):
-        for date_format in self.DATETIME_FMT:
-            try:
-                date_stripped = int(time.mktime(dt.strptime(dtime, date_format).timetuple()))
-                return date_stripped
-            except ValueError:
-                continue
 
     def calculated_states_by_stream(self, current_state):
         timedelta_by_stream = {stream: [0,0,0,5]  # {stream_name: [days, hours, minutes, seconds], ...}

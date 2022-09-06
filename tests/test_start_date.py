@@ -17,7 +17,6 @@ class YotpoStartDateTest(YotpoBaseTest):
         return "tap_tester_yotpo_start_date_test"
 
     def test_run(self):
-        # 
         expected_streams = self.expected_streams() 
         self.run_test("2021-09-09T00:00:00Z", "2022-06-20T00:00:00Z", expected_streams)
 
@@ -88,8 +87,6 @@ class YotpoStartDateTest(YotpoBaseTest):
 
         for stream in expected_streams:
             with self.subTest(stream=stream):
-                LOGGER.info("stream.........:%s",stream)
-
                 # expected values
                 expected_primary_keys = self.expected_primary_keys()[stream]
                 expected_start_date_1 = self.timedelta_formatted(self.start_date_1, -1)
@@ -116,15 +113,12 @@ class YotpoStartDateTest(YotpoBaseTest):
                     replication_dates_1 = [row.get('data').get(expected_replication_key) for row in
                                         synced_records_1.get(stream, {'messages': []}).get('messages', [])
                                         if row.get('data')]
-                    LOGGER.info("replication_dates_1......:%s",replication_dates_1)
                     replication_dates_2 = [row.get('data').get(expected_replication_key) for row in
                                         synced_records_2.get(stream, {'messages': []}).get('messages', [])
                                         if row.get('data')]
-                    LOGGER.info("replication_dates_2......:%s",replication_dates_2)
 
                     # Verify replication key is greater or equal to start_date for sync 1
                     for replication_date in replication_dates_1:
-                        #LOGGER.info
                         self.assertGreaterEqual(self.parse_date(replication_date), self.parse_date(expected_start_date_1),
                             msg="Report pertains to a date prior to our start date.\n" +
                             "Sync start_date: {}\n".format(expected_start_date_1) +
