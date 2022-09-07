@@ -13,11 +13,47 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
     def test_run(self):
         """
+
+        Scenario: A sync job is interrupted. The state is saved with `currently_syncing`.
+                  The next sync job kicks off and the tap picks back up on that `currently_syncing` stream.
+        Expected State Structure:
+        {
+            'currently_syncing': 'product_variants',
+            'bookmarks': {
+                'collections': {
+                    'updated_at': '2022-09-05T14:54:55.000000Z'
+                },
+                'emails': {
+                    'email_sent_timestamp': '2022-09-06T03:00:10.000000Z'
+                },
+                'order_fulfillments': {
+                    '1234567890': '2022-09-02T04:32:15.000000Z',
+                    '1234567890': '2022-09-02T04:32:15.000000Z'
+                },
+                'orders': {
+                    'updated_at': '2022-09-02T14:18:36.000000Z'
+                },
+                'product_reviews': {
+                    '1111111111': '2021-01-01T00:00:00.000000Z',
+                    '2222222222': '2021-01-01T00:00:00.000000Z'
+                },
+                'product_variants': {
+                    '66666666': '2022-08-05T09:02:07.000000Z',
+                    '77777777': '2021-07-15T09:02:07.000000Z',
+                    '88888888': '2021-01-01T00:00:00.000000Z',
+                    'currently_syncing': '77777777'
+                },
+                'reviews': {
+                    'updated_at': '2021-01-01T00:00:00.000000Z'
+                }
+            }
+        }
+        Test Cases:
         - Verify an interrupted sync can resume based on the currently_syncing and stream level bookmark value.
         - Verify only records with replication-key values greater than or equal to the stream level bookmark 
           are replicated on the resuming sync for the interrupted stream.
-        - Verify the yet-to-be-synced streams are replicated following the interrupted stream in the resuming sync. 
-          (All yet-to-be-synced streams must replicate before streams that were already synced)
+        - Verify the pending streams are replicated following the interrupted stream in the resuming sync. 
+          (All pending streams must replicate before streams that were already synced)
         """
         
         start_date = self.get_properties()['start_date'].replace('Z', '.000000Z')
