@@ -54,11 +54,11 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
                     break
         return shared_product_ids, last_sync_index
 
-    def get_records(self, prod_id: str, bookmark_date: str) -> Tuple[List, datetime]:
+    def get_records(self, product__external_id: str, bookmark_date: str) -> Tuple[List, datetime]:
         # pylint: disable=W0221
         """performs api querying and pagination of response."""
         params = {"page": 1, "per_page": 150, "sort": ["date", "time"], "direction": "desc"}
-        extraction_url = self.base_url.replace("PRODUCT_ID", prod_id)
+        extraction_url = self.base_url.replace("PRODUCT_ID", product__external_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
         next_page = True
         filtered_records = []
@@ -83,7 +83,7 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
                 record_timestamp = strptime_to_utc(record[self.replication_key])
                 if record_timestamp >= bookmark_date:
                     current_max = max(current_max, record_timestamp)
-                    record["domain_key"] = prod_id
+                    record["domain_key"] = product__external_id
                     filtered_records.append(record)
                 else:
                     next_page = False
@@ -105,28 +105,30 @@ class ProductReviews(IncremetalStream, UrlEndpointMixin):
             prod_len = len(products)
 
             with metrics.Counter(self.tap_stream_id) as counter:
-                for index, (prod_id, ext_prod_id) in enumerate(products[start_index:], max(start_index, 1)):
-                    if skip_product(ext_prod_id):
+                for index, (product__yotpo_id, product__external_id) in enumerate(
+                    products[start_index:], max(start_index, 1)
+                ):
+                    if skip_product(product__external_id):
                         LOGGER.info(
                             "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
-                            str(prod_id)[-4:],
+                            str(product__yotpo_id)[-4:],
                             index,
                             prod_len,
-                            ext_prod_id,
+                            product__external_id,
                         )
                         continue
 
-                    LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)
+                    LOGGER.info("Sync for prod *****%s (%s/%s)", str(product__yotpo_id)[-4:], index, prod_len)
 
-                    bookmark_date = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
-                    records, max_bookmark = self.get_records(ext_prod_id, bookmark_date)
+                    bookmark_date = get_bookmark(state, self.tap_stream_id, str(product__yotpo_id), config_start)
+                    records, max_bookmark = self.get_records(product__external_id, bookmark_date)
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
-                    state = self.write_bookmark(state, prod_id, strftime(max_bookmark))
-                    state = self.write_bookmark(state, "currently_syncing", prod_id)
+                    state = self.write_bookmark(state, product__yotpo_id, strftime(max_bookmark))
+                    state = self.write_bookmark(state, "currently_syncing", product__yotpo_id)
                     write_state(state)
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state
