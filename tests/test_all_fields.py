@@ -65,6 +65,5 @@ class YotpoAllFields(YotpoBaseTest):
                 for message in messages['messages']:
                     if message['action'] == 'upsert':
                         actual_all_keys.update(message['data'].keys())
-                
                 # Verify all fields for each stream are replicated
                 self.assertSetEqual(expected_all_keys, actual_all_keys)

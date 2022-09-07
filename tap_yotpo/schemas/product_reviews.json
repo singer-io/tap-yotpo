@@ -7,7 +7,16 @@
       "type": "integer"
     },
     "domain_key": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_yotpo_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "created_at": {
       "type": "string",
