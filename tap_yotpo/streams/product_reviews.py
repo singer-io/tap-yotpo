@@ -122,7 +122,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
 
                     LOGGER.info("Sync for prod *****%s (%s/%s)", product__yotpo_id[-4:], index, prod_len)
 
-                    bookmark_date = get_bookmark(state, self.tap_stream_id, product__yotpo_id)
+                    bookmark_date = self.get_bookmark(state, product__yotpo_id)
                     records, max_bookmark = self.get_records(product__external_id, product__yotpo_id, bookmark_date)
 
                     for _ in records:
