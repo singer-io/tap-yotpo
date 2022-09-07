@@ -1,6 +1,5 @@
 import unittest
 import os
-import time
 from datetime import timedelta
 from datetime import datetime as dt
 import dateutil.parser
@@ -48,7 +47,7 @@ class YotpoBaseTest(unittest.TestCase):
         """The expected streams and metadata about the streams"""
         return {
             'emails': {
-                self.PRIMARY_KEYS: {'email_address'},
+                self.PRIMARY_KEYS: {'email_address','email_type','email_sent_timestamp'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'}
             },
@@ -105,6 +104,26 @@ class YotpoBaseTest(unittest.TestCase):
                 for table, properties
                 in self.expected_metadata().items()}
 
+    def parse_date(self, date_value):
+        """
+        Pass in string-formatted-datetime, parse the value, and return it as an unformatted datetime object.
+        """
+        date_formats = {
+            "%Y-%m-%dT%H:%M:%S.%fZ",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%dT%H:%M:%S.%f+00:00",
+            "%Y-%m-%dT%H:%M:%S+00:00",
+            "%Y-%m-%d"
+        }
+        for date_format in date_formats:
+            try:
+                date_stripped = dt.strptime(date_value, date_format)
+                return date_stripped
+            except ValueError:
+                continue
+
+        raise NotImplementedError("Tests do not account for dates of this format: {}".format(date_value))
+
     def expected_replication_keys(self):
         """
         return a dictionary with key of table name
@@ -131,19 +150,10 @@ class YotpoBaseTest(unittest.TestCase):
         return_value["start_date"] = self.start_date
         return return_value
 
-    def expected_start_date_keys(self):
-        """
-        return a dictionary with key of table name
-        and value as a set of start_date key fields
-        """
-        return {table: properties.get(self.STARTDATE_KEYS, set())
-                for table, properties
-                in self.expected_metadata().items()}
-
     def expected_automatic_fields(self):
         auto_fields = {}
         for k, v in self.expected_metadata().items():
-            auto_fields[k] = v.get(self.PRIMARY_KEYS, set())
+            auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set())
         return auto_fields
 
 
@@ -270,34 +280,17 @@ class YotpoBaseTest(unittest.TestCase):
     def timedelta_formatted(self, dtime, days=0):
         try:
             date_stripped = dt.strptime(dtime, self.START_DATE_FORMAT)
-            LOGGER.info("........date_stripped : %s, type : %s",date_stripped, type(date_stripped))
             return_date = date_stripped + timedelta(days=days)
-            LOGGER.info("........return_date : %s, type : %s",return_date, type(return_date))
             return dt.strftime(return_date, self.START_DATE_FORMAT)
 
         except ValueError:
             try:
                 date_stripped = dt.strptime(dtime, self.BOOKMARK_COMPARISON_FORMAT)
-                LOGGER.info(">>>>>>>>>> date_stripped : %s, type : %s",date_stripped, type(date_stripped))
                 return_date = date_stripped + timedelta(days=days)
-                LOGGER.info(">>>>>>>>>> return_date : %s, type : %s",return_date, type(return_date))
                 return dt.strftime(return_date, self.BOOKMARK_COMPARISON_FORMAT)
 
             except ValueError:
                 return Exception("Datetime object is not of the format: {}".format(self.START_DATE_FORMAT))
-
-    def is_start_date_appling(self, stream):
-        if self.expected_metadata().get(stream).get(self.STARTDATE_KEYS,None) is None:
-            return False 
-        return True
-
-    def dt_to_ts(self, dtime):
-        for date_format in self.DATETIME_FMT:
-            try:
-                date_stripped = int(time.mktime(dt.strptime(dtime, date_format).timetuple()))
-                return date_stripped
-            except ValueError:
-                continue
 
     def calculated_states_by_stream(self, current_state):
         timedelta_by_stream = {stream: [0,0,0,5]  # {stream_name: [days, hours, minutes, seconds], ...}
@@ -305,13 +298,11 @@ class YotpoBaseTest(unittest.TestCase):
         
         stream_to_calculated_state = {stream: "" for stream in current_state['bookmarks'].keys()}
         for stream, state in current_state['bookmarks'].items():
-            #days, hours, minutes, seconds = '
             state_format = '%Y-%m-%dT%H:%M:%S-00:00'
             if stream in ['product_reviews','order_fulfillments','product_variants'] :
                 new_state = {}
                 for state_key in state.keys() :
                     state_value = next(iter(state.values()))
-                    #LOGGER.info("kkkkkkkkkkkkkk state_key : %s, state_value: %s", state_key, state_value)
                     state_as_datetime = dateutil.parser.parse(state_value)
                     calculated_state_as_datetime = state_as_datetime - timedelta(*timedelta_by_stream[stream])
 
@@ -320,9 +311,7 @@ class YotpoBaseTest(unittest.TestCase):
                     new_state[state_key] = calculated_state_formatted
                 stream_to_calculated_state[stream] = new_state
             else :
-                #LOGGER.info("iiiiiiiiiiiiiiii stream : %s, state: %s", stream, state)
                 state_key, state_value = next(iter(state.keys())), next(iter(state.values()))
-                #LOGGER.info("jjjjjjjjjjjjjjjj state_key : %s, state_value: %s", state_key, state_value)
                 state_as_datetime = dateutil.parser.parse(state_value)
 
                 days, hours, minutes, seconds = timedelta_by_stream[stream]
@@ -343,3 +332,6 @@ class YotpoBaseTest(unittest.TestCase):
         date_object = dateutil.parser.parse(date_str)
         date_object_utc = date_object.astimezone(tz=pytz.UTC)
         return dt.strftime(date_object_utc, "%Y-%m-%dT%H:%M:%SZ")
+
+    def is_incremental(self, stream):
+        return self.expected_metadata().get(stream).get(self.REPLICATION_METHOD) == self.INCREMENTAL
