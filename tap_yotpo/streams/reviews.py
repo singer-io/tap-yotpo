@@ -6,12 +6,12 @@ from singer import get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncremetalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin
 
 LOGGER = get_logger()
 
 
-class Reviews(IncremetalStream, UrlEndpointMixin):
+class Reviews(IncrementalStream, UrlEndpointMixin):
     """class for `reviews` stream."""
 
     stream = "reviews"
@@ -40,7 +40,7 @@ class Reviews(IncremetalStream, UrlEndpointMixin):
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer) -> Dict:
         """Sync implementation for `reviews` stream."""
         max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
-        bookmark_date_utc = bookmark_date_utc - timedelta(days=self.client.config.get("reviews_lookback_days", 0))
+        bookmark_date_utc = bookmark_date_utc - timedelta(days=int(self.client.config.get("reviews_lookback_days", 0)))
 
         with metrics.Counter(self.tap_stream_id) as counter:
             for record in self.get_records(strftime(bookmark_date_utc)):

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
     name="tap-yotpo",
@@ -23,7 +23,7 @@ setup(
     [console_scripts]
     tap-yotpo=tap_yotpo:main
     """,
-    packages=["tap_yotpo"],
+    packages=find_packages(exclude=["tests"]),
     package_data={"schemas": ["tap_yotpo/schemas/*.json"]},
     include_package_data=True,
 )

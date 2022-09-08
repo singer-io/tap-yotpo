@@ -1,6 +1,6 @@
 [tool.black]
 line-length = 120
-target-version = ['py36', 'py37', 'py38']
+target-version = ['py37',]
 include = '\.pyi?$'
 
 [flake8]
@@ -16,3 +16,6 @@ disable = ["R0801",]
 [tool.isort]
 profile = "black"
 multi_line_output = 3
+
+[tool.bandit]
+exclude_dirs = ["tests",".env"]

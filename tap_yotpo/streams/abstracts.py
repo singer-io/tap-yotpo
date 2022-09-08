@@ -128,7 +128,7 @@ class BaseStream(ABC):
         return stream_metadata
 
 
-class IncremetalStream(BaseStream):
+class IncrementalStream(BaseStream):
     """Base Class for Incremental Stream."""
 
     replication_method = "INCREMENTAL"

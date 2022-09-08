@@ -7,10 +7,22 @@
       "type": "integer"
     },
     "domain_key": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "name": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "product_yotpo_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "created_at": {
       "type": "string",
@@ -29,19 +41,31 @@
       "type": "string"
     },
     "title": {
-      "type": ["string", "null"]
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "verified_buyer": {
       "type": "boolean"
     },
     "source_review_id": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "sentiment": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "product_id": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "user": {
       "type": "object",
@@ -53,51 +77,16 @@
           "type": "string"
         },
         "social_image": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "user_type": {
           "type": "string"
         },
         "is_social_connected": {
           "type": "number"
-        }
-      }
-    },
-    "images_data": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "original_url": {
-            "type": "string"
-          },
-          "thumb_url": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "comment": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "number"
-        },
-        "content": {
-          "type": "string"
-        },
-        "created_at": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "display_name": {
-          "type": "string"
-        },
-        "comments_avatar": {
-          "type": ["string", "null"]
         }
       }
     }
