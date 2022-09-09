@@ -38,7 +38,10 @@
         "string"
       ]
     },
-    "is_valid_url": {
+    "store_id": {
+      "type": "string"
+    },    
+    "is_valid_url_format": {
       "type": "boolean"
     },
     "image_url": {
@@ -148,16 +151,12 @@
       ],
       "properties": {
         "created_at": {
-          "type": [
-            "string",
-            "date-time"
-          ]
+          "type": ["string", "null"],
+          "format": "date-time"
         },
         "updated_at": {
-          "type": [
-            "string",
-            "date-time"
-          ]
+          "type": ["string", "null"],
+          "format": "date-time"
         }
       }
     }

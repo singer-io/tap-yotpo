@@ -18,6 +18,12 @@
         "null"
       ]
     },
+    "product_yotpo_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "created_at": {
       "type": "string",
       "format": "date-time"
