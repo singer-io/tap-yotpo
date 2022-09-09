@@ -64,6 +64,12 @@
     },
     "escalated": {
       "type": "boolean"
+    },
+    "user_reference": {
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "additionalProperties": false

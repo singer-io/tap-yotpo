@@ -3,17 +3,16 @@ import json
 
 from singer.catalog import Catalog
 
-from tap_yotpo.helpers import get_abs_path, ApiSpec
+from tap_yotpo.client import Client
+from tap_yotpo.helpers import ApiSpec, get_abs_path
 from tap_yotpo.streams import STREAMS
 
-from tap_yotpo.client import Client
 
-
-def discover(config = None):
+def discover(config=None):
     """
     TODO: Permission Check
     """
-    if config :
+    if config:
         client = Client(config)
         client.authenticate({}, {}, ApiSpec.API_V3)
     streams = []
