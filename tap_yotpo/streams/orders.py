@@ -22,10 +22,14 @@ class Orders(IncrementalStream, UrlEndpointMixin):
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/orders"
 
+    def __init__(self, client=None) -> None:
+        super().__init__(client)
+        self.page_size = int(self.client.config.get("page_size", 0) or 100)
+
     def get_records(self) -> Iterator[Dict]:
         """performs api querying and pagination of response."""
         extraction_url = self.get_url_endpoint()
-        page_count, params = 1, {}
+        page_count, params = 1, {"limit": self.page_size}
         while True:
             LOGGER.info("Calling Page %s", page_count)
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)

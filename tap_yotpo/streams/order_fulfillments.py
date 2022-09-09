@@ -37,6 +37,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
     def __init__(self, client=None) -> None:
         super().__init__(client)
         self.base_url = self.get_url_endpoint()
+        self.page_size = int(self.client.config.get("page_size", 0) or 100)
 
     def get_orders(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interruption."""
@@ -57,7 +58,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
         extraction_url = self.base_url.replace("ORDER_ID", order_id)
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
         filtered_records = []
-        page_count, params = 1, {}
+        page_count, params = 1, {"limit": self.page_size}
         while True:
             LOGGER.info("Calling Page %s", page_count)
 

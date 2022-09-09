@@ -97,6 +97,7 @@ class Client:
             errors.Http400RequestError,
             errors.Http404RequestError,
             errors.Http500RequestError,
+            errors.Http502RequestError,
             errors.Http503RequestError,
         ),
         jitter=None,

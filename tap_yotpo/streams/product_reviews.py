@@ -38,6 +38,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     def __init__(self, client=None) -> None:
         super().__init__(client)
         self.base_url = self.get_url_endpoint()
+        self.page_size = int(self.client.config.get("page_size", 0) or 150)
 
     def get_products(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interuption."""
@@ -57,7 +58,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     ) -> Tuple[List, datetime]:
         # pylint: disable=W0221
         """performs api querying and pagination of response."""
-        params = {"page": 1, "per_page": 150, "sort": ["date", "time"], "direction": "desc"}
+        params = {"page": 1, "per_page": self.page_size, "sort": ["date", "time"], "direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", product__external_id)
         config_start = self.client.config.get(self.config_start_key, False)
         bookmark_date = current_max = max(strptime_to_utc(bookmark_date), strptime_to_utc(config_start))
@@ -76,9 +77,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
             if not raw_records:
                 break
 
-            LOGGER.info(
-                "Page: (%s/%s) Total Records: %s", current_page, max(ceil(total_records / 150), 1), total_records
-            )
+            LOGGER.info("Page: (%s/%s)", current_page, max(ceil(total_records / self.page_size), 1))
 
             for record in raw_records:
                 record_timestamp = strptime_to_utc(record[self.replication_key])
@@ -128,7 +127,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
-
+                    LOGGER.info("Synced %d records for prod *****%s (%s/%s)", len(records), product__yotpo_id[-4:], index, prod_len)
                     state = self.write_bookmark(state, product__yotpo_id, strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", product__yotpo_id)
                     write_state(state)

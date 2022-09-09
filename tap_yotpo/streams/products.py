@@ -18,10 +18,14 @@ class Products(FullTableStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V3
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
 
+    def __init__(self, client=None) -> None:
+        super().__init__(client)
+        self.page_size = int(self.client.config.get("page_size", 0) or 100)
+
     def get_records(self) -> Iterator[Dict]:
         """performs api querying and pagination of response."""
         extraction_url = self.get_url_endpoint()
-        headers, params, call_next = {}, {"limit": 100}, True
+        headers, params, call_next = {}, {"limit": self.page_size}, True
         while call_next:
             response = self.client.get(extraction_url, params, headers, self.api_auth_version)
 
