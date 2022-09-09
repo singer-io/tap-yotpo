@@ -40,7 +40,7 @@
     },
     "store_id": {
       "type": "string"
-    },    
+    },
     "is_valid_url_format": {
       "type": "boolean"
     },
@@ -151,11 +151,17 @@
       ],
       "properties": {
         "created_at": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time"
         },
         "updated_at": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time"
         }
       }
