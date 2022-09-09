@@ -3,8 +3,7 @@ from datetime import datetime, timedelta
 from typing import Dict, Iterator
 
 from singer import Transformer, get_logger, metrics, write_record
-from singer.utils import strptime_to_utc
-from singer.utils import strftime as strftime_from_framework
+from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
 from .abstracts import IncrementalStream, UrlEndpointMixin
@@ -18,7 +17,7 @@ class Emails(IncrementalStream, UrlEndpointMixin):
 
     stream = "emails"
     tap_stream_id = "emails"
-    key_properties = ["email_address","email_type","email_sent_timestamp"]
+    key_properties = ["email_address", "email_type", "email_sent_timestamp"]
     replication_key = "email_sent_timestamp"
     valid_replication_keys = ["email_sent_timestamp"]
     api_auth_version = ApiSpec.API_V1
@@ -47,8 +46,9 @@ class Emails(IncrementalStream, UrlEndpointMixin):
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
         """Sync implementation for `emails` stream."""
 
+        lookback_window = self.client.config.get("email_stats_lookback_days", 0)
         max_bookmark = bookmark_date_utc = strptime_to_utc(self.get_bookmark(state))
-        bookmark_date_utc = bookmark_date_utc - timedelta(days=int(self.client.config.get("email_stats_lookback_days", 0)))
+        bookmark_date_utc = bookmark_date_utc - timedelta(days=int(lookback_window))
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records(bookmark_date_utc.strftime(DATE_FORMAT)):
                 record_timestamp = strptime_to_utc(record[self.replication_key])
@@ -58,5 +58,5 @@ class Emails(IncrementalStream, UrlEndpointMixin):
                     counter.increment()
                 else:
                     break
-            state = self.write_bookmark(state, value=strftime_from_framework(max_bookmark))
+            state = self.write_bookmark(state, value=strftime(max_bookmark))
         return state
