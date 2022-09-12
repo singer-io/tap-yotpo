@@ -180,14 +180,12 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                             self.assertLessEqual(interrupt_bookmark_value,
                                                 replication_key_value,
                                                 msg="Interrupt bookmark was set incorrectly, a record with a lesser replication-key value was synced compared to interrupt bookmark value. Record = {}".format(record))
-                                                # TODO: remove record from above message
 
                             # Verify the second sync bookmark value is the max replication key value for a given id
                             second_bookmark_id_value = second_bookmark_value[repl_key_id] if repl_key_id in second_bookmark_value.keys() else start_date
                             self.assertLessEqual(replication_key_value,
                                                 second_bookmark_id_value,
                                                 msg="Second sync bookmark was set incorrectly, a record with a greater replication-key value was synced. Record = {}".format(record))
-                                                # TODO: remove record from above message
                     else:
                         for record in second_sync_messages:
                             # Verify the second sync replication key value is Greater or Equal to the first sync bookmark
@@ -196,13 +194,11 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                             self.assertLessEqual(interrupted_bookmark_value[replication_key],
                                                 replication_key_value,
                                                 msg="Interrupt bookmark was set incorrectly, a record with a lesser replication-key value was synced compared to interrupt bookmark value. Record = {}".format(record))
-                                                # TODO: remove record from above message
 
                             # Verify the second sync bookmark value is the max replication key value for a given stream
                             self.assertLessEqual(replication_key_value,
                                                 second_bookmark_value[replication_key],
                                                 msg="Second sync bookmark was set incorrectly, a record with a greater replication-key value was synced. Record = {}".format(record))
-                                                # TODO: remove record from above message
                 
                 elif expected_replication_method == self.FULL_TABLE:
 
