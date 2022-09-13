@@ -134,20 +134,9 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                     interrupted_bookmark_value = interrupted_sync_states['bookmarks'][stream]
                     if stream in completed_streams:
                         # Verify at least 1 record was replicated in the second sync
-                        if stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
-                            # Bookmarking logic differs compared to other streams.
-                            self.assertGreaterEqual(second_sync_count,
+                        self.assertGreaterEqual(second_sync_count,
                                             1, 
-                                            msg="Incorrect bookmarking for {0}, at least one record should be replicated".format(stream))
-                        elif second_bookmark_value[replication_key] == first_bookmark_value[replication_key]:
-                            self.assertGreaterEqual(second_sync_count,
-                                            1, 
-                                            msg="Incorrect bookmarking for {0}, at least one record should be replicated".format(stream))
-                        else:
-                            # second sync bookmark is greater than first sync
-                            self.assertGreater(second_sync_count,
-                                                1,
-                                                msg="Incorrect bookmarking for {0}, more than one records should be replicated if second sync bookmark is greater than first sync".format(stream))
+                                            msg="Incorrect bookmarking for {0}, at least one or more record should be replicated".format(stream))
 
                     elif stream == interrupted_sync_states.get('currently_syncing', None):
                         # For interrupted stream records sync count should be less equals
