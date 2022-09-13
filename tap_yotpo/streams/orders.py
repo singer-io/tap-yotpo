@@ -62,7 +62,7 @@ class Orders(IncrementalStream, UrlEndpointMixin):
                     max_bookmark = max(max_bookmark, record_timestamp)
                     counter.increment()
                 else:
-                    LOGGER.warning("Skipping Record Older than the timestamp")
+                    LOGGER.warning("Skipping Older Record, order-id - ******%s", str(record["yotpo_id"])[-4:])
 
             state = self.write_bookmark(state, value=strftime(max_bookmark))
         return state
