@@ -9,7 +9,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
     """Test tap sets a bookmark and respects it for the next sync of a stream"""
 
     def name(self):
-        return "tap_tester_yotpo_bookmark_test"
+        return "tap_tester_yotpo_interrupt_test"
 
     def test_run(self):
         """
