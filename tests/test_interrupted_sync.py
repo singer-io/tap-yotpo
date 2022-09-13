@@ -165,12 +165,10 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                         raise Exception("Invalid state of stream {0} in interrupted state, please update appropriate state for the stream".format(stream))
                     
                     if stream in {'product_reviews', 'product_variants', 'order_fulfillments'}:
-                        if stream == 'product_reviews' :
-                            repl_key = 'product_yotpo_id'
-                        elif stream == 'order_fulfillments':
-                            repl_key = 'order_id' 
-                        elif stream == 'product_variants':
-                            repl_key = 'yotpo_product_id'
+                        repl_key = {'product_reviews': 'product_yotpo_id',
+                                    'order_fulfillments': 'order_id',
+                                    'product_variants': 'yotpo_product_id'
+                                }[stream]
                         for record in second_sync_messages:
                             # Verify the second sync replication key value is Greater or Equal to the first sync bookmark for each id
                             replication_key_value = record.get(replication_key)
