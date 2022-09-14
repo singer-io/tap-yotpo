@@ -121,6 +121,10 @@ class Client:
         response = self._session.request(method, endpoint, **kwargs)
         if response.status_code != 200:
             try:
+                try:
+                    LOGGER.error("Failed due: %s", response.text)
+                except AttributeError:
+                    pass
                 raise_for_error(response)
             except errors.Http401RequestError as _:
                 LOGGER.info("Authorization Failure, attempting to regenrate token")
