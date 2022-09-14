@@ -49,13 +49,13 @@
     "price": {
       "type": [
         "null",
-        "number"
+        "integer"
       ]
     },
     "compare_at_price": {
       "type": [
         "null",
-        "number"
+        "integer"
       ]
     },
     "currency": {
@@ -67,7 +67,7 @@
     "inventory_quantity": {
       "type": [
         "null",
-        "number"
+        "integer"
       ]
     },
     "is_discontinued": {

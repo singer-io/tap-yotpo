@@ -18,7 +18,7 @@
     "yotpo_id": {
       "type": [
         "null",
-        "number"
+        "integer"
       ]
     },
     "created_at": {

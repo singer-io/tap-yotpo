@@ -37,13 +37,13 @@
     "votes_up": {
       "type": [
         "null",
-        "number"
+        "integer"
       ]
     },
     "votes_down": {
       "type": [
         "null",
-        "number"
+        "integer"
       ]
     },
     "content": {
@@ -75,7 +75,7 @@
     },
     "product_id": {
       "type": [
-        "number",
+        "integer",
         "null"
       ]
     },
@@ -83,7 +83,7 @@
       "type": ["null", "object"],
       "properties": {
         "user_id": {
-          "type": "number"
+          "type": "integer"
         },
         "display_name": {
           "type": [
@@ -117,7 +117,7 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "number"
+            "type": "integer"
           },
           "original_url": {
             "type": [
@@ -138,7 +138,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "number"
+          "type": "integer"
         },
         "content": {
           "type": [
