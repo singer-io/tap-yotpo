@@ -57,7 +57,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
         """
         
         start_date = self.get_properties()['start_date'].replace('Z', '.000000Z')
-        expected_streams = self.expected_streams()
+        expected_streams = self.expected_streams() - {'product_reviews'}
         expected_replication_keys = self.expected_replication_keys()
         expected_replication_methods = self.expected_replication_method()
         LOGGER.info(f"expected_replication_keys = {expected_replication_keys} \n expected_replication_methods = {expected_replication_methods}")
