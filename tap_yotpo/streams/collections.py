@@ -31,7 +31,7 @@ class Collections(IncrementalStream, UrlEndpointMixin):
             LOGGER.info("Calling Page %s", page_count)
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
-            # retrive records from response.collections key
+            # retrieve records from response.collections key
             raw_records = response.get(self.stream, [])
 
             # retrieve pagination from response.pagination.next_page_info key
@@ -56,7 +56,7 @@ class Collections(IncrementalStream, UrlEndpointMixin):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
                 except KeyError as _:
-                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
+                    LOGGER.error("Unable to process Record, Exception occurred: %s for stream %s", _, self.__class__)
                     continue
                 if record_timestamp >= bookmark_date_to_utc:
                     write_record(self.tap_stream_id, transformer.transform(record, schema, stream_metadata))

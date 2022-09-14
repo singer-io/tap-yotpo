@@ -8,42 +8,54 @@
     },
     "domain_key": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "name": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "product_yotpo_id": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": "string"
     },
     "created_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "score": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "votes_up": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "votes_down": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "content": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "title": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "verified_buyer": {
@@ -68,13 +80,16 @@
       ]
     },
     "user": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "user_id": {
           "type": "number"
         },
         "display_name": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "social_image": {
           "type": [
@@ -83,15 +98,21 @@
           ]
         },
         "user_type": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "is_social_connected": {
-          "type": "number"
+          "type": [
+            "null",
+            "number"
+          ]
         }
       }
     },
     "images_data": {
-      "type": "array",
+      "type": ["null","array"],
       "items": {
         "type": "object",
         "properties": {
@@ -99,29 +120,44 @@
             "type": "number"
           },
           "original_url": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "thumb_url": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }
     },
     "comment": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "id": {
           "type": "number"
         },
         "content": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "created_at": {
-          "type": "string",
+          "type": [
+            "null",
+            "string"
+          ],
           "format": "date-time"
         },
         "display_name": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "comments_avatar": {
           "type": [

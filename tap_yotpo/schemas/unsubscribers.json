@@ -7,13 +7,22 @@
       "type": "integer"
     },
     "user_email": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "email_type_id": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "unsubscirbed_by_name": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "description": "This field is misspelled in the api response!"
     }
   },

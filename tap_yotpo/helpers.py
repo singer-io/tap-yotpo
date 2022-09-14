@@ -22,7 +22,7 @@ def wait_gen():
     """Returns a generator that is passed to backoff decorator to indicate how
     long to backoff for in seconds."""
     while True:
-        LOGGER.info("API exception occured sleeping for 60 seconds")
+        LOGGER.info("API exception occurred sleeping for 60 seconds")
         yield 60
 
 

@@ -17,7 +17,7 @@ class Emails(IncrementalStream, UrlEndpointMixin):
 
     stream = "emails"
     tap_stream_id = "emails"
-    key_properties = ["email_address", "email_type", "email_sent_timestamp"]
+    key_properties = ["email_address", "email_sent_timestamp"]
     replication_key = "email_sent_timestamp"
     valid_replication_keys = ["email_sent_timestamp"]
     api_auth_version = ApiSpec.API_V1
