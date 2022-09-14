@@ -4,7 +4,7 @@ from datetime import timedelta
 from datetime import datetime as dt
 import dateutil.parser
 import pytz
-
+from typing import Dict, Set
 from tap_tester import connections, menagerie, runner
 from tap_tester.logger import LOGGER
 
@@ -335,3 +335,54 @@ class YotpoBaseTest(unittest.TestCase):
 
     def is_incremental(self, stream):
         return self.expected_metadata().get(stream).get(self.REPLICATION_METHOD) == self.INCREMENTAL
+
+    def create_interrupt_sync_state(self, state: Dict, interrupt_stream: str, pending_streams: Set, start_date: str) -> Dict:
+        """
+        This function will create a new interrupt sync bookmark state
+        """
+        expected_replication_keys = self.expected_replication_keys()
+        bookmark_state = state['bookmarks']
+        if self.is_incremental(interrupt_stream):
+            if interrupt_stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
+                reverse_sorted_id_list = list(bookmark_state[interrupt_stream].keys())[::-1]
+                breakpoint = int(len(reverse_sorted_id_list)/2)
+                # update bookmark value in reverse order of keys
+                for index, id in enumerate(reverse_sorted_id_list):
+                    if index >= breakpoint:
+                        bookmark_state[interrupt_stream]["currently_syncing"] = id
+                        break
+                    bookmark_date = bookmark_state[interrupt_stream][id]
+                    updated_bookmark_date = self.get_mid_point_date(start_date, bookmark_date)
+                    bookmark_state[interrupt_stream][id] = updated_bookmark_date
+            else:
+                replication_key = next(iter(expected_replication_keys[interrupt_stream]))
+                bookmark_date = bookmark_state[interrupt_stream][replication_key]
+                updated_bookmark_date = self.get_mid_point_date(start_date, bookmark_date)
+                bookmark_state[interrupt_stream][replication_key] = updated_bookmark_date
+            state["currently_syncing"] = interrupt_stream
+
+        # for pending streams, update the bookmark_value to start-date 
+        for stream in iter(pending_streams):
+            # only incremental streams should have the bookmark value
+            if self.is_incremental(stream):
+                if stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
+                    for id in bookmark_state[stream].keys():
+                        bookmark_state[stream][id] = start_date
+                else:
+                    replication_key = next(iter(expected_replication_keys[stream]))
+                    bookmark_state[stream][replication_key] = start_date
+            state["bookmarks"] = bookmark_state
+        
+        return state
+
+    def get_mid_point_date(self, start_date: str, bookmark_date: str) -> str:
+        """
+        Function to find the middle date between two dates
+        """
+        DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_date_dt = dt.strptime(start_date, DATE_FORMAT)
+        bookmark_date_dt = dt.strptime(bookmark_date, DATE_FORMAT)
+        mid_date_dt = start_date_dt.date() + (bookmark_date_dt-start_date_dt) / 2
+        # Convert datetime object to string format
+        mid_date = mid_date_dt.strftime(DATE_FORMAT)
+        return mid_date
