@@ -25,10 +25,10 @@ class Products(FullTableStream, UrlEndpointMixin):
         while call_next:
             response = self.client.get(extraction_url, params, headers, self.api_auth_version)
 
-            # retrive records from response.products key
+            # retrieve records from response.products key
             raw_records = response.get(self.stream, [])
 
-            # retrive pagination from response.pagination.next_page_info key
+            # retrieve pagination from response.pagination.next_page_info key
             next_param = response.get("pagination", {}).get("next_page_info", None)
 
             if not raw_records or not next_param:

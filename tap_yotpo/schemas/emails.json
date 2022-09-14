@@ -8,33 +8,33 @@
     },
     "order_id": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "order_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "product_id": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "sku": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "email_type": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "reminder_num": {
@@ -45,26 +45,26 @@
     },
     "trr_bundle_id": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "trr_bundle_subject": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "review_type": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "coupon_code": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "email_sent_timestamp": {
@@ -75,69 +75,69 @@
     },
     "opened_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "clicked_through_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "content_creation_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "review_form": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "platform": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "invalid_address_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "failed_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "unsubscribed_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "marked_spam_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "arrived_early_timestamp": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     }

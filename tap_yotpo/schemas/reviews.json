@@ -8,34 +8,52 @@
     },
     "title": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "content": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "score": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "votes_up": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "votes_down": {
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "created_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "updated_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "sentiment": {
       "type": [
-        "number",
-        "null"
+        "null",
+        "number"
       ]
     },
     "sku": {
@@ -45,25 +63,40 @@
       ]
     },
     "name": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "email": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "reviewer_type": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "deleted": {
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "archived": {
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "escalated": {
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "user_reference": {
       "type": [
