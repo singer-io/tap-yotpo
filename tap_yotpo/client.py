@@ -98,6 +98,7 @@ class Client:
             errors.Http404RequestError,
             errors.Http500RequestError,
             errors.Http503RequestError,
+            errors.Http504RequestError,
         ),
         jitter=None,
         max_tries=5,
@@ -121,10 +122,10 @@ class Client:
         response = self._session.request(method, endpoint, **kwargs)
         if response.status_code != 200:
             try:
-                try:
-                    LOGGER.error("Failed due: %s", response.text)
-                except AttributeError:
-                    pass
+                LOGGER.error("Failed due: %s", response.text)
+            except AttributeError:
+                pass
+            try:
                 raise_for_error(response)
             except errors.Http401RequestError as _:
                 LOGGER.info("Authorization Failure, attempting to regenrate token")
