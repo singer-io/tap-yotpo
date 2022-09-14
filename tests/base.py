@@ -72,7 +72,7 @@ class YotpoBaseTest(unittest.TestCase):
             'orders': {
                 self.PRIMARY_KEYS: {'yotpo_id'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {'updated_at'}
+                self.REPLICATION_KEYS: {'order_date'}
             },
             'order_fulfillments': {
                 self.PRIMARY_KEYS: {'id'},
