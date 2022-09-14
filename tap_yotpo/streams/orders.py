@@ -30,10 +30,10 @@ class Orders(IncrementalStream, UrlEndpointMixin):
             LOGGER.info("Calling Page %s", page_count)
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
-            # retrive records from response.orders key
+            # retrieve records from response.orders key
             raw_records = response.get(self.stream, [])
 
-            # retrive pagination from response.pagination.next_page_info key
+            # retrieve pagination from response.pagination.next_page_info key
             next_param = response.get("pagination", {}).get("next_page_info", None)
 
             if not raw_records:
@@ -55,14 +55,14 @@ class Orders(IncrementalStream, UrlEndpointMixin):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
                 except IndexError as _:
-                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
+                    LOGGER.error("Unable to process Record, Exception occurred: %s for stream %s", _, self.__class__)
                     continue
                 if record_timestamp >= current_bookmark_date_utc:
                     write_record(self.tap_stream_id, transformer.transform(record, schema, stream_metadata))
                     max_bookmark = max(max_bookmark, record_timestamp)
                     counter.increment()
                 else:
-                    LOGGER.warning("Skipping Record Older than the timestamp")
+                    LOGGER.warning("Skipping Older Record, order-id - ******%s", str(record["yotpo_id"])[-4:])
 
             state = self.write_bookmark(state, value=strftime(max_bookmark))
         return state

@@ -2,7 +2,7 @@
 
 
 class ClientError(Exception):
-    """class representing Genric Http error."""
+    """class representing Generic Http error."""
 
     message = None
 

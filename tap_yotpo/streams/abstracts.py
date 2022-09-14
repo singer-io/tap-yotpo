@@ -23,7 +23,7 @@ class BaseStream(ABC):
     ~~~
     Provides:
      - Basic Attributes (stream_name,replication_method,key_properties)
-     - Helper methods for catalog genration
+     - Helper methods for catalog generation
      - `sync` and `get_records` method for performing sync
     """
 
@@ -155,7 +155,7 @@ class IncrementalStream(BaseStream):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
                 except IndexError as _:
-                    LOGGER.error("Unable to process Record, Exception occured: %s for stream %s", _, self.__class__)
+                    LOGGER.error("Unable to process Record, Exception occurred: %s for stream %s", _, self.__class__)
                     continue
                 if record_timestamp >= current_bookmark_date_utc:
                     transformed_record = transformer.transform(record, schema, stream_metadata)
@@ -195,5 +195,5 @@ class UrlEndpointMixin:
     url_endpoint = ""
 
     def get_url_endpoint(self) -> str:
-        """Returns a formated endpoint using the stream attributes."""
+        """Returns a formatted endpoint using the stream attributes."""
         return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])

@@ -61,14 +61,14 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
         extraction_url = self.base_url.replace("PRODUCT_ID", product__external_id)
         config_start = self.client.config.get(self.config_start_key, False)
         bookmark_date = current_max = max(strptime_to_utc(bookmark_date), strptime_to_utc(config_start))
-        next_page = True
+        next_page, prod_map = True, None
         filtered_records = []
         while next_page:
-
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
-
             response = response.get("response", {})
             raw_records = response.get("reviews", [])
+            if not prod_map:
+                prod_map = {px["id"]: px["name"] for px in response.get("products", [])}
             current_page = response.get("pagination", {}).get("page", None)
             total_records = response.get("pagination", {}).get("total", None)
             max_pages = max(ceil(total_records / params["per_page"]), 1)
@@ -76,17 +76,19 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
             if not raw_records:
                 break
 
-            LOGGER.info(
-                "Page: (%s/%s) Total Records: %s", current_page, max(ceil(total_records / 150), 1), total_records
-            )
+            LOGGER.info("Page: (%s/%s)", current_page, max(ceil(total_records / 150), 1))
 
             for record in raw_records:
                 record_timestamp = strptime_to_utc(record[self.replication_key])
                 if record_timestamp >= bookmark_date:
-                    current_max = max(current_max, record_timestamp)
-                    record["domain_key"] = product__external_id
-                    record["product_yotpo_id"] = product__yotpo_id
-                    filtered_records.append(record)
+                    try:
+                        current_max = max(current_max, record_timestamp)
+                        record["domain_key"] = product__external_id
+                        record["product_yotpo_id"] = product__yotpo_id
+                        record["name"] = prod_map[record["product_id"]]
+                        filtered_records.append(record)
+                    except KeyError as _:
+                        LOGGER.fatal("Error: %s for prod_id %s ", str(_), product__yotpo_id[-4:])
                 else:
                     next_page = False
 
@@ -95,7 +97,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
             if params["page"] > max_pages:
                 next_page = False
 
-        return (filtered_records, current_max)
+        return (filtered_records, current_max, total_records)
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
         """Sync implementation for `product_reviews` stream."""
@@ -112,8 +114,8 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
                     product__yotpo_id = str(product__yotpo_id)
                     if skip_product(product__external_id):
                         LOGGER.info(
-                            "Skipping Prod *****%s (%s/%s),Cant fetch reviews for products with special charecters %s",
-                            str(product__yotpo_id)[-4:],
+                            "Skipping Prod *****%s (%s/%s),Can't fetch reviews for products with special characters %s",
+                            product__yotpo_id[-4:],
                             index,
                             prod_len,
                             product__external_id,
@@ -123,12 +125,15 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
                     LOGGER.info("Sync for prod *****%s (%s/%s)", product__yotpo_id[-4:], index, prod_len)
 
                     bookmark_date = self.get_bookmark(state, product__yotpo_id)
-                    records, max_bookmark = self.get_records(product__external_id, product__yotpo_id, bookmark_date)
+                    records, max_bookmark, total_records = self.get_records(
+                        product__external_id, product__yotpo_id, bookmark_date
+                    )
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
                         counter.increment()
 
+                    LOGGER.info("Total records : %s, Total records synced : %s", total_records, len(records))
                     state = self.write_bookmark(state, product__yotpo_id, strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", product__yotpo_id)
                     write_state(state)

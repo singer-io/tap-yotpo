@@ -47,7 +47,7 @@ This tap:
    The `start_date` parameter determines the starting date for incremental syncs. The `email_stats_lookback_days` parameter
    is used to fetch updated email statistics (opens, clicks, etc) for emails sent by Yotpo. The `reviews_lookback_days`
    parameter is used to re-fetch reviews that have been updated (or deleted) since the last time they were synced.
-   The `request_timeout` is an optional paramater to set timeout for requests. Default: 300 seconds
+   The `request_timeout` is an optional parameter to set timeout for requests. Default: 300 seconds
 
 4. Run the Tap in Discovery Mode
 

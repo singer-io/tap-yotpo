@@ -7,29 +7,38 @@
       "type": "integer"
     },
     "created_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "updated_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "external_id": {
       "type": "string"
     },
     "name": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "description": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "status": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "url": {
@@ -39,85 +48,94 @@
       ]
     },
     "store_id": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "is_valid_url_format": {
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "image_url": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "price": {
       "type": [
-        "integer",
-        "null"
+        "null",
+        "integer"
       ]
     },
     "compare_at_price": {
       "type": [
-        "integer",
-        "null"
+        "null",
+        "integer"
       ]
     },
     "currency": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "inventory_quantity": {
       "type": [
-        "integer",
-        "null"
+        "null",
+        "integer"
       ]
     },
     "is_discontinued": {
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "group_name": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "brand": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "sku": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "mpn": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "handle": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ]
     },
     "external_created_at": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
     "external_updated_at": {
       "type": [
-        "string",
-        "null"
+        "null",
+        "string"
       ],
       "format": "date-time"
     },
