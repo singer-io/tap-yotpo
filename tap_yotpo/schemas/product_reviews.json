@@ -28,6 +28,13 @@
       ],
       "format": "date-time"
     },
+    "deleted": {
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "description": "Available in APi Response Object"
+    },
     "score": {
       "type": [
         "null",
@@ -71,6 +78,12 @@
       "type": [
         "number",
         "null"
+      ]
+    },
+    "custom_fields": {
+      "type": [
+        "null",
+        "object"
       ]
     },
     "product_id": {

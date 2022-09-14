@@ -84,19 +84,22 @@
       "type": [
         "null",
         "boolean"
-      ]
+      ],
+      "description": "Available in APi Response Object"
     },
     "archived": {
       "type": [
         "null",
         "boolean"
-      ]
+      ],
+      "description": "Available in APi Response Object"
     },
     "escalated": {
       "type": [
         "null",
         "boolean"
-      ]
+      ],
+      "description": "Available in APi Response Object"
     },
     "user_reference": {
       "type": [

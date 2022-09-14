@@ -38,7 +38,7 @@
         "null",
         "boolean"
       ],
-      "description": "Actual response shows `is_valid_url_format` whereas documentation mentions `is_valid_url`"
+      "description": "Actual response shows `is_valid_url_format` whereas documentation mention `is_valid_url`"
     },
     "image_url": {
       "type": [
@@ -49,13 +49,13 @@
     "price": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "compare_at_price": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "currency": {
@@ -147,7 +147,7 @@
         "null",
         "integer"
       ],
-      "description": "Actual response shows `yotpo_product_id` whereas documentation does not mentions it"
+      "description": "Actual response shows `yotpo_product_id` whereas documentation does not mention it"
     }
   },
   "additionalProperties": false
