@@ -8,7 +8,7 @@
         "null",
         "integer"
       ],
-      "description": "Actual response displays `id` whereas documentation mentions `yotpo_id`"
+      "description": "Actual response displays `id` whereas documentation mention `yotpo_id`"
     },
     "external_id": {
       "type": [
@@ -21,7 +21,7 @@
         "null",
         "string"
       ],
-      "description": "Actual response shows `order_id` whereas documentation mentions `yotpo_order_id`"
+      "description": "Actual response shows `order_id` whereas documentation mention `yotpo_order_id`"
     },
     "fulfillment_date": {
       "type": [
