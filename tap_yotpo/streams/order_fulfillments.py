@@ -59,7 +59,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin):
         filtered_records = []
         page_count, params = 1, {}
         while True:
-            LOGGER.info("Calling Page %s", page_count)
+            LOGGER.info("Fetching Page %s", page_count)
 
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 

@@ -16,18 +16,23 @@ class Orders(IncrementalStream, UrlEndpointMixin):
     stream = "orders"
     tap_stream_id = "orders"
     key_properties = ["yotpo_id"]
-    replication_key = "updated_at"
-    valid_replication_keys = ["updated_at"]
+    replication_key = "order_date"
+    valid_replication_keys = ["order_date"]
     api_auth_version = ApiSpec.API_V3
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/orders"
 
-    def get_records(self) -> Iterator[Dict]:
+    def get_records(self, start_date: str = None) -> Iterator[Dict]:
         """performs api querying and pagination of response."""
         extraction_url = self.get_url_endpoint()
         page_count, params = 1, {}
+        if start_date:
+            params["order_date_min"] = strftime(start_date)
+        else:
+            LOGGER.info("Executing Order Stream without date filter %s", params)
+
         while True:
-            LOGGER.info("Calling Page %s", page_count)
+            LOGGER.info("Fetching Page %s", page_count)
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
 
             # retrieve records from response.orders key
@@ -40,6 +45,12 @@ class Orders(IncrementalStream, UrlEndpointMixin):
                 LOGGER.warning("No records found on Page %s", page_count)
                 break
             params["page_info"] = next_param
+
+            # if `order_date_min` param is passed with page_info, it will break the api resulting in 400 error
+            # the date is stored in the page_info cursor which sends the filtered records without requiring
+            # the filter param for further pages
+            if "order_date_min" in params:
+                del params["order_date_min"]
             page_count += 1
             yield from raw_records
             if not next_param:
@@ -51,7 +62,7 @@ class Orders(IncrementalStream, UrlEndpointMixin):
         max_bookmark = current_bookmark_date_utc = strptime_to_utc(current_bookmark_date)
 
         with metrics.record_counter(self.tap_stream_id) as counter:
-            for record in self.get_records():
+            for record in self.get_records(current_bookmark_date_utc):
                 try:
                     record_timestamp = strptime_to_utc(record[self.replication_key])
                 except IndexError as _:
