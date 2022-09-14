@@ -47,12 +47,6 @@
         "string"
       ]
     },
-    "store_id": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "is_valid_url_format": {
       "type": [
         "null",
@@ -164,25 +158,9 @@
     },
     "custom_properties": {
       "type": [
-        "object",
-        "null"
-      ],
-      "properties": {
-        "created_at": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time"
-        },
-        "updated_at": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "format": "date-time"
-        }
-      }
+        "null",
+        "object"
+      ]
     }
   },
   "additionalProperties": false
