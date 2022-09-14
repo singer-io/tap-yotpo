@@ -16,7 +16,7 @@ class YotpoAllFields(YotpoBaseTest):
         """
 
         # Streams to verify all fields tests
-        expected_streams = {'product_reviews','reviews'} #self.expected_streams()
+        expected_streams = self.expected_streams()
 
         expected_automatic_fields = self.expected_automatic_fields()
         conn_id = connections.ensure_connection(self)
