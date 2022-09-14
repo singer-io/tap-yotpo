@@ -31,13 +31,13 @@
     "total_price": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "subtotal_price": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "currency": {
@@ -68,15 +68,142 @@
       "type": [
         "null",
         "object"
-      ]
+      ],
+      "properties": {
+        "cancellation_date": {
+          "type": [
+            "null",
+            "string"
+          ],
+          "format": "date-time"
+        }
+      }
     },
     "billing_address": {
       "type": [
         "null",
         "object"
-      ]
+      ],
+      "properties": {
+        "address1": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "address2": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "city": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "company": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "state": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "zip": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "province_code": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "country_code": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "phone_number": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
     },
     "shipping_address": {
+      "type": [
+        "null",
+        "object"
+      ],
+      "properties": {
+        "address1": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "address2": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "city": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "company": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "state": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "zip": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "province_code": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "country_code": {
+          "type": [
+            "null",
+            "string"
+          ]
+        },
+        "phone_number": {
+          "type": [
+            "null",
+            "string"
+          ]
+        }
+      }
+    },
+    "custom_properties": {
       "type": [
         "null",
         "object"
@@ -233,7 +360,7 @@
               "null",
               "integer"
             ],
-            "description": "Actual response displays `yotpo_id` whereas documentation mentions `yotpo_product_id`"
+            "description": "Actual response displays `yotpo_id` whereas documentation mention `yotpo_product_id`"
           },
           "created_at": {
             "type": [
@@ -258,13 +385,13 @@
           "total_price": {
             "type": [
               "null",
-              "integer"
+              "number"
             ]
           },
           "subtotal_price": {
             "type": [
               "null",
-              "integer"
+              "number"
             ]
           },
           "coupon_code": {
@@ -278,12 +405,18 @@
               "null",
               "string"
             ],
-            "description": "Actual response contains `product_id` whereas documentation does not mentions it."
+            "description": "Actual response contains `product_id` whereas documentation does not mention it."
           },
           "external_product_id": {
             "type": [
               "null",
               "string"
+            ]
+          },
+          "custom_properties": {
+            "type": [
+              "null",
+              "object"
             ]
           }
         }

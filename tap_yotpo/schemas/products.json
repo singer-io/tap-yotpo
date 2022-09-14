@@ -51,7 +51,8 @@
       "type": [
         "null",
         "boolean"
-      ]
+      ],
+      "description": "Actual response displays `is_valid_url_format` whereas documentation mention `is_valid_url`"
     },
     "image_url": {
       "type": [
@@ -62,13 +63,13 @@
     "price": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "compare_at_price": {
       "type": [
         "null",
-        "integer"
+        "number"
       ]
     },
     "currency": {
@@ -117,7 +118,8 @@
       "type": [
         "null",
         "string"
-      ]
+      ],
+      "description": "Actual response shows `handle` whereas documentation does not mention it"
     },
     "external_created_at": {
       "type": [
@@ -151,7 +153,8 @@
             "type": [
               "string",
               "null"
-            ]
+            ],
+            "description": "Actual response shows `detected_type` whereas documentation does not mention it"
           }
         }
       }
