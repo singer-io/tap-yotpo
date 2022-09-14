@@ -47,7 +47,7 @@ class YotpoBaseTest(unittest.TestCase):
         """The expected streams and metadata about the streams"""
         return {
             'emails': {
-                self.PRIMARY_KEYS: {'email_address','email_type','email_sent_timestamp'},
+                self.PRIMARY_KEYS: {'email_address', 'email_sent_timestamp'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'}
             },
