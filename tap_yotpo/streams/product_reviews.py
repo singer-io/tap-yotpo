@@ -57,7 +57,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     ) -> Tuple[List, datetime]:
         # pylint: disable=W0221
         """performs api querying and pagination of response."""
-        params = {"page": 1, "per_page": 150, "sort": ["date", "time"], "direction": "desc"}
+        params = {"page": 1, "per_page": 150, "sort": "date", "direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", product__external_id)
         config_start = self.client.config.get(self.config_start_key, False)
         bookmark_date = current_max = max(strptime_to_utc(bookmark_date), strptime_to_utc(config_start))
