@@ -11,7 +11,7 @@ setup(
     py_modules=["tap_yotpo"],
     install_requires=[
         "singer-python==5.12.1",
-        "requests==2.28.1",
+        "requests",
     ],
     extras_require={
         "dev": [
