@@ -1,5 +1,4 @@
 from tap_tester import connections, runner, menagerie
-from tap_tester.logger import LOGGER
 from base import YotpoBaseTest
 
 class YotpoAllFields(YotpoBaseTest):

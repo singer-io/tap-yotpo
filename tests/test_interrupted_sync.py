@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from tap_tester import connections, menagerie, runner
 from base import YotpoBaseTest
 from tap_tester.logger import LOGGER
@@ -79,7 +77,6 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
         # Run a first sync job using orchestrator
         first_sync_record_count = self.run_and_verify_sync(conn_id)
-        first_sync_records = runner.get_records_from_target_output()
         first_sync_bookmarks = menagerie.get_state(conn_id)
         
         LOGGER.info(f"first_sync_record_count = {first_sync_record_count}")

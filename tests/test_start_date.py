@@ -1,6 +1,3 @@
-from asyncio import streams
-from datetime import datetime as dt
-
 import tap_tester.connections as connections
 import tap_tester.runner as runner
 from base import YotpoBaseTest

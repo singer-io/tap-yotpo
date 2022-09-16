@@ -379,10 +379,10 @@ class YotpoBaseTest(unittest.TestCase):
         """
         Function to find the middle date between two dates
         """
-        DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_date_dt = dt.strptime(start_date, DATE_FORMAT)
-        bookmark_date_dt = dt.strptime(bookmark_date, DATE_FORMAT)
+        date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
+        start_date_dt = dt.strptime(start_date, date_format)
+        bookmark_date_dt = dt.strptime(bookmark_date, date_format)
         mid_date_dt = start_date_dt.date() + (bookmark_date_dt-start_date_dt) / 2
         # Convert datetime object to string format
-        mid_date = mid_date_dt.strftime(DATE_FORMAT)
+        mid_date = mid_date_dt.strftime(date_format)
         return mid_date
