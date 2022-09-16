@@ -100,6 +100,7 @@ class Client:
             errors.Http404RequestError,
             errors.Http406RequestError,
             errors.Http500RequestError,
+            errors.Http502RequestError,
             errors.Http503RequestError,
             errors.Http504RequestError,
         ),
