@@ -38,6 +38,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     def __init__(self, client=None) -> None:
         super().__init__(client)
         self.base_url = self.get_url_endpoint()
+        self.page_size = int(self.client.config.get("page_size", 0) or 150)
 
     def get_products(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interuption."""
@@ -57,7 +58,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     ) -> Tuple[List, datetime]:
         # pylint: disable=W0221
         """performs api querying and pagination of response."""
-        params = {"page": 1, "per_page": 150, "sort": "date", "direction": "desc"}
+        params = {"page": 1, "per_page": self.page_size, "sort": "date", "direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", product__external_id)
         config_start = self.client.config.get(self.config_start_key, False)
         bookmark_date = current_max = max(strptime_to_utc(bookmark_date), strptime_to_utc(config_start))

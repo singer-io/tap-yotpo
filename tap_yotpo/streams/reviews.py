@@ -23,11 +23,15 @@ class Reviews(IncrementalStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
+    def __init__(self, client=None) -> None:
+        super().__init__(client)
+        self.page_size = int(self.client.config.get("page_size", 0) or 100)
+
     def get_records(self, start_date: Optional[str]) -> Iterator[Dict]:
         """performs querying and pagination of reviews resource."""
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
-        params = {"page": 1, "count": 100, "since_updated_at": start_date}
+        params = {"page": 1, "count": self.page_size, "since_updated_at": start_date}
         while True:
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])

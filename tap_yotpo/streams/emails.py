@@ -17,12 +17,16 @@ class Emails(IncrementalStream, UrlEndpointMixin):
 
     stream = "emails"
     tap_stream_id = "emails"
-    key_properties = ["email_address", "email_type", "email_sent_timestamp"]
+    key_properties = ["email_address", "email_sent_timestamp"]
     replication_key = "email_sent_timestamp"
     valid_replication_keys = ["email_sent_timestamp"]
     api_auth_version = ApiSpec.API_V1
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/analytics/v1/emails/APP_KEY/export/raw_data"
+
+    def __init__(self, client=None) -> None:
+        super().__init__(client)
+        self.page_size = int(self.client.config.get("page_size", 0) or 1000)
 
     def get_records(self, start_date: str) -> Iterator[Dict]:
         """performs querying and pagination of email resource."""
@@ -30,7 +34,7 @@ class Emails(IncrementalStream, UrlEndpointMixin):
         extraction_url = self.get_url_endpoint()
         params = {
             "page": 1,
-            "per_page": 1000,
+            "per_page": self.page_size,
             "sort": "descending",
             "since": start_date,
             "until": datetime.today().strftime(DATE_FORMAT),
