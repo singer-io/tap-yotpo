@@ -2,6 +2,7 @@
 Test tap pagination of streams
 """
 
+from math import ceil
 from tap_tester import runner, connections
 from base import YotpoBaseTest
 
