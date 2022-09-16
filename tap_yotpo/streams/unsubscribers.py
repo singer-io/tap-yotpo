@@ -4,12 +4,12 @@ from typing import Dict, Iterator
 from singer import get_logger
 
 from ..helpers import ApiSpec
-from .abstracts import FullTableStream, UrlEndpointMixin
+from .abstracts import FullTableStream, UrlEndpointMixin, PageSizeMixin
 
 LOGGER = get_logger()
 
 
-class Unsubscribers(FullTableStream, UrlEndpointMixin):
+class Unsubscribers(FullTableStream, UrlEndpointMixin, PageSizeMixin):
     """class for unsubscribers stream."""
 
     stream = "unsubscribers"
@@ -17,10 +17,7 @@ class Unsubscribers(FullTableStream, UrlEndpointMixin):
     key_properties = ["id"]
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/apps/APP_KEY/unsubscribers"
-
-    def __init__(self, client=None) -> None:
-        super().__init__(client)
-        self.page_size = int(self.client.config.get("page_size", 0) or 5000)
+    default_page_size = 5000
 
     def get_records(self) -> Iterator[Dict]:
         extraction_url = self.get_url_endpoint()

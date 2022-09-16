@@ -187,13 +187,30 @@ class FullTableStream(BaseStream):
         return state
 
 
+
 class UrlEndpointMixin:
     """A mixin for url formatting of URL's."""
 
     # pylint: disable=R0903; Mixin implementation
 
-    url_endpoint = ""
+    url_endpoint :str = ""
 
     def get_url_endpoint(self) -> str:
         """Returns a formatted endpoint using the stream attributes."""
         return self.url_endpoint.replace("APP_KEY", self.client.config["api_key"])
+
+
+class PageSizeMixin:
+    """
+    Adds a getter method to fetch page_size for current stream
+    """
+
+    default_page_size = 100
+
+    @property
+    def page_size(self) ->int:
+        """returns the `page_size` from config if present, else returns the self.default_page_size"""
+        try:
+            return int(getattr(self,"client").config.get("page_size", self.default_page_size))
+        except (AttributeError):
+            return self.default_page_size
