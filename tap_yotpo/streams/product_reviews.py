@@ -33,7 +33,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     api_auth_version = ApiSpec.API_V1
     # points to the attribute of the config that marks the first-start-date for the stream
     config_start_key = "start_date"
-    url_endpoint = " https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
+    url_endpoint = "https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
 
     def __init__(self, client=None) -> None:
         super().__init__(client)
@@ -58,7 +58,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     ) -> Tuple[List, datetime]:
         # pylint: disable=W0221
         """performs api querying and pagination of response."""
-        params = {"page": 1, "per_page": self.page_size, "sort": ["date", "time"], "direction": "desc"}
+        params = {"page": 1, "per_page": self.page_size, "sort": "date", "direction": "desc"}
         extraction_url = self.base_url.replace("PRODUCT_ID", product__external_id)
         config_start = self.client.config.get(self.config_start_key, False)
         bookmark_date = current_max = max(strptime_to_utc(bookmark_date), strptime_to_utc(config_start))

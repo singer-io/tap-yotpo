@@ -3,13 +3,13 @@ from typing import Any, Dict, Mapping, Optional, Tuple
 
 import backoff
 import requests
-import singer
 from requests import session
+from singer import get_logger, metrics
 
 from . import exceptions as errors
 from .helpers import ApiSpec
 
-LOGGER = singer.get_logger()
+LOGGER = get_logger()
 
 
 def raise_for_error(response: requests.Response) -> None:
@@ -48,6 +48,8 @@ class Client:
         self.config = config
         self._session = session()
         self.__utoken = None
+        self.req_counter: metrics.Counter = None
+        self.req_timer: metrics.Timer = None
 
     def _get_auth_token(self, force: Optional[bool] = False):
         if self.__utoken and not force:
@@ -96,6 +98,7 @@ class Client:
         exception=(
             errors.Http400RequestError,
             errors.Http404RequestError,
+            errors.Http406RequestError,
             errors.Http500RequestError,
             errors.Http502RequestError,
             errors.Http503RequestError,
@@ -121,6 +124,8 @@ class Client:
             Dict,List,None: Returns a `Json Parsed` HTTP Response or None if exception
         """
         response = self._session.request(method, endpoint, **kwargs)
+        if self.req_counter:
+            self.req_counter.increment()
         if response.status_code != 200:
             try:
                 LOGGER.error("Failed due: %s", response.text)

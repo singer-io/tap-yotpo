@@ -35,6 +35,12 @@ class Http404RequestError(ClientError):
     message = "Resource not found"
 
 
+class Http406RequestError(ClientError):
+    """class representing 406 status code."""
+
+    message = "Nadav Nadav Exception"
+
+
 class Http429RequestError(ClientError):
     """class representing 429 status code."""
 
