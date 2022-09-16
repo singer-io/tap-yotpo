@@ -24,7 +24,7 @@ class Unsubscribers(FullTableStream, UrlEndpointMixin):
 
     def get_records(self) -> Iterator[Dict]:
         extraction_url = self.get_url_endpoint()
-        params = {"page": 1, "count": 1000}
+        params = {"page": 1, "count": self.page_size}
         while True:
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
             raw_records = response.get("response", {}).get(self.stream, [])

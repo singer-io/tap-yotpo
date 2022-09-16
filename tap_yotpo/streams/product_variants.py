@@ -36,8 +36,6 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin):
 
     def __init__(self, client=None) -> None:
         super().__init__(client)
-        self.sync_prod: bool = True
-        self.last_synced: bool = False
         self.base_url = self.get_url_endpoint()
         self.page_size = int(self.client.config.get("page_size", 0) or 100)
 
