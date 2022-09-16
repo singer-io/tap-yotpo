@@ -68,7 +68,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
         # Run in check mode
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
-        # table and field selection
+        # Table and field selection
         catalog_entries = [catalog for catalog in found_catalogs
                            if catalog.get('tap_stream_id') in expected_streams]
         
@@ -110,10 +110,10 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
         for stream in expected_streams:
             LOGGER.info(f"Executing for stream = {stream}")
             with self.subTest(stream=stream):
-                # expected values
+                # Expected values
                 expected_replication_method = expected_replication_methods[stream]
 
-                # collect information for assertions from syncs 1 & 2 base on expected values
+                # Collect information for assertions from syncs 1 & 2 base on expected values
                 first_sync_count = first_sync_record_count.get(stream, 0)
                 second_sync_count = second_sync_record_count.get(stream, 0)
                 second_sync_messages = [record.get('data') for record in

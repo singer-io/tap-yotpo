@@ -8,6 +8,7 @@ from base import YotpoBaseTest
 
 
 class YotpoPaginationTest(YotpoBaseTest):
+    """Checking the pagination is working properly or not for the streams supporting pagination"""
 
     def __init__(self, methodName: str = ...) -> None:
         super().__init__(methodName)
@@ -19,6 +20,7 @@ class YotpoPaginationTest(YotpoBaseTest):
         return "tap_tester_yotpo_pagination_test"
 
     def get_properties(self, original: bool = False):
+        """Configuration of properties required for the tap."""
         return_value = {
             'start_date': '2021-01-01T00:00:00Z',
             'email_stats_lookback_days': 30,
@@ -31,12 +33,14 @@ class YotpoPaginationTest(YotpoBaseTest):
         return return_value
 
     def validate_pagination(self, page_size, stream_records):
+        """
+        Verify records are more than page size so multiple page is working
+        Chunk the replicated records (just primary keys) into expected pages
+        """
         record_count = len(stream_records)
         if record_count < page_size:
             return True
 
-        # verify records are more than page size so multiple page is working
-        # Chunk the replicated records (just primary keys) into expected pages
         pages = []
         page_count = ceil(len(stream_records) / page_size)
         for page_index in range(page_count):
@@ -52,12 +56,14 @@ class YotpoPaginationTest(YotpoBaseTest):
                     if current_index == other_index:
                         continue  # don't compare the page to itself
 
-                    # verify there are no dupes between pages
+                    # Verify there are no duplicates between pages
                     self.assertTrue(
                         current_page.isdisjoint(other_page), msg=f'other_page_primary_keys={other_page}')
         return True
 
     def test_run(self):
+        """Executing run_test with different page_size values for different streams"""
+        
         # Skipping streams emails and unsubscribers because of insufficient test data
         testable_streams = self.expected_streams() - {"emails", "unsubscribers"}
         
@@ -66,14 +72,14 @@ class YotpoPaginationTest(YotpoBaseTest):
         self.run_test({"product_reviews", "product_variants", "order_fulfillments"}, 50)
 
     def run_test(self, expected_streams, page_size):
-        # Checking pagination for streams with enough data
+        """Checking pagination for streams with enough data"""
         self.streams_to_test = expected_streams
         self.page_size = page_size
 
         conn_id = connections.ensure_connection(self)
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
-        # table and field selection
+        # Table and field selection
         test_catalogs = [catalog for catalog in found_catalogs
                          if catalog.get('stream_name') in expected_streams]
 
@@ -85,17 +91,17 @@ class YotpoPaginationTest(YotpoBaseTest):
 
         for stream in expected_streams:
             with self.subTest(stream=stream):
-                # expected values
+                # Expected values
                 expected_primary_keys = self.expected_primary_keys()
 
-                # collect information for assertions from syncs 1 & 2 base on expected values
+                # Collect information for assertions from syncs 1 & 2 base on expected values
                 record_count_sync = record_count_by_stream.get(stream, 0)
                 stream_records = [tuple(message.get('data')
                                         for expected_pk in expected_primary_keys[stream])
                                   for message in synced_records.get(stream).get('messages')
                                   if message.get('action') == 'upsert']
 
-                # verify records are more than page size so multiple page is working
+                # Verify records are more than page size so multiple page is working
                 self.assertGreater(record_count_sync, page_size)
 
                 if stream in ["product_reviews", "order_fulfillments", "product_variants"]:
@@ -128,10 +134,10 @@ class YotpoPaginationTest(YotpoBaseTest):
                         pagination_records_found,
                         msg=f"Not enough test data, either add more test data or reduce the page_size={page_size}")
                 else:
-                    # expected values
+                    # Expected values
                     expected_primary_keys = self.expected_primary_keys()
 
-                    # collect information for assertions from syncs 1 & 2 base on expected values
+                    # Collect information for assertions from syncs 1 & 2 base on expected values
                     record_count_sync = record_count_by_stream.get(stream, 0)
                     primary_keys_list = [tuple(message.get('data').get(expected_pk)
                                             for expected_pk in expected_primary_keys[stream])

@@ -1,6 +1,17 @@
 from tap_tester import connections, runner, menagerie
 from base import YotpoBaseTest
 
+
+# As we are not able to generate following fields by yotpo post apis, so removed it form expectation list.
+KNOWN_MISSING_FIELDS = {
+    'product_reviews': {
+        'comment',
+        'images_data'
+    },
+    'reviews': {
+        'user_reference'
+    }
+}
 class YotpoAllFields(YotpoBaseTest):
     """Ensure running the tap with all streams and fields selected results in the replication of all fields."""
      
@@ -61,7 +72,7 @@ class YotpoAllFields(YotpoBaseTest):
                 messages = synced_records.get(stream)
                 # Collect actual values
                 actual_all_keys = set()
-                expected_all_keys = expected_all_keys - {'user_reference', 'comment', 'images_data'}
+                expected_all_keys = expected_all_keys - KNOWN_MISSING_FIELDS.get(stream, set())
                 for message in messages['messages']:
                     if message['action'] == 'upsert':
                         actual_all_keys.update(message['data'].keys())
