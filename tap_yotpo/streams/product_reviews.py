@@ -16,13 +16,13 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec, skip_product
 
-from .abstracts import IncrementalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin,PageSizeMixin
 from .products import Products
 
 LOGGER = get_logger()
 
 
-class ProductReviews(IncrementalStream, UrlEndpointMixin):
+class ProductReviews(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
     """class for product_reviews stream."""
 
     stream = "product_reviews"
@@ -34,11 +34,11 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin):
     # points to the attribute of the config that marks the first-start-date for the stream
     config_start_key = "start_date"
     url_endpoint = "https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
+    default_page_size = 150
 
     def __init__(self, client=None) -> None:
         super().__init__(client)
         self.base_url = self.get_url_endpoint()
-        self.page_size = int(self.client.config.get("page_size", 0) or 150)
 
     def get_products(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interuption."""

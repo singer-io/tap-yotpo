@@ -6,12 +6,12 @@ from singer import get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncrementalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin, PageSizeMixin
 
 LOGGER = get_logger()
 
 
-class Reviews(IncrementalStream, UrlEndpointMixin):
+class Reviews(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
     """class for `reviews` stream."""
 
     stream = "reviews"
@@ -22,10 +22,6 @@ class Reviews(IncrementalStream, UrlEndpointMixin):
     config_start_key = "start_date"
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
-
-    def __init__(self, client=None) -> None:
-        super().__init__(client)
-        self.page_size = int(self.client.config.get("page_size", 0) or 100)
 
     def get_records(self, start_date: Optional[str]) -> Iterator[Dict]:
         """performs querying and pagination of reviews resource."""

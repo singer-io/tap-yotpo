@@ -5,13 +5,13 @@ from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncrementalStream, UrlEndpointMixin
+from .abstracts import IncrementalStream, UrlEndpointMixin, PageSizeMixin
 
 LOGGER = get_logger()
 DATE_FORMAT = "%Y-%m-%d"
 
 
-class Collections(IncrementalStream, UrlEndpointMixin):
+class Collections(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
     """class for collections stream."""
 
     stream = "collections"
@@ -23,9 +23,6 @@ class Collections(IncrementalStream, UrlEndpointMixin):
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/collections"
 
-    def __init__(self, client=None) -> None:
-        super().__init__(client)
-        self.page_size = int(self.client.config.get("page_size", 0) or 100)
 
     def get_records(self) -> List:
         """performs api querying and pagination of response."""
@@ -51,7 +48,6 @@ class Collections(IncrementalStream, UrlEndpointMixin):
                 break
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
-        """Sync implementation for `collections` stream."""
         bookmark_date = self.get_bookmark(state)
         current_max_bookmark_date = bookmark_date_to_utc = strptime_to_utc(bookmark_date)
         skip_record_count = 0

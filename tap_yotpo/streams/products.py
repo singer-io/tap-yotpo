@@ -4,12 +4,12 @@ from typing import Dict, Iterator, List
 from singer import Transformer, get_logger, metrics, write_record
 
 from ..helpers import ApiSpec
-from .abstracts import FullTableStream, UrlEndpointMixin
+from .abstracts import FullTableStream, UrlEndpointMixin, PageSizeMixin
 
 LOGGER = get_logger()
 
 
-class Products(FullTableStream, UrlEndpointMixin):
+class Products(FullTableStream, UrlEndpointMixin,PageSizeMixin):
     """class for products stream."""
 
     stream = "products"
@@ -17,10 +17,6 @@ class Products(FullTableStream, UrlEndpointMixin):
     key_properties = ["yotpo_id"]
     api_auth_version = ApiSpec.API_V3
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products"
-
-    def __init__(self, client=None) -> None:
-        super().__init__(client)
-        self.page_size = int(self.client.config.get("page_size", 0) or 100)
 
     def get_records(self) -> Iterator[Dict]:
         """performs api querying and pagination of response."""
