@@ -69,7 +69,7 @@ class YotpoPaginationTest(YotpoBaseTest):
         
         # Depending on test data data availability passing page_size value to verify pagination implementation
         self.run_test(testable_streams - {"product_reviews", "product_variants", "order_fulfillments"}, 20)
-        self.run_test({"product_reviews", "product_variants", "order_fulfillments"}, 50)
+        self.run_test(testable_streams - {"product_reviews", "product_variants", "order_fulfillments"}, 30)
 
     def run_test(self, expected_streams, page_size):
         """Checking pagination for streams with enough data"""
