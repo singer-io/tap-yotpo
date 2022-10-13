@@ -15,13 +15,13 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec
 
-from .abstracts import IncrementalStream, UrlEndpointMixin,PageSizeMixin
+from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
 from .products import Products
 
 LOGGER = get_logger()
 
 
-class ProductVariants(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
+class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     """class for product_variants stream."""
 
     stream = "product_variants"
@@ -38,7 +38,7 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
         super().__init__(client)
         self.base_url = self.get_url_endpoint()
 
-    def get_products(self, state) -> Tuple[List, int]:
+    def get_products(self, state: Dict) -> Tuple[List, int]:
         """Returns index for sync resuming on interruption."""
         shared_product_ids = Products(self.client).prefetch_product_ids()
         last_synced = get_bookmark(state, self.tap_stream_id, "currently_syncing", False)

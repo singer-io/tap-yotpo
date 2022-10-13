@@ -1,5 +1,6 @@
 """tap-yotpo discover module."""
 import json
+from typing import Dict
 
 from singer.catalog import Catalog
 
@@ -8,10 +9,8 @@ from tap_yotpo.helpers import ApiSpec, get_abs_path
 from tap_yotpo.streams import STREAMS
 
 
-def discover(config=None):
-    """
-    TODO: Permission Check
-    """
+def discover(config: Dict = None):
+    """Performs Discovery for tap-yotpo."""
     if config:
         client = Client(config)
         client.authenticate({}, {}, ApiSpec.API_V3)
