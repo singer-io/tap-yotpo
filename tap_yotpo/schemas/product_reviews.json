@@ -93,7 +93,10 @@
       ]
     },
     "user": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
         "user_id": {
           "type": "integer"
@@ -125,7 +128,10 @@
       }
     },
     "images_data": {
-      "type": ["null","array"],
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "object",
         "properties": {
@@ -148,7 +154,10 @@
       }
     },
     "comment": {
-      "type": ["null", "object"],
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
         "id": {
           "type": "integer"

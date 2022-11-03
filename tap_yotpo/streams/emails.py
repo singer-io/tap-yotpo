@@ -6,13 +6,13 @@ from singer import Transformer, get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncrementalStream, UrlEndpointMixin,PageSizeMixin
+from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
 
 LOGGER = get_logger()
 DATE_FORMAT = "%Y-%m-%d"
 
 
-class Emails(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
+class Emails(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     """class for emails stream."""
 
     stream = "emails"
@@ -24,7 +24,6 @@ class Emails(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/analytics/v1/emails/APP_KEY/export/raw_data"
     default_page_size = 1000
-
 
     def get_records(self, start_date: str) -> Iterator[Dict]:
         """performs querying and pagination of email resource."""

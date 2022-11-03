@@ -4,12 +4,12 @@ from typing import Dict, Iterator, List
 from singer import Transformer, get_logger, metrics, write_record
 
 from ..helpers import ApiSpec
-from .abstracts import FullTableStream, UrlEndpointMixin, PageSizeMixin
+from .abstracts import FullTableStream, PageSizeMixin, UrlEndpointMixin
 
 LOGGER = get_logger()
 
 
-class Products(FullTableStream, UrlEndpointMixin,PageSizeMixin):
+class Products(FullTableStream, UrlEndpointMixin, PageSizeMixin):
     """class for products stream."""
 
     stream = "products"

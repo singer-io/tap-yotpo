@@ -15,7 +15,7 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec
 
-from .abstracts import IncrementalStream, UrlEndpointMixin, PageSizeMixin
+from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
 from .orders import Orders
 
 LOGGER = singer.get_logger()
