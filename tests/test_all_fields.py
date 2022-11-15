@@ -10,6 +10,13 @@ KNOWN_MISSING_FIELDS = {
     },
     'reviews': {
         'user_reference'
+    },
+    'orders': {
+        'shipping_address',
+        'payment_status',
+        'cancellation',
+        'custom_properties',
+        'billing_address'
     }
 }
 
