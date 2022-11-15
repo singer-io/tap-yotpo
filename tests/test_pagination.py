@@ -10,7 +10,7 @@ from base import YotpoBaseTest
 class YotpoPaginationTest(YotpoBaseTest):
     """Checking the pagination is working properly or not for the streams supporting pagination"""
 
-    def __init__(self, methodName: str = ...) -> None:
+    def __init__(self, methodName=...):
         super().__init__(methodName)
         self.streams_to_test = None
         self.page_size = None
@@ -19,7 +19,7 @@ class YotpoPaginationTest(YotpoBaseTest):
     def name():
         return "tap_tester_yotpo_pagination_test"
 
-    def get_properties(self, original: bool = False):
+    def get_properties(self, original=False):
         """Configuration of properties required for the tap."""
         return_value = {
             'start_date': '2021-01-01T00:00:00Z',
@@ -57,19 +57,19 @@ class YotpoPaginationTest(YotpoBaseTest):
                         continue  # don't compare the page to itself
 
                     # Verify there are no duplicates between pages
-                    self.assertTrue(
-                        current_page.isdisjoint(other_page), msg=f'other_page_primary_keys={other_page}')
+                    self.assertTrue(current_page.isdisjoint(other_page),
+                                    msg=f'other_page_primary_keys={other_page}')
         return True
 
     def test_run(self):
         """Executing run_test with different page_size values for different streams"""
-        
+
         # Skipping streams emails and unsubscribers because of insufficient test data
         testable_streams = self.expected_streams() - {"emails", "unsubscribers"}
-        
+
         # Depending on test data data availability passing page_size value to verify pagination implementation
         self.run_test(testable_streams - {"product_reviews", "product_variants", "order_fulfillments"}, 20)
-        self.run_test({"product_variants","order_fulfillments"},30)
+        self.run_test({"product_variants", "order_fulfillments"}, 30)
 
     def run_test(self, expected_streams, page_size):
         """Checking pagination for streams with enough data"""
@@ -96,8 +96,7 @@ class YotpoPaginationTest(YotpoBaseTest):
 
                 # Collect information for assertions from syncs 1 & 2 base on expected values
                 record_count_sync = record_count_by_stream.get(stream, 0)
-                stream_records = [tuple(message.get('data')
-                                        for expected_pk in expected_primary_keys[stream])
+                stream_records = [tuple(message.get('data') for expected_pk in expected_primary_keys[stream])
                                   for message in synced_records.get(stream).get('messages')
                                   if message.get('action') == 'upsert']
 
@@ -119,20 +118,18 @@ class YotpoPaginationTest(YotpoBaseTest):
                         if current_product_id == parent_id:
                             current_product_id_records.append((primary_key, parent_id))
                         else:
-                            pagination_records_found = pagination_records_found or len(current_product_id_records) > page_size
-                            self.assertTrue(
-                                self.validate_pagination(page_size, current_product_id_records))
+                            pagination_records_found = pagination_records_found or len(
+                                current_product_id_records) > page_size
+                            self.assertTrue(self.validate_pagination(page_size, current_product_id_records))
                             current_product_id = parent_id
                             current_product_id_records = [(primary_key, parent_id)]
 
                     pagination_records_found = pagination_records_found or len(current_product_id_records) > page_size
 
-                    self.assertTrue(
-                        self.validate_pagination(page_size, current_product_id_records))
+                    self.assertTrue(self.validate_pagination(page_size, current_product_id_records))
 
-                    self.assertTrue(
-                        pagination_records_found,
-                        msg=f"Not enough test data, either add more test data or reduce the page_size={page_size}")
+                    self.assertTrue(pagination_records_found,
+                                    msg=f"Not enough test data, either add more test data or reduce the page_size={page_size}")
                 else:
                     # Expected values
                     expected_primary_keys = self.expected_primary_keys()
@@ -140,12 +137,11 @@ class YotpoPaginationTest(YotpoBaseTest):
                     # Collect information for assertions from syncs 1 & 2 base on expected values
                     record_count_sync = record_count_by_stream.get(stream, 0)
                     primary_keys_list = [tuple(message.get('data').get(expected_pk)
-                                            for expected_pk in expected_primary_keys[stream])
-                                        for message in synced_records.get(stream).get('messages')
-                                        if message.get('action') == 'upsert']
+                                               for expected_pk in expected_primary_keys[stream])
+                                         for message in synced_records.get(stream).get('messages')
+                                         if message.get('action') == 'upsert']
 
-                    self.assertGreater(
-                        record_count_sync, page_size, msg=f"Not enough test data, either add more test data or reduce the page_size={page_size}")
+                    self.assertGreater(record_count_sync, page_size,
+                                       msg=f"Not enough test data, either add more test data or reduce the page_size={page_size}")
 
-                    self.assertTrue(
-                        self.validate_pagination(page_size, primary_keys_list))
+                    self.assertTrue(self.validate_pagination(page_size, primary_keys_list))

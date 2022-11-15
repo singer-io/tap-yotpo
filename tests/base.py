@@ -9,6 +9,7 @@ import unittest
 from tap_tester import connections, menagerie, runner
 from tap_tester.logger import LOGGER
 
+
 class YotpoBaseTest(unittest.TestCase):
     """
     Setup expectations for test sub classes.
@@ -28,8 +29,7 @@ class YotpoBaseTest(unittest.TestCase):
     def expected_replication_method(self):
         """Return a dictionary with key of table name nd value of replication method"""
         return {table: properties.get(self.REPLICATION_METHOD, None)
-                for table, properties
-                in self.expected_metadata().items()}
+                for table, properties in self.expected_metadata().items()}
 
     def setUp(self):
         """Checking required environment variables"""
@@ -50,16 +50,40 @@ class YotpoBaseTest(unittest.TestCase):
     def expected_metadata(self):
         """The expected streams and metadata about the streams"""
         return {
+            'collections': {
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'},
+                self.OBEYS_START_DATE: True
+            },
             'emails': {
                 self.PRIMARY_KEYS: {'email_address', 'email_sent_timestamp'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'email_sent_timestamp'},
                 self.OBEYS_START_DATE: True
             },
+            'order_fulfillments': {
+                self.PRIMARY_KEYS: {'id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'},
+                self.OBEYS_START_DATE: True
+            },
+            'orders': {
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'order_date'},
+                self.OBEYS_START_DATE: True
+            },
             'product_reviews': {
                 self.PRIMARY_KEYS: {'id'},
                 self.REPLICATION_METHOD: self.INCREMENTAL,
                 self.REPLICATION_KEYS: {'created_at'},
+                self.OBEYS_START_DATE: True
+            },
+            'product_variants': {
+                self.PRIMARY_KEYS: {'yotpo_id'},
+                self.REPLICATION_METHOD: self.INCREMENTAL,
+                self.REPLICATION_KEYS: {'updated_at'},
                 self.OBEYS_START_DATE: True
             },
             'products': {
@@ -77,30 +101,6 @@ class YotpoBaseTest(unittest.TestCase):
                 self.PRIMARY_KEYS: {'id'},
                 self.REPLICATION_METHOD: self.FULL_TABLE,
                 self.OBEYS_START_DATE: False
-            },
-            'orders': {
-                self.PRIMARY_KEYS: {'yotpo_id'},
-                self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {'order_date'},
-                self.OBEYS_START_DATE: True
-            },
-            'order_fulfillments': {
-                self.PRIMARY_KEYS: {'id'},
-                self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {'updated_at'},
-                self.OBEYS_START_DATE: True
-            },
-            'product_variants': {
-                self.PRIMARY_KEYS: {'yotpo_id'},
-                self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {'updated_at'},
-                self.OBEYS_START_DATE: True
-            },
-            'collections': {
-                self.PRIMARY_KEYS: {'yotpo_id'},
-                self.REPLICATION_METHOD: self.INCREMENTAL,
-                self.REPLICATION_KEYS: {'updated_at'},
-                self.OBEYS_START_DATE: True
             }
         }
 
@@ -114,8 +114,7 @@ class YotpoBaseTest(unittest.TestCase):
         and value as a set of primary key fields
         """
         return {table: properties.get(self.PRIMARY_KEYS, set())
-                for table, properties
-                in self.expected_metadata().items()}
+                for table, properties in self.expected_metadata().items()}
 
     def parse_date(self, date_value):
         """
@@ -143,14 +142,12 @@ class YotpoBaseTest(unittest.TestCase):
         and value as a set of replication key fields
         """
         return {table: properties.get(self.REPLICATION_KEYS, set())
-                for table, properties
-                in self.expected_metadata().items()}
+                for table, properties in self.expected_metadata().items()}
 
     def get_credentials(self):
         """Authentication information for the test account"""
         return {'api_key': os.getenv('TAP_YOTPO_API_KEY'),
-                'api_secret': os.getenv('TAP_YOTPO_API_SECRET')
-        }
+                'api_secret': os.getenv('TAP_YOTPO_API_SECRET')}
 
     def get_properties(self, original: bool = True):
         """Configuration of properties required for the tap."""
@@ -172,7 +169,6 @@ class YotpoBaseTest(unittest.TestCase):
             auto_fields[k] = v.get(self.PRIMARY_KEYS, set()) | v.get(self.REPLICATION_KEYS, set())
         return auto_fields
 
-
     def run_and_verify_check_mode(self, conn_id):
         """
         Run the tap in check mode and verify it succeeds.
@@ -189,7 +185,7 @@ class YotpoBaseTest(unittest.TestCase):
         found_catalogs = menagerie.get_catalogs(conn_id)
         self.assertGreater(len(found_catalogs), 0, msg="unable to locate schemas for connection {}".format(conn_id))
 
-        found_catalog_names = set(map(lambda c: c['stream_name'] , found_catalogs))
+        found_catalog_names = set(map(lambda c: c['stream_name'], found_catalogs))
 
         self.assertSetEqual(self.expected_streams(), found_catalog_names, msg="discovered schemas do not match")
         LOGGER.info("discovered schemas are OK")
@@ -212,18 +208,13 @@ class YotpoBaseTest(unittest.TestCase):
         # Verify actual rows were synced
         sync_record_count = runner.examine_target_output_file(
             self, conn_id, self.expected_streams(), self.expected_primary_keys())
-        self.assertGreater(
-            sum(sync_record_count.values()), 0,
-            msg="failed to replicate any data: {}".format(sync_record_count)
-        )
+        self.assertGreater(sum(sync_record_count.values()), 0,
+                           msg="failed to replicate any data: {}".format(sync_record_count))
         LOGGER.info("total replicated row count: {}".format(sum(sync_record_count.values())))
-
         return sync_record_count
 
-    def perform_and_verify_table_and_field_selection(self,
-                                                     conn_id,
-                                                     test_catalogs,
-                                                     select_all_fields=True):
+    def perform_and_verify_table_and_field_selection(self, conn_id,
+                                                     test_catalogs, select_all_fields=True):
         """
         Perform table and field selection based off of the streams to select
         set and field selection parameters.
@@ -232,9 +223,7 @@ class YotpoBaseTest(unittest.TestCase):
         """
 
         # Select all available fields or select no fields from all testable streams
-        self.select_all_streams_and_fields(
-            conn_id=conn_id, catalogs=test_catalogs, select_all_fields=select_all_fields
-        )
+        self.select_all_streams_and_fields(conn_id=conn_id, catalogs=test_catalogs, select_all_fields=select_all_fields)
 
         catalogs = menagerie.get_catalogs(conn_id)
 
@@ -255,8 +244,7 @@ class YotpoBaseTest(unittest.TestCase):
                 # Verify all fields within each selected stream are selected
                 for field, field_props in catalog_entry.get('annotated-schema').get('properties').items():
                     field_selected = field_props.get('selected')
-                    LOGGER.info("\tValidating selection on {}.{}: {}".format(
-                        cat['stream_name'], field, field_selected))
+                    LOGGER.info("\tValidating selection on {}.{}: {}".format(cat['stream_name'], field, field_selected))
                     self.assertTrue(field_selected, msg="Field not selected.")
             else:
                 # Verify only automatic fields are selected
@@ -270,17 +258,14 @@ class YotpoBaseTest(unittest.TestCase):
         selected_fields = set()
         for field in metadata:
             is_field_metadata = len(field['breadcrumb']) > 1
-            inclusion_automatic_or_selected = (
-                field['metadata']['selected'] is True or \
-                field['metadata']['inclusion'] == 'automatic'
-            )
+            inclusion_automatic_or_selected = (field['metadata']['selected'] is True or
+                                               field['metadata']['inclusion'] == 'automatic')
             if is_field_metadata and inclusion_automatic_or_selected:
                 selected_fields.add(field['breadcrumb'][1])
         return selected_fields
 
-
     @staticmethod
-    def select_all_streams_and_fields(conn_id, catalogs, select_all_fields: bool = True):
+    def select_all_streams_and_fields(conn_id, catalogs, select_all_fields=True):
         """Select all streams and all fields within streams"""
         for catalog in catalogs:
             schema = menagerie.get_annotated_schema(conn_id, catalog['stream_id'])
@@ -288,11 +273,9 @@ class YotpoBaseTest(unittest.TestCase):
             non_selected_properties = []
             if not select_all_fields:
                 # Get a list of all properties so that none are selected
-                non_selected_properties = schema.get('annotated-schema', {}).get(
-                    'properties', {}).keys()
+                non_selected_properties = schema.get('annotated-schema', {}).get('properties', {}).keys()
 
-            connections.select_catalog_and_fields_via_metadata(
-                conn_id, catalog, schema, [], non_selected_properties)
+            connections.select_catalog_and_fields_via_metadata(conn_id, catalog, schema, [], non_selected_properties)
 
     def timedelta_formatted(self, dtime, dt_format, days=0):
         """
@@ -314,33 +297,33 @@ class YotpoBaseTest(unittest.TestCase):
         at least 1 record but, fewer records than the previous sync.
         If the test data is changed in the future this will break expectations for this test.
         """
-        timedelta_by_stream = {stream: [0,0,0,5]  # {stream_name: [days, hours, minutes, seconds], ...}
+        timedelta_by_stream = {stream: [0, 0, 0, 5]  # {stream_name: [days, hours, minutes, seconds], ...}
                                for stream in self.expected_streams()}
-        
+
         stream_to_calculated_state = {stream: "" for stream in current_state['bookmarks'].keys()}
         for stream, state in current_state['bookmarks'].items():
             state_format = '%Y-%m-%dT%H:%M:%S-00:00'
-            if stream in ['product_reviews','order_fulfillments','product_variants'] :
+            if stream in ['product_reviews', 'order_fulfillments', 'product_variants']:
                 new_state = {}
-                for state_key in state.keys() :
+                for state_key in state.keys():
                     state_value = next(iter(state.values()))
                     state_as_datetime = dateutil.parser.parse(state_value)
+
                     calculated_state_as_datetime = state_as_datetime - timedelta(*timedelta_by_stream[stream])
-
-
                     calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+
                     new_state[state_key] = calculated_state_formatted
                 stream_to_calculated_state[stream] = new_state
-            else :
+            else:
                 state_key, state_value = next(iter(state.keys())), next(iter(state.values()))
                 state_as_datetime = dateutil.parser.parse(state_value)
 
                 days, hours, minutes, seconds = timedelta_by_stream[stream]
-                calculated_state_as_datetime = state_as_datetime - timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
-
+                calculated_state_as_datetime = state_as_datetime - timedelta(days=days, hours=hours,
+                                                                             minutes=minutes, seconds=seconds)
                 calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
 
-                stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}               
+                stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}
 
         return stream_to_calculated_state
 
@@ -358,16 +341,18 @@ class YotpoBaseTest(unittest.TestCase):
         """Checking if the given stream is incremental or not"""
         return self.expected_metadata().get(stream).get(self.REPLICATION_METHOD) == self.INCREMENTAL
 
-    def create_interrupt_sync_state(self, state: Dict, interrupt_stream: str, pending_streams: Set, start_date: str) -> Dict:
+    def create_interrupt_sync_state(self, state, interrupt_stream, pending_streams, start_date):
         """
-        This function will create a new interrupt sync bookmark state
+        This function will create a new interrupt sync bookmark state 
+        where "currently_syncing" will have the non-null value 
+        and this state will be used to resume the data extraction.
         """
         expected_replication_keys = self.expected_replication_keys()
         bookmark_state = state['bookmarks']
         if self.is_incremental(interrupt_stream):
             if interrupt_stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
                 reverse_sorted_id_list = list(bookmark_state[interrupt_stream].keys())[::-1]
-                breakpoint = int(len(reverse_sorted_id_list)/2)
+                breakpoint = int(len(reverse_sorted_id_list) / 2)
                 # Update bookmark value in reverse order of keys
                 for index, id in enumerate(reverse_sorted_id_list):
                     if index >= breakpoint:
@@ -383,7 +368,7 @@ class YotpoBaseTest(unittest.TestCase):
                 bookmark_state[interrupt_stream][replication_key] = updated_bookmark_date
             state["currently_syncing"] = interrupt_stream
 
-        # For pending streams, update the bookmark_value to start-date 
+        # For pending streams, update the bookmark_value to start-date
         for stream in iter(pending_streams):
             # Only incremental streams should have the bookmark value
             if self.is_incremental(stream):
@@ -394,17 +379,17 @@ class YotpoBaseTest(unittest.TestCase):
                     replication_key = next(iter(expected_replication_keys[stream]))
                     bookmark_state[stream][replication_key] = start_date
             state["bookmarks"] = bookmark_state
-        
+
         return state
 
-    def get_mid_point_date(self, start_date: str, bookmark_date: str) -> str:
+    def get_mid_point_date(self, start_date, bookmark_date):
         """
         Function to find the middle date between two dates
         """
         date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
         start_date_dt = dt.strptime(start_date, date_format)
         bookmark_date_dt = dt.strptime(bookmark_date, date_format)
-        mid_date_dt = start_date_dt.date() + (bookmark_date_dt-start_date_dt) / 2
+        mid_date_dt = start_date_dt.date() + (bookmark_date_dt - start_date_dt) / 2
         # Convert datetime object to string format
         mid_date = mid_date_dt.strftime(date_format)
         return mid_date

@@ -12,9 +12,11 @@ KNOWN_MISSING_FIELDS = {
         'user_reference'
     }
 }
+
+
 class YotpoAllFields(YotpoBaseTest):
     """Ensure running the tap with all streams and fields selected results in the replication of all fields."""
-     
+
     def name(self):
         return "tap_tester_yotpo_all_fields_test"
 
@@ -66,8 +68,8 @@ class YotpoAllFields(YotpoBaseTest):
                 expected_automatic_keys = expected_automatic_fields.get(stream, set())
 
                 # Verify that more than just the automatic fields are replicated for each stream.
-                self.assertTrue(expected_automatic_keys.issubset(
-                    expected_all_keys), msg='{} is not in "expected_all_keys"'.format(expected_automatic_keys-expected_all_keys))
+                self.assertTrue(expected_automatic_keys.issubset(expected_all_keys), \
+                    msg='{} is not in "expected_all_keys"'.format(expected_automatic_keys - expected_all_keys))
 
                 messages = synced_records.get(stream)
                 # Collect actual values
