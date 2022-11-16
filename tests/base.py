@@ -1,3 +1,4 @@
+import copy
 from datetime import datetime as dt
 import dateutil.parser
 from datetime import timedelta
@@ -341,55 +342,61 @@ class YotpoBaseTest(unittest.TestCase):
         """Checking if the given stream is incremental or not"""
         return self.expected_metadata().get(stream).get(self.REPLICATION_METHOD) == self.INCREMENTAL
 
-    def create_interrupt_sync_state(self, state, interrupt_stream, pending_streams, start_date):
+    def create_interrupt_sync_state(self, state, interrupt_stream, pending_streams, sync_records):
         """
         This function will create a new interrupt sync bookmark state 
         where "currently_syncing" will have the non-null value 
         and this state will be used to resume the data extraction.
         """
         expected_replication_keys = self.expected_replication_keys()
-        bookmark_state = state['bookmarks']
+        interrupted_sync_states = copy.deepcopy(state)
+        bookmark_state = interrupted_sync_states["bookmarks"]
+        # Set the interrupt stream as currently syncing
+        interrupted_sync_states["currently_syncing"] = interrupt_stream
+
+        # For pending streams, removing the bookmark_value
+        for stream in pending_streams:
+            bookmark_state.pop(stream, None)
+
         if self.is_incremental(interrupt_stream):
+            # update state for chats stream and set the bookmark to a date earlier
+            interrupt_stream_bookmark = bookmark_state.get(interrupt_stream, {})
+            interrupt_stream_bookmark.pop("offset", None)
+
+            bookmark_keys = {
+                "product_reviews": "product_yotpo_id",
+                "order_fulfillments": "order_id",
+                "product_variants": "yotpo_product_id"}
+
+            replication_key = next(iter(expected_replication_keys[interrupt_stream]))
             if interrupt_stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
-                reverse_sorted_id_list = list(bookmark_state[interrupt_stream].keys())[::-1]
-                breakpoint = int(len(reverse_sorted_id_list) / 2)
-                # Update bookmark value in reverse order of keys
-                for index, id in enumerate(reverse_sorted_id_list):
-                    if index >= breakpoint:
-                        bookmark_state[interrupt_stream]["currently_syncing"] = id
-                        break
-                    bookmark_date = bookmark_state[interrupt_stream][id]
-                    updated_bookmark_date = self.get_mid_point_date(start_date, bookmark_date)
-                    bookmark_state[interrupt_stream][id] = updated_bookmark_date
-            else:
-                replication_key = next(iter(expected_replication_keys[interrupt_stream]))
-                bookmark_date = bookmark_state[interrupt_stream][replication_key]
-                updated_bookmark_date = self.get_mid_point_date(start_date, bookmark_date)
-                bookmark_state[interrupt_stream][replication_key] = updated_bookmark_date
-            state["currently_syncing"] = interrupt_stream
+                interrupt_stream_rec = {}
+                for record in sync_records.get(interrupt_stream).get("messages"):
+                    if record.get("action") == "upsert":
+                        rec = record.get("data")
+                        id_wise_records = interrupt_stream_rec.get(rec[bookmark_keys[interrupt_stream]],[])
+                        id_wise_records.append(rec)
+                        interrupt_stream_rec[rec[bookmark_keys[interrupt_stream]]] = id_wise_records
+ 
+                last_key = str(list(interrupt_stream_rec)[-1])
+                interrupt_stream_rec.popitem()
+                interrupt_stream_bookmark = bookmark_state[interrupt_stream]
+                
+                interrupt_stream_bookmark.pop(last_key)
+                interrupt_stream_bookmark['currently_syncing']= last_key
 
-        # For pending streams, update the bookmark_value to start-date
-        for stream in iter(pending_streams):
-            # Only incremental streams should have the bookmark value
-            if self.is_incremental(stream):
-                if stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
-                    for id in bookmark_state[stream].keys():
-                        bookmark_state[stream][id] = start_date
-                else:
-                    replication_key = next(iter(expected_replication_keys[stream]))
-                    bookmark_state[stream][replication_key] = start_date
-            state["bookmarks"] = bookmark_state
+                for key, value in interrupt_stream_rec.items():
+                    key_index = len(interrupt_stream_rec[key]) // 2 if len(interrupt_stream_rec[key]) > 1 else 0
+                    interrupt_stream_bookmark[key] = interrupt_stream_rec[key][key_index][replication_key]                
+            else :
+                interrupt_stream_rec = []
+                for record in sync_records.get(interrupt_stream).get("messages"):
+                    if record.get("action") == "upsert":
+                        rec = record.get("data")
+                        interrupt_stream_rec.append(rec)
+                interrupt_stream_index = len(interrupt_stream_rec) // 2 if len(interrupt_stream_rec) > 1 else 0
+                interrupt_stream_bookmark[replication_key] = interrupt_stream_rec[interrupt_stream_index][replication_key]
+            bookmark_state[interrupt_stream] = interrupt_stream_bookmark
+            interrupted_sync_states["bookmarks"] = bookmark_state
+        return interrupted_sync_states
 
-        return state
-
-    def get_mid_point_date(self, start_date, bookmark_date):
-        """
-        Function to find the middle date between two dates
-        """
-        date_format = "%Y-%m-%dT%H:%M:%S.%fZ"
-        start_date_dt = dt.strptime(start_date, date_format)
-        bookmark_date_dt = dt.strptime(bookmark_date, date_format)
-        mid_date_dt = start_date_dt.date() + (bookmark_date_dt - start_date_dt) / 2
-        # Convert datetime object to string format
-        mid_date = mid_date_dt.strftime(date_format)
-        return mid_date
