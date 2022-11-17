@@ -1,7 +1,7 @@
+from singer.utils import strptime_to_utc
 from tap_tester import connections, menagerie, runner
 from base import YotpoBaseTest
 from tap_tester.logger import LOGGER
-import copy
 
 
 class YotpoInterruptedSyncTest(YotpoBaseTest):
@@ -34,8 +34,6 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
           are replicated on the resuming sync for the interrupted stream.
         - Verify the pending streams are replicated following the interrupted stream in the resuming sync. 
         """
-
-        start_date = self.get_properties()['start_date'].replace('Z', '.000000Z')
         expected_streams = self.expected_streams() - {'product_reviews'}
         expected_replication_keys = self.expected_replication_keys()
         expected_replication_methods = self.expected_replication_method()
@@ -57,6 +55,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
         # Run a first sync job using orchestrator
         first_sync_record_count = self.run_and_verify_sync(conn_id)
+        first_sync_records = runner.get_records_from_target_output()
         first_sync_bookmarks = menagerie.get_state(conn_id)
 
         LOGGER.info(f"first_sync_record_count = {first_sync_record_count}")
@@ -70,10 +69,11 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
         completed_streams = {'collections', 'emails', 'order_fulfillments', 'orders', 'product_reviews'}
         pending_streams = {'reviews'}
         interrupt_stream = 'product_variants'
-        interrupted_sync_states = self.create_interrupt_sync_state(copy.deepcopy(first_sync_bookmarks), 
-                                                                   interrupt_stream, 
-                                                                   pending_streams, 
-                                                                   start_date)
+        interrupted_sync_states = self.create_interrupt_sync_state(first_sync_bookmarks,
+                                                                   interrupt_stream,
+                                                                   pending_streams,
+                                                                   first_sync_records)
+        bookmark_state = interrupted_sync_states["bookmarks"]
         menagerie.set_state(conn_id, interrupted_sync_states)
 
         LOGGER.info(f"Interrupted Bookmark - {interrupted_sync_states}")
@@ -84,6 +84,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
         second_sync_record_count = self.run_and_verify_sync(conn_id)
         second_sync_records = runner.get_records_from_target_output()
+
         second_sync_bookmarks = menagerie.get_state(conn_id)
         LOGGER.info(f"second_sync_record_count = {second_sync_record_count} \n second_sync_bookmarks = {second_sync_bookmarks}")
         ##########################################################################
@@ -99,18 +100,21 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                 # Collect information for assertions from syncs 1 & 2 base on expected values
                 first_sync_count = first_sync_record_count.get(stream, 0)
                 second_sync_count = second_sync_record_count.get(stream, 0)
-                second_sync_messages = [record.get('data') for record in
-                                        second_sync_records.get(stream, {}).get('messages', [])
-                                        if record.get('action') == 'upsert']
+
+                # Gather results
+                full_records = [message["data"] for message in first_sync_records[stream]["messages"]]
+                interrupted_records = [message["data"] for message in second_sync_records[stream]["messages"]]
+
                 first_bookmark_value = first_sync_bookmarks.get('bookmarks', {stream: None}).get(stream)
                 second_bookmark_value = second_sync_bookmarks.get('bookmarks', {stream: None}).get(stream)
-                LOGGER.info(f"first_bookmark_value = {first_bookmark_value} \n second_bookmark_value = {second_bookmark_value}")
+                LOGGER.info(f"first_bookmark_value = {first_bookmark_value} \n \
+                            second_bookmark_value = {second_bookmark_value}")
 
                 if expected_replication_method == self.INCREMENTAL:
 
                     replication_key = next(iter(expected_replication_keys[stream]))
 
-                    interrupted_bookmark_value = interrupted_sync_states['bookmarks'][stream]
+                    #interrupted_bookmark_value = interrupted_sync_states['bookmarks'][stream]
                     if stream in completed_streams:
                         # Verify at least 1 record was replicated in the second sync
                         self.assertGreaterEqual(second_sync_count,
@@ -125,58 +129,52 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                                              msg="For interrupted stream - {0}, \
                                              seconds sync record count should be less than or equal to first sync".format(stream))
 
+                        # Verify the interrupted sync replicates the expected record set
+                        # All interrupted recs are in full recs
+                        for record in interrupted_records:
+                            self.assertIn(record,
+                                          full_records,
+                                          msg="incremental table record in interrupted sync not found in full sync")
+
+                        if stream in {'product_reviews', 'product_variants', 'order_fulfillments'}:
+                            repl_key = {'product_reviews': 'product_yotpo_id',
+                                        'order_fulfillments': 'order_id',
+                                        'product_variants': 'yotpo_product_id'}
+
+                            for record in interrupted_records:
+                                rec_time = strptime_to_utc(record.get(replication_key))
+                                rec_repl_key = str(record[repl_key[stream]])
+                                interrupted_stream_state = bookmark_state[stream]
+                                if interrupted_stream_state['currently_syncing'] == rec_repl_key:
+                                    continue
+                                interrupted_bmk = interrupted_stream_state[rec_repl_key]
+                                self.assertGreaterEqual(rec_time, strptime_to_utc(interrupted_bmk))
+                        else:
+                            interrupted_bmk = strptime_to_utc(bookmark_state[stream][replication_key])
+                            for record in interrupted_records:
+                                rec_time = strptime_to_utc(record.get(replication_key))
+                                self.assertGreaterEqual(rec_time, strptime_to_utc(interrupted_bmk))
+
+                            # Record count for all streams of interrupted sync match expectations
+                            full_records_after_interrupted_bookmark = 0
+
+                            for record in full_records:
+                                rec_time = strptime_to_utc(record.get(replication_key))
+                                if rec_time >= strptime_to_utc(interrupted_bmk):
+                                    full_records_after_interrupted_bookmark += 1
+
+                            self.assertEqual(full_records_after_interrupted_bookmark,
+                                            len(interrupted_records),
+                                            msg=f"Expected {full_records_after_interrupted_bookmark} records in each sync",)
+
                     elif stream in pending_streams:
                         # First sync and second sync record count match
                         self.assertGreaterEqual(second_sync_count,
                                                 first_sync_count,
-                                                msg="For pending sync streams - {0}, \
-                                                second sync record count should be more than or equal to first sync".format(stream))
-
+                                                msg="For pending sync streams - {0}, second sync record count \
+                                                should be more than or equal to first sync".format(stream))
                     else:
                         raise Exception("Invalid state of stream {0} in interrupted state".format(stream))
-
-                    if stream in {'product_reviews', 'product_variants', 'order_fulfillments'}:
-                        repl_key = {'product_reviews': 'product_yotpo_id',
-                                    'order_fulfillments': 'order_id',
-                                    'product_variants': 'yotpo_product_id'
-                                    }[stream]
-                        for record in second_sync_messages:
-                            # Verify the second sync replication key value is Greater or Equal to the first sync bookmark for each id
-                            replication_key_value = record.get(replication_key)
-                            repl_key_id = str(record.get(repl_key))
-                            interrupt_bookmark_value = interrupted_bookmark_value[repl_key_id] \
-                                if repl_key_id in interrupted_bookmark_value.keys() else start_date
-
-                            self.assertLessEqual(interrupt_bookmark_value,
-                                                 replication_key_value,
-                                                 msg="Interrupt bookmark was set incorrectly,\
-                                                 a record with a lesser replication-key value was synced.\
-                                                 Record = {}".format(record))
-
-                            # Verify the second sync bookmark value is the max replication key value for a given id
-                            second_bookmark_id_value = second_bookmark_value[repl_key_id] if repl_key_id in second_bookmark_value.keys() else start_date
-                            self.assertLessEqual(replication_key_value,
-                                                 second_bookmark_id_value,
-                                                 msg="Second sync bookmark was set incorrectly,\
-                                                 a record with a greater replication-key value was synced.\
-                                                 Record = {}".format(record))
-                    else:
-                        for record in second_sync_messages:
-                            # Verify the second sync replication key value is Greater or Equal to the first sync bookmark
-                            replication_key_value = record.get(replication_key)
-
-                            self.assertLessEqual(interrupted_bookmark_value[replication_key],
-                                                 replication_key_value,
-                                                 msg="Interrupt bookmark was set incorrectly,\
-                                                 a record with a lesser replication-key value was synced.\
-                                                 Record = {}".format(record))
-
-                            # Verify the second sync bookmark value is the max replication key value for a given stream
-                            self.assertLessEqual(replication_key_value,
-                                                 second_bookmark_value[replication_key],
-                                                 msg="Second sync bookmark was set incorrectly,\
-                                                 a record with a greater replication-key value was synced.\
-                                                 Record = {}".format(record))
 
                 elif expected_replication_method == self.FULL_TABLE:
 
@@ -187,6 +185,5 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                     # Verify the number of records in the second sync is the same as the first
                     self.assertEqual(second_sync_count, first_sync_count)
                 else:
-
                     raise NotImplementedError("INVALID EXPECTATIONS\t\tSTREAM: {} \
                                               REPLICATION_METHOD: {}".format(stream, expected_replication_method))

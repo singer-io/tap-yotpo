@@ -368,15 +368,17 @@ class YotpoBaseTest(unittest.TestCase):
                 "order_fulfillments": "order_id",
                 "product_variants": "yotpo_product_id"}
 
+            repl_key = bookmark_keys[interrupt_stream]
             replication_key = next(iter(expected_replication_keys[interrupt_stream]))
             if interrupt_stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
                 interrupt_stream_rec = {}
                 for record in sync_records.get(interrupt_stream).get("messages"):
                     if record.get("action") == "upsert":
                         rec = record.get("data")
-                        id_wise_records = interrupt_stream_rec.get(rec[bookmark_keys[interrupt_stream]],[])
-                        id_wise_records.append(rec)
-                        interrupt_stream_rec[rec[bookmark_keys[interrupt_stream]]] = id_wise_records
+                        rec_id = str(rec[repl_key])
+                        id_wise_records = interrupt_stream_rec.get(rec_id,[])
+                        id_wise_records.append(rec)                        
+                        interrupt_stream_rec[rec_id] = id_wise_records
  
                 last_key = str(list(interrupt_stream_rec)[-1])
                 interrupt_stream_rec.popitem()
@@ -386,8 +388,8 @@ class YotpoBaseTest(unittest.TestCase):
                 interrupt_stream_bookmark['currently_syncing']= last_key
 
                 for key, value in interrupt_stream_rec.items():
-                    key_index = len(interrupt_stream_rec[key]) // 2 if len(interrupt_stream_rec[key]) > 1 else 0
-                    interrupt_stream_bookmark[key] = interrupt_stream_rec[key][key_index][replication_key]                
+                    key_index = len(value) // 2 if len(value) > 1 else 0
+                    interrupt_stream_bookmark[key] = value[key_index][replication_key]                
             else :
                 interrupt_stream_rec = []
                 for record in sync_records.get(interrupt_stream).get("messages"):
@@ -399,4 +401,3 @@ class YotpoBaseTest(unittest.TestCase):
             bookmark_state[interrupt_stream] = interrupt_stream_bookmark
             interrupted_sync_states["bookmarks"] = bookmark_state
         return interrupted_sync_states
-
