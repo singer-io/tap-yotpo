@@ -1,11 +1,32 @@
 # Changelog
 
-## 1 3.6
+## 2.0.0
+  * Code Refactoring [#46](https://github.com/singer-io/tap-yotpo/pull/46)
+    - New streams added from V3 Yotpo Api: `orders`, `order_fulfillments`, `product_variants` and `collections`
+    - Performance enhancement, support for interruptible sync & bookmarking fix for `product_reviews` stream
+    - Api Version Upgrade for existing streams
+    - Improved folder structure
+    - Schema Changes for existing streams
+    - Fixed vulnerable dependency of `requests` module
+    - Updated unit test cases
+    - Added pre-commit integration
+    - Added standard linter & formatter config with pyproject.toml' & setup.cfg` files
+    - Code refactoring, type hinting & increased readability
+
+  * Added Integration Tests [#50](https://github.com/singer-io/tap-yotpo/pull/50)
+    - Formatting changes [#52](https://github.com/singer-io/tap-yotpo/pull/52)
+
+  * Fixes Following issues :
+    - https://github.com/singer-io/tap-yotpo/issues/2
+    - https://github.com/singer-io/tap-yotpo/issues/3
+    - https://github.com/singer-io/tap-yotpo/issues/25
+
+## 1.3.6
   * Unit test cases  [#38](https://github.com/singer-io/tap-yotpo/pull/38)
   * Add response of unknown errors  [#37](https://github.com/singer-io/tap-yotpo/pull/37)
-## 1 3.5
+## 1.3.5
   * Update products schema to accept null values [#33](https://github.com/singer-io/tap-yotpo/pull/33)
-## 1 3.4
+## 1.3.4
   * Exception Handling for Error 500 [#31](https://github.com/singer-io/tap-yotpo/pull/31)
 
 ## 1.3.3
