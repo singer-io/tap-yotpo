@@ -114,7 +114,6 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
                     replication_key = next(iter(expected_replication_keys[stream]))
 
-                    #interrupted_bookmark_value = interrupted_sync_states['bookmarks'][stream]
                     if stream in completed_streams:
                         # Verify at least 1 record was replicated in the second sync
                         self.assertGreaterEqual(second_sync_count,

@@ -71,7 +71,7 @@ class YotpoAllFields(YotpoBaseTest):
             with self.subTest(stream=stream):
 
                 # Expected values
-                expected_all_keys = stream_to_all_catalog_fields[stream]
+                expected_all_keys = stream_to_all_catalog_fields[stream] - KNOWN_MISSING_FIELDS.get(stream, set())
                 expected_automatic_keys = expected_automatic_fields.get(stream, set())
 
                 # Verify that more than just the automatic fields are replicated for each stream.
@@ -81,7 +81,6 @@ class YotpoAllFields(YotpoBaseTest):
                 messages = synced_records.get(stream)
                 # Collect actual values
                 actual_all_keys = set()
-                expected_all_keys = expected_all_keys - KNOWN_MISSING_FIELDS.get(stream, set())
                 for message in messages['messages']:
                     if message['action'] == 'upsert':
                         actual_all_keys.update(message['data'].keys())
