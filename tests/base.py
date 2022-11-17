@@ -359,7 +359,7 @@ class YotpoBaseTest(unittest.TestCase):
             bookmark_state.pop(stream, None)
 
         if self.is_incremental(interrupt_stream):
-            # update state for chats stream and set the bookmark to a date earlier
+            # update state for interrupt stream and set the bookmark to a date earlier
             interrupt_stream_bookmark = bookmark_state.get(interrupt_stream, {})
             interrupt_stream_bookmark.pop("offset", None)
 
@@ -368,14 +368,13 @@ class YotpoBaseTest(unittest.TestCase):
                 "order_fulfillments": "order_id",
                 "product_variants": "yotpo_product_id"}
 
-            repl_key = bookmark_keys[interrupt_stream]
             replication_key = next(iter(expected_replication_keys[interrupt_stream]))
             if interrupt_stream in {'order_fulfillments', 'product_reviews', 'product_variants'}:
                 interrupt_stream_rec = {}
                 for record in sync_records.get(interrupt_stream).get("messages"):
                     if record.get("action") == "upsert":
                         rec = record.get("data")
-                        rec_id = str(rec[repl_key])
+                        rec_id = str(rec[bookmark_keys[interrupt_stream]])
                         id_wise_records = interrupt_stream_rec.get(rec_id,[])
                         id_wise_records.append(rec)                        
                         interrupt_stream_rec[rec_id] = id_wise_records
