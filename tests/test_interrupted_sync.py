@@ -21,10 +21,10 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
             'bookmarks': {
                 'collections': {'updated_at':'2022-09-05T14:54:55.000000Z'},
                 'emails': {'email_sent_timestamp':'2022-09-06T03:00:10.000000Z'},
-                'order_fulfillments':{'1234567890':'2022-09-02T04:32:15.000000Z','1234567890':'2022-09-02T04:32:15.000000Z'},
+                'order_fulfillments':{'order_id1':'2022-09-02T04:32:15.000000Z','order_id2':'2022-09-02T04:32:15.000000Z'},
                 'orders': {'updated_at': '2022-09-02T14:18:36.000000Z'},
-                'product_reviews':{'1111111111':'2021-01-01T00:00:00.000000Z','2222222222':'2021-01-01T00:00:00.000000Z'},
-                'product_variants': {'66666666': '2022-08-05T09:02:07.000000Z', 'currently_syncing': '77777777'},
+                'product_reviews':{'product_yotpo_id1':'2021-01-01T00:00:00.000000Z','product_yotpo_id2':'2021-01-01T00:00:00.000000Z'},
+                'product_variants': {'yotpo_product_id1': '2022-08-05T09:02:07.000000Z', 'currently_syncing': '77777777'},
                 'reviews': {'updated_at': '2021-01-01T00:00:00.000000Z'
                 }
             }
