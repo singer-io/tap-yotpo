@@ -1,23 +1,24 @@
-"""
-Test that with no fields selected for a stream automatic fields are still replicated
-"""
-from tap_tester import runner, connections
-
+"""Test that with no fields selected for a stream automatic fields are still
+replicated."""
 from base import YotpoBaseTest
+from tap_tester import connections, runner
 
 
 class YotpoAutomaticFields(YotpoBaseTest):
-    """Test that with no fields selected for a stream automatic fields are still replicated"""
+    """Test that with no fields selected for a stream automatic fields are
+    still replicated."""
 
     @staticmethod
     def name():
         return "tap_tester_yotpo_automatic_fields"
 
     def test_run(self):
-        """
-        • Verify we can deselect all fields except when inclusion=automatic, which is handled by base.py methods
+        """• Verify we can deselect all fields except when inclusion=automatic,
+        which is handled by base.py methods.
+
         • Verify that only the automatic fields are sent to the target.
-        • Verify that all replicated records have unique primary key values.
+        • Verify that all replicated records have unique primary key
+        values.
         """
 
         expected_streams = self.expected_streams()
@@ -29,12 +30,15 @@ class YotpoAutomaticFields(YotpoBaseTest):
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
         # Table and field selection
-        test_catalogs_automatic_fields = [catalog for catalog in found_catalogs
-                                          if catalog.get('stream_name') in expected_streams]
+        test_catalogs_automatic_fields = [
+            catalog for catalog in found_catalogs if catalog.get("stream_name") in expected_streams
+        ]
 
-        self.perform_and_verify_table_and_field_selection(conn_id, 
-                                                          test_catalogs_automatic_fields, 
-                                                          select_all_fields=False,)
+        self.perform_and_verify_table_and_field_selection(
+            conn_id,
+            test_catalogs_automatic_fields,
+            select_all_fields=False,
+        )
 
         # Run initial sync
         self.run_and_verify_sync(conn_id)
@@ -48,9 +52,12 @@ class YotpoAutomaticFields(YotpoBaseTest):
 
                 # Collect actual values
                 data = synced_records.get(stream, {})
-                record_messages_keys = [set(row.get('data').keys()) for row in data.get('messages', {})]
-                primary_keys_list = [tuple(message.get('data', {}).get(expected_pk) for expected_pk in expected_primary_keys)
-                                     for message in data.get('messages', []) if message.get('action') == 'upsert']
+                record_messages_keys = [set(row.get("data").keys()) for row in data.get("messages", {})]
+                primary_keys_list = [
+                    tuple(message.get("data", {}).get(expected_pk) for expected_pk in expected_primary_keys)
+                    for message in data.get("messages", [])
+                    if message.get("action") == "upsert"
+                ]
                 unique_primary_keys_list = set(primary_keys_list)
 
                 # Verify that only the automatic fields are sent to the target
@@ -58,6 +65,8 @@ class YotpoAutomaticFields(YotpoBaseTest):
                     self.assertSetEqual(expected_keys, actual_keys)
 
                 # Verify that all replicated records have unique primary key values.
-                self.assertEqual(len(primary_keys_list),
-                                 len(unique_primary_keys_list),
-                                 msg="Replicated record does not have unique primary key values.")
+                self.assertEqual(
+                    len(primary_keys_list),
+                    len(unique_primary_keys_list),
+                    msg="Replicated record does not have unique primary key values.",
+                )
