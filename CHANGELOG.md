@@ -1,25 +1,23 @@
 # Changelog
 
 ## 2.0.0
-  * Code Refactoring [#46](https://github.com/singer-io/tap-yotpo/pull/46)
-    - New streams added from V3 Yotpo Api: `orders`, `order_fulfillments`, `product_variants` and `collections`
-    - Performance enhancement, support for interruptible sync & bookmarking fix for `product_reviews` stream
-    - Api Version Upgrade for existing streams
-    - Improved folder structure
-    - Schema Changes for existing streams
-    - Fixed vulnerable dependency of `requests` module
-    - Updated unit test cases
-    - Added pre-commit integration
-    - Added standard linter & formatter config with pyproject.toml' & setup.cfg` files
-    - Code refactoring, type hinting & increased readability
+  * Code refactoring [#46](https://github.com/singer-io/tap-yotpo/pull/46)
+    * Add new streams `orders`, `order_fulfillments`, `product_variants` and `collections`
+    * Enhance performance and bookmarking strategy for `product_reviews` stream
+    * Api Version upgrade for existing streams
+    * Schema changes for existing streams
+    * Fix vulnerable dependency of `requests` module
+    * Handle custom exceptions by providing backoff support  
+    * Update unit test cases
+    * Add pre-commit integration
 
-  * Added Integration Tests [#50](https://github.com/singer-io/tap-yotpo/pull/50)
-    - Formatting changes [#52](https://github.com/singer-io/tap-yotpo/pull/52)
+  * Fixes following community issues :
+    * Stitch Integration error https://github.com/singer-io/tap-yotpo/issues/2
+    * The `emails` stream provides all historical data on each extraction https://github.com/singer-io/tap-yotpo/issues/3
+    * `reviews` table field selection not applying in Stitch https://github.com/singer-io/tap-yotpo/issues/25
 
-  * Fixes Following issues :
-    - https://github.com/singer-io/tap-yotpo/issues/2
-    - https://github.com/singer-io/tap-yotpo/issues/3
-    - https://github.com/singer-io/tap-yotpo/issues/25
+  * Added integration tests [#50](https://github.com/singer-io/tap-yotpo/pull/50) [#52](https://github.com/singer-io/tap-yotpo/pull/52)
+  * Support for python version 3.6+
 
 ## 1.3.6
   * Unit test cases  [#38](https://github.com/singer-io/tap-yotpo/pull/38)
