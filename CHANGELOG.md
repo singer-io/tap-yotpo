@@ -1,11 +1,30 @@
 # Changelog
 
-## 1 3.6
+## 2.0.0
+  * Code refactoring [#46](https://github.com/singer-io/tap-yotpo/pull/46)
+    * Add new streams `orders`, `order_fulfillments`, `product_variants` and `collections`
+    * Enhance performance and bookmarking strategy for `product_reviews` stream
+    * Api Version upgrade for existing streams
+    * Schema changes for existing streams
+    * Fix vulnerable dependency of `requests` module
+    * Handle custom exceptions by providing backoff support  
+    * Update unit test cases
+    * Add pre-commit integration
+
+  * Fixes following community issues :
+    * Stitch Integration error https://github.com/singer-io/tap-yotpo/issues/2
+    * The `emails` stream provides all historical data on each extraction https://github.com/singer-io/tap-yotpo/issues/3
+    * `reviews` table field selection not applying in Stitch https://github.com/singer-io/tap-yotpo/issues/25
+
+  * Added integration tests [#50](https://github.com/singer-io/tap-yotpo/pull/50) [#52](https://github.com/singer-io/tap-yotpo/pull/52)
+  * Support for python version 3.6+
+
+## 1.3.6
   * Unit test cases  [#38](https://github.com/singer-io/tap-yotpo/pull/38)
   * Add response of unknown errors  [#37](https://github.com/singer-io/tap-yotpo/pull/37)
-## 1 3.5
+## 1.3.5
   * Update products schema to accept null values [#33](https://github.com/singer-io/tap-yotpo/pull/33)
-## 1 3.4
+## 1.3.4
   * Exception Handling for Error 500 [#31](https://github.com/singer-io/tap-yotpo/pull/31)
 
 ## 1.3.3
