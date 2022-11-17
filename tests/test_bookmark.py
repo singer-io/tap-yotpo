@@ -1,26 +1,25 @@
 from base import YotpoBaseTest
 from singer.utils import strptime_to_utc
-
 from tap_tester import connections, menagerie, runner
 from tap_tester.logger import LOGGER
 
 
 class YotpoBookMarkTest(YotpoBaseTest):
-    """Test tap sets a bookmark and respects it for the next sync of a stream"""
+    """Test tap sets a bookmark and respects it for the next sync of a
+    stream."""
 
     def name(self):
         return "tap_tester_yotpo_bookmark_test"
 
     def test_run(self):
-        """
-        Verify that for each stream you can do a sync which records bookmarks.
-        That the bookmark is the maximum value sent to the target for the replication key.
-        That a second sync respects the bookmark
-            All data of the second sync is >= the bookmark from the first sync
-            The number of records in the 2nd sync is less then the first (This assumes that
-                new data added to the stream is done at a rate slow enough that you haven't
-                doubled the amount of data from the start date to the first sync between
-                the first sync and second sync run in this test)
+        """Verify that for each stream you can do a sync which records
+        bookmarks. That the bookmark is the maximum value sent to the target
+        for the replication key. That a second sync respects the bookmark All
+        data of the second sync is >= the bookmark from the first sync The
+        number of records in the 2nd sync is less then the first (This assumes
+        that new data added to the stream is done at a rate slow enough that
+        you haven't doubled the amount of data from the start date to the first
+        sync between the first sync and second sync run in this test)
 
         Verify that for full table stream, all data replicated in sync 1 is replicated again in sync 2.
 
@@ -29,13 +28,13 @@ class YotpoBookMarkTest(YotpoBaseTest):
             different values for the replication key
         """
         # Filtering the stream 'product_variants' to minimize the execution time of integration tests
-        expected_streams = self.expected_streams() - {'product_variants'}
+        expected_streams = self.expected_streams() - {"product_variants"}
         expected_replication_keys = self.expected_replication_keys()
         expected_replication_methods = self.expected_replication_method()
         # Lookback window for emails stream
-        expected_email_lookback_window = -1 * int(self.get_properties()['email_stats_lookback_days'])
+        expected_email_lookback_window = -1 * int(self.get_properties()["email_stats_lookback_days"])
         # Lookback window for reviews stream
-        expected_review_lookback_window = -1 * int(self.get_properties()['reviews_lookback_days'])
+        expected_review_lookback_window = -1 * int(self.get_properties()["reviews_lookback_days"])
         ##########################################################################
         # First Sync
         ##########################################################################
@@ -45,8 +44,7 @@ class YotpoBookMarkTest(YotpoBaseTest):
         found_catalogs = self.run_and_verify_check_mode(conn_id)
 
         # Table and field selection
-        catalog_entries = [catalog for catalog in found_catalogs
-                           if catalog.get('tap_stream_id') in expected_streams]
+        catalog_entries = [catalog for catalog in found_catalogs if catalog.get("tap_stream_id") in expected_streams]
 
         self.perform_and_verify_table_and_field_selection(conn_id, catalog_entries)
 
@@ -59,10 +57,10 @@ class YotpoBookMarkTest(YotpoBaseTest):
         # Update State Between Syncs
         ##########################################################################
 
-        new_states = {'bookmarks': dict()}
+        new_states = {"bookmarks": dict()}
         simulated_states = self.calculated_states_by_stream(first_sync_bookmarks)
         for stream, new_state in simulated_states.items():
-            new_states['bookmarks'][stream] = new_state
+            new_states["bookmarks"][stream] = new_state
         menagerie.set_state(conn_id, new_states)
 
         ##########################################################################
@@ -86,25 +84,33 @@ class YotpoBookMarkTest(YotpoBaseTest):
                 # Collect information for assertions from syncs 1 & 2 base on expected values
                 first_sync_count = first_sync_record_count.get(stream, 0)
                 second_sync_count = second_sync_record_count.get(stream, 0)
-                first_sync_messages = [record.get('data') for record in
-                                       first_sync_records.get(stream, {}).get('messages', [])
-                                       if record.get('action') == 'upsert']
-                second_sync_messages = [record.get('data') for record in
-                                        second_sync_records.get(stream, {}).get('messages', [])
-                                        if record.get('action') == 'upsert']
-                first_bookmark_key_value = first_sync_bookmarks.get('bookmarks', {stream: None}).get(stream)
-                second_bookmark_key_value = second_sync_bookmarks.get('bookmarks', {stream: None}).get(stream)
+                first_sync_messages = [
+                    record.get("data")
+                    for record in first_sync_records.get(stream, {}).get("messages", [])
+                    if record.get("action") == "upsert"
+                ]
+                second_sync_messages = [
+                    record.get("data")
+                    for record in second_sync_records.get(stream, {}).get("messages", [])
+                    if record.get("action") == "upsert"
+                ]
+                first_bookmark_key_value = first_sync_bookmarks.get("bookmarks", {stream: None}).get(stream)
+                second_bookmark_key_value = second_sync_bookmarks.get("bookmarks", {stream: None}).get(stream)
 
                 if expected_replication_method == self.INCREMENTAL:
                     # Collect information specific to incremental streams from syncs 1 & 2
                     replication_key = next(iter(expected_replication_keys[stream]))
-                    if stream in ['product_reviews', 'order_fulfillments', 'product_variants']:
-                        first_bookmark_value_utc = {key: self.convert_state_to_utc(value) \
-                            for key, value in first_bookmark_key_value.items()}
-                        second_bookmark_value_utc = {key: self.convert_state_to_utc(value) \
-                            for key, value in second_bookmark_key_value.items()}
-                        simulated_bookmark_value = {key: self.convert_state_to_utc(value) \
-                            for key, value in new_states['bookmarks'][stream].items()}
+                    if stream in ["product_reviews", "order_fulfillments", "product_variants"]:
+                        first_bookmark_value_utc = {
+                            key: self.convert_state_to_utc(value) for key, value in first_bookmark_key_value.items()
+                        }
+                        second_bookmark_value_utc = {
+                            key: self.convert_state_to_utc(value) for key, value in second_bookmark_key_value.items()
+                        }
+                        simulated_bookmark_value = {
+                            key: self.convert_state_to_utc(value)
+                            for key, value in new_states["bookmarks"][stream].items()
+                        }
 
                         simulated_bookmark_minus_lookback = simulated_bookmark_value
 
@@ -117,8 +123,9 @@ class YotpoBookMarkTest(YotpoBaseTest):
                         # Verify the second sync bookmark is Equal to the first sync bookmark
                         # assumes no changes to data during test
                         for item in first_bookmark_key_value.keys():
-                            self.assertGreaterEqual(second_bookmark_key_value.get(item),
-                                                    first_bookmark_key_value.get(item))
+                            self.assertGreaterEqual(
+                                second_bookmark_key_value.get(item), first_bookmark_key_value.get(item)
+                            )
 
                         # These 3 streams product_reviews,product_variants, and order_fulfillments are child streams of
                         # product and order streams, respectively.
@@ -130,33 +137,44 @@ class YotpoBookMarkTest(YotpoBaseTest):
                         bookmark_keys = {
                             "product_reviews": "product_yotpo_id",
                             "order_fulfillments": "order_id",
-                            "product_variants": "yotpo_product_id"}
+                            "product_variants": "yotpo_product_id",
+                        }
 
                         for record in first_sync_messages:
                             try:
                                 replication_key_value = record.get(replication_key)
                                 first_bookmark_value_utc_value = first_bookmark_value_utc[record[bookmark_keys[stream]]]
-                                self.assertLessEqual(replication_key_value,
-                                                     first_bookmark_value_utc_value,
-                                                     msg="First sync bookmark was set incorrectly, \
-                                                     a record with a greater replication-key value was synced.")
+                                self.assertLessEqual(
+                                    replication_key_value,
+                                    first_bookmark_value_utc_value,
+                                    msg="First sync bookmark was set incorrectly, \
+                                                     a record with a greater replication-key value was synced.",
+                                )
                             except KeyError:
                                 LOGGER.info("Key not found in the first bookmark value")
 
                         for record in second_sync_messages:
                             try:
                                 replication_key_value = record.get(replication_key)
-                                simulated_bookmark_minus_lookback_value = simulated_bookmark_minus_lookback[record[bookmark_keys[stream]]]
-                                self.assertGreaterEqual(replication_key_value,
-                                                        simulated_bookmark_minus_lookback_value,
-                                                        msg="Second sync records do not repeat the previous bookmark.")
+                                simulated_bookmark_minus_lookback_value = simulated_bookmark_minus_lookback[
+                                    record[bookmark_keys[stream]]
+                                ]
+                                self.assertGreaterEqual(
+                                    replication_key_value,
+                                    simulated_bookmark_minus_lookback_value,
+                                    msg="Second sync records do not repeat the previous bookmark.",
+                                )
 
-                                second_bookmark_value_utc_value = second_bookmark_value_utc[record[bookmark_keys[stream]]]
+                                second_bookmark_value_utc_value = second_bookmark_value_utc[
+                                    record[bookmark_keys[stream]]
+                                ]
                                 # Verify the second sync bookmark value is the max replication key value for a given stream
-                                self.assertLessEqual(replication_key_value,
-                                                     second_bookmark_value_utc_value,
-                                                     msg="Second sync bookmark was set incorrectly, \
-                                                     a record with a greater replication-key value was synced.")
+                                self.assertLessEqual(
+                                    replication_key_value,
+                                    second_bookmark_value_utc_value,
+                                    msg="Second sync bookmark was set incorrectly, \
+                                                     a record with a greater replication-key value was synced.",
+                                )
                             except KeyError:
                                 LOGGER.info("Key not found in the second bookmark value")
                     else:
@@ -164,17 +182,23 @@ class YotpoBookMarkTest(YotpoBaseTest):
                         second_bookmark_value = second_bookmark_key_value.get(replication_key)
                         first_bookmark_value_utc = self.convert_state_to_utc(first_bookmark_value)
                         second_bookmark_value_utc = self.convert_state_to_utc(second_bookmark_value)
-                        simulated_bookmark_value = self.convert_state_to_utc(new_states['bookmarks'][stream][replication_key])
+                        simulated_bookmark_value = self.convert_state_to_utc(
+                            new_states["bookmarks"][stream][replication_key]
+                        )
 
                         # Subtracting the days as per the lookback window value
-                        if stream == 'emails':
-                            simulated_bookmark_minus_lookback = self.timedelta_formatted(simulated_bookmark_value,
-                                                                                         self.BOOKMARK_COMPARISON_FORMAT,
-                                                                                         days=expected_email_lookback_window)
-                        elif stream == 'reviews':
-                            simulated_bookmark_minus_lookback = self.timedelta_formatted(simulated_bookmark_value,
-                                                                                         self.BOOKMARK_COMPARISON_FORMAT,
-                                                                                         days=expected_review_lookback_window)
+                        if stream == "emails":
+                            simulated_bookmark_minus_lookback = self.timedelta_formatted(
+                                simulated_bookmark_value,
+                                self.BOOKMARK_COMPARISON_FORMAT,
+                                days=expected_email_lookback_window,
+                            )
+                        elif stream == "reviews":
+                            simulated_bookmark_minus_lookback = self.timedelta_formatted(
+                                simulated_bookmark_value,
+                                self.BOOKMARK_COMPARISON_FORMAT,
+                                days=expected_review_lookback_window,
+                            )
                         else:
                             simulated_bookmark_minus_lookback = simulated_bookmark_value
 
@@ -193,27 +217,35 @@ class YotpoBookMarkTest(YotpoBaseTest):
                         for record in first_sync_messages:
                             # Verify the first sync bookmark value is the max replication key value for a given stream
                             replication_key_value = record.get(replication_key)
-                            self.assertLessEqual(replication_key_value,
-                                                 first_bookmark_value_utc,
-                                                 msg="First sync bookmark was set incorrectly, \
-                                                 a record with a greater replication-key value was synced.")
+                            self.assertLessEqual(
+                                replication_key_value,
+                                first_bookmark_value_utc,
+                                msg="First sync bookmark was set incorrectly, \
+                                                 a record with a greater replication-key value was synced.",
+                            )
 
                         for record in second_sync_messages:
                             replication_key_value = record.get(replication_key)
-                            self.assertGreaterEqual(strptime_to_utc(replication_key_value),
-                                                    strptime_to_utc(simulated_bookmark_minus_lookback),
-                                                    msg="Second sync records do not repeat the previous bookmark.")
+                            self.assertGreaterEqual(
+                                strptime_to_utc(replication_key_value),
+                                strptime_to_utc(simulated_bookmark_minus_lookback),
+                                msg="Second sync records do not repeat the previous bookmark.",
+                            )
 
                             # Verify the second sync bookmark value is the max replication key value for a given stream
-                            self.assertLessEqual(replication_key_value,
-                                                 second_bookmark_value_utc,
-                                                 msg="Second sync bookmark was set incorrectly, \
-                                                 a record with a greater replication-key value was synced.")
+                            self.assertLessEqual(
+                                replication_key_value,
+                                second_bookmark_value_utc,
+                                msg="Second sync bookmark was set incorrectly, \
+                                                 a record with a greater replication-key value was synced.",
+                            )
 
                     # Verify that you get less than or equal to data getting at 2nd time around
-                    self.assertLessEqual(second_sync_count,
-                                         first_sync_count,
-                                         msg="second sync didn't have less records, bookmark usage not verified")
+                    self.assertLessEqual(
+                        second_sync_count,
+                        first_sync_count,
+                        msg="second sync didn't have less records, bookmark usage not verified",
+                    )
 
                 elif expected_replication_method == self.FULL_TABLE:
 
@@ -224,9 +256,12 @@ class YotpoBookMarkTest(YotpoBaseTest):
                     # Verify the number of records in the second sync is the same as the first
                     self.assertEqual(second_sync_count, first_sync_count)
                 else:
-                    raise NotImplementedError("INVALID EXPECTATIONS\t\tSTREAM: {} \
-                                              REPLICATION_METHOD: {}".format(stream, expected_replication_method))
+                    raise NotImplementedError(
+                        "INVALID EXPECTATIONS\t\tSTREAM: {} \
+                                              REPLICATION_METHOD: {}".format(
+                            stream, expected_replication_method
+                        )
+                    )
 
                 # Verify at least 1 record was replicated in the second sync
-                self.assertGreater(second_sync_count, 0,
-                                   msg="We are not fully testing bookmarking for {}".format(stream))
+                self.assertGreater(second_sync_count, 0, msg=f"We are not fully testing bookmarking for {stream}")
