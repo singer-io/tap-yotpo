@@ -6,49 +6,106 @@
     "id": {
       "type": "integer"
     },
+    "title": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "content": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "score": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "votes_up": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "votes_down": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
     "created_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "updated_at": {
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
-    "votes_up": {
-      "type": "number"
-    },
-    "votes_down": {
-      "type": "number"
-    },
-    "score": {
-      "type": "number"
-    },
-    "content": {
-      "type": "string"
-    },
-    "title": {
-      "type": ["string", "null"]
-    },
-    "email": {
-      "type": ["string", "null"]
-    },
     "sentiment": {
-      "type": ["number", "null"]
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "sku": {
-      "type": [ "null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "name": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "email": {
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "reviewer_type": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "deleted": {
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "description": "Available in APi Response Object"
+    },
+    "archived": {
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "description": "Available in APi Response Object"
+    },
+    "escalated": {
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "description": "Available in APi Response Object"
     },
     "user_reference": {
-      "type": ["null", "string"]
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "additionalProperties": false

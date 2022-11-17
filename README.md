@@ -7,11 +7,15 @@ This tap:
 
 - Pulls raw data from [Yotpo](http://apidocs.yotpo.com/reference)
 - Extracts the following resources:
-  - [products](http://apidocs.yotpo.com/reference#draft-retrieve-all-products)
+  - [products](https://core-api.yotpo.com/reference/retrieve-products)
   - [reviews](http://apidocs.yotpo.com/reference#retrieve-all-reviews)
   - [emails](http://apidocs.yotpo.com/reference#raw-data)
   - [unsubscribers](http://apidocs.yotpo.com/reference#retrieve-a-list-of-unsubscribers)
   - [product_reviews](http://apidocs.yotpo.com/reference#retrieve-reviews-for-a-specific-product)
+  - [product_variants](https://core-api.yotpo.com/reference/retrieve-product-variants)
+  - [orders](https://core-api.yotpo.com/reference/retrieve-orders)
+  - [order_fulfillments](https://core-api.yotpo.com/reference/retrieve-order-fulfillments)
+  - [collections](https://core-api.yotpo.com/reference/retrieve-collections)
 - Outputs the schema for each resource
 
 **Note:** The `product_reviews` endpoint is similar to the `reviews` endpoint, but also contains custom fields specified for your Yotpo integration. Consider disabling this endpoint if you do not have or need custom fields in the output of this integration.
@@ -47,7 +51,7 @@ This tap:
    The `start_date` parameter determines the starting date for incremental syncs. The `email_stats_lookback_days` parameter
    is used to fetch updated email statistics (opens, clicks, etc) for emails sent by Yotpo. The `reviews_lookback_days`
    parameter is used to re-fetch reviews that have been updated (or deleted) since the last time they were synced.
-   The `request_timeout` is an optional paramater to set timeout for requests. Default: 300 seconds
+   The `request_timeout` is an optional parameter to set timeout for requests. Default: 300 seconds
 
 4. Run the Tap in Discovery Mode
 
@@ -61,9 +65,9 @@ This tap:
 5. Run the Tap in Sync Mode
 
     ```bash
-    $ tap-yotpo -c config.json -p catalog-file.json
+    $ tap-yotpo -c config.json --catalog catalog-file.json
     ```
 
 ---
 
-Copyright &copy; 2018 Stitch
+Copyright &copy; 2022 Stitch

@@ -7,97 +7,185 @@
       "type": "integer"
     },
     "domain_key": {
-      "type": ["string", "null"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "name": {
-      "type": ["string", "null"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
-    "created_at": {
-      "type": "string",
-      "format": "date-time"
-    },
-    "score": {
-      "type": "number"
-    },
-    "votes_up": {
-      "type": "number"
-    },
-    "votes_down": {
-      "type": "number"
-    },
-    "content": {
+    "product_yotpo_id": {
       "type": "string"
     },
+    "created_at": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "deleted": {
+      "type": [
+        "null",
+        "boolean"
+      ],
+      "description": "Available in APi Response Object"
+    },
+    "score": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "votes_up": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "votes_down": {
+      "type": [
+        "null",
+        "integer"
+      ]
+    },
+    "content": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
     "title": {
-      "type": ["string", "null"]
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "verified_buyer": {
       "type": "boolean"
     },
     "source_review_id": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
     },
     "sentiment": {
-      "type": ["number", "null"]
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "custom_fields": {
+      "type": [
+        "null",
+        "object"
+      ]
     },
     "product_id": {
-      "type": ["number", "null"]
+      "type": [
+        "integer",
+        "null"
+      ]
     },
     "user": {
-      "type": "object",
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
         "user_id": {
-          "type": "number"
+          "type": "integer"
         },
         "display_name": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "social_image": {
-          "type": ["null", "string"]
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "user_type": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "is_social_connected": {
-          "type": "number"
+          "type": [
+            "null",
+            "number"
+          ]
         }
       }
     },
     "images_data": {
-      "type": "array",
+      "type": [
+        "null",
+        "array"
+      ],
       "items": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "number"
+            "type": "integer"
           },
           "original_url": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "thumb_url": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       }
     },
     "comment": {
-      "type": "object",
+      "type": [
+        "null",
+        "object"
+      ],
       "properties": {
         "id": {
-          "type": "number"
+          "type": "integer"
         },
         "content": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "created_at": {
-          "type": "string",
+          "type": [
+            "null",
+            "string"
+          ],
           "format": "date-time"
         },
         "display_name": {
-          "type": "string"
+          "type": [
+            "null",
+            "string"
+          ]
         },
         "comments_avatar": {
-          "type": ["string", "null"]
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     }

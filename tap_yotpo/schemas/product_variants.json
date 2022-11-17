@@ -4,24 +4,16 @@
   ],
   "properties": {
     "yotpo_id": {
-      "type": "integer"
-    },
-    "created_at": {
       "type": [
         "null",
-        "string"
-      ],
-      "format": "date-time"
-    },
-    "updated_at": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
+        "integer"
+      ]
     },
     "external_id": {
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "name": {
       "type": [
@@ -30,12 +22,6 @@
       ]
     },
     "description": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "status": {
       "type": [
         "null",
         "string"
@@ -52,7 +38,7 @@
         "null",
         "boolean"
       ],
-      "description": "Actual response displays `is_valid_url_format` whereas documentation mention `is_valid_url`"
+      "description": "Actual response shows `is_valid_url_format` whereas documentation mention `is_valid_url`"
     },
     "image_url": {
       "type": [
@@ -90,80 +76,78 @@
         "boolean"
       ]
     },
-    "group_name": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "brand": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
     "sku": {
       "type": [
         "null",
         "string"
       ]
     },
-    "mpn": {
-      "type": [
-        "null",
-        "string"
-      ]
-    },
-    "handle": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "description": "Actual response shows `handle` whereas documentation does not mention it"
-    },
-    "external_created_at": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
-    },
-    "external_updated_at": {
-      "type": [
-        "null",
-        "string"
-      ],
-      "format": "date-time"
-    },
     "gtins": {
       "type": [
-        "array",
-        "null"
+        "null",
+        "array"
       ],
       "items": {
         "type": "object",
         "properties": {
           "declared_type": {
-            "type": "string"
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "value": {
-            "type": "string"
-          },
-          "detected_type": {
             "type": [
-              "string",
-              "null"
-            ],
-            "description": "Actual response shows `detected_type` whereas documentation does not mention it"
+              "null",
+              "string"
+            ]
           }
         }
       }
     },
-    "custom_properties": {
+    "options": {
       "type": [
         "null",
-        "object"
-      ]
+        "array"
+      ],
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      }
+    },
+    "created_at": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": [
+        "null",
+        "string"
+      ],
+      "format": "date-time"
+    },
+    "yotpo_product_id": {
+      "type": [
+        "null",
+        "integer"
+      ],
+      "description": "Actual response shows `yotpo_product_id` whereas documentation does not mention it"
     }
   },
   "additionalProperties": false
