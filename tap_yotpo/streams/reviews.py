@@ -6,12 +6,12 @@ from singer import get_logger, metrics, write_record
 from singer.utils import strftime, strptime_to_utc
 
 from ..helpers import ApiSpec
-from .abstracts import IncrementalStream, UrlEndpointMixin, PageSizeMixin
+from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
 
 LOGGER = get_logger()
 
 
-class Reviews(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
+class Reviews(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     """class for `reviews` stream."""
 
     stream = "reviews"
@@ -23,11 +23,11 @@ class Reviews(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
     api_auth_version = ApiSpec.API_V1
     url_endpoint = "https://api.yotpo.com/v1/apps/APP_KEY/reviews"
 
-    def get_records(self, start_date: Optional[str]) -> Iterator[Dict]:
+    def get_records(self, bookmark_date: Optional[str]) -> Iterator[Dict]:
         """performs querying and pagination of reviews resource."""
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
-        params = {"page": 1, "count": self.page_size, "since_updated_at": start_date}
+        params = {"page": 1, "count": self.page_size, "since_updated_at": bookmark_date}
         while True:
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
@@ -44,17 +44,10 @@ class Reviews(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
 
         with metrics.Counter(self.tap_stream_id) as counter:
             for record in self.get_records(strftime(bookmark_date_utc)):
-                try:
-                    record_timestamp = strptime_to_utc(record[self.replication_key])
-                    if record_timestamp >= bookmark_date_utc:
-                        max_bookmark = max(max_bookmark, record_timestamp)
-                        transformed_record = transformer.transform(record, schema, stream_metadata)
-                        write_record(self.tap_stream_id, transformed_record)
-                        counter.increment()
-                    else:
-                        LOGGER.info("Older Record Found")
-                except TypeError:
-                    LOGGER.info("unable to Find Replication Key for record")
-
+                record_timestamp = strptime_to_utc(record[self.replication_key])
+                max_bookmark = max(max_bookmark, record_timestamp)
+                transformed_record = transformer.transform(record, schema, stream_metadata)
+                write_record(self.tap_stream_id, transformed_record)
+                counter.increment()
             state = self.write_bookmark(state, value=strftime(max_bookmark))
         return state

@@ -16,13 +16,13 @@ from singer.utils import strftime, strptime_to_utc
 
 from tap_yotpo.helpers import ApiSpec, skip_product
 
-from .abstracts import IncrementalStream, UrlEndpointMixin,PageSizeMixin
+from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
 from .products import Products
 
 LOGGER = get_logger()
 
 
-class ProductReviews(IncrementalStream, UrlEndpointMixin,PageSizeMixin):
+class ProductReviews(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     """class for product_reviews stream."""
 
     stream = "product_reviews"

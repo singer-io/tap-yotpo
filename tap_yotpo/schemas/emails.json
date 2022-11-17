@@ -69,6 +69,7 @@
     },
     "email_sent_timestamp": {
       "type": [
+        "null",
         "string"
       ],
       "format": "date-time"

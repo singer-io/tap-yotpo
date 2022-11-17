@@ -1,4 +1,6 @@
 """tap-yotpo sync."""
+from typing import Dict
+
 import singer
 
 from . import streams
@@ -6,7 +8,7 @@ from . import streams
 LOGGER = singer.get_logger()
 
 
-def sync(client, catalog: singer.Catalog, state):
+def sync(client, catalog: singer.Catalog, state: Dict):
     """performs sync for selected streams."""
     with singer.Transformer() as transformer:
         for stream in catalog.get_selected_streams(state):

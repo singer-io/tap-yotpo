@@ -4,7 +4,7 @@ from typing import Dict, Iterator
 from singer import get_logger
 
 from ..helpers import ApiSpec
-from .abstracts import FullTableStream, UrlEndpointMixin, PageSizeMixin
+from .abstracts import FullTableStream, PageSizeMixin, UrlEndpointMixin
 
 LOGGER = get_logger()
 
