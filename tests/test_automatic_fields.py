@@ -13,11 +13,11 @@ class YotpoAutomaticFields(YotpoBaseTest):
         return "tap_tester_yotpo_automatic_fields"
 
     def test_run(self):
-        """• Verify we can deselect all fields except when inclusion=automatic,
+        """
+        - Verify we can deselect all fields except when inclusion=automatic,
         which is handled by base.py methods.
-
-        • Verify that only the automatic fields are sent to the target.
-        • Verify that all replicated records have unique primary key
+        - Verify that only the automatic fields are sent to the target.
+        - Verify that all replicated records have unique primary key
         values.
         """
 

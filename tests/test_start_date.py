@@ -13,11 +13,10 @@ class YotpoStartDateTest(YotpoBaseTest):
     def test_run(self):
         """Test that the start_date configuration is respected.
 
-        • verify that a sync with a later start date has at least one
-        record synced and less records than the 1st sync with a previous
-        start date • verify that each stream has less records than the
-        earlier start date sync • verify all data from later start data
-        has bookmark values >= start_date
+        - verify that a sync with a later start date has at least one record synced
+        and less records than the 1st sync with a previous start date
+        - verify that each stream has less records than the earlier start date sync
+        - verify all data from later start data has bookmark values >= start_date
         """
 
         self.start_date_1 = "2021-09-09T00:00:00Z"

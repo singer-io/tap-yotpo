@@ -17,11 +17,10 @@ class YotpoAllFields(YotpoBaseTest):
         return "tap_tester_yotpo_all_fields_test"
 
     def test_run(self):
-        """• Verify no unexpected streams were replicated.
-
-        • Verify that more than just the automatic fields are replicated
-        for each stream. • verify all fields for each stream are
-        replicated
+        """
+        - Verify no unexpected streams were replicated
+        - Verify that more than just the automatic fields are replicated for each stream.
+        - verify all fields for each stream are replicated
         """
 
         # Streams to verify all fields tests
