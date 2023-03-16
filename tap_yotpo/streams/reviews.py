@@ -27,7 +27,7 @@ class Reviews(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
         """performs querying and pagination of reviews resource."""
         # pylint: disable=W0221
         extraction_url = self.get_url_endpoint()
-        params = {"page": 1, "count": self.page_size, "since_updated_at": bookmark_date}
+        params = {"page": 1, "count": self.page_size, "since_updated_at": bookmark_date, "deleted": "true"}
         while True:
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
             raw_records = response.get(self.stream, [])
