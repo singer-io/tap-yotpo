@@ -1,7 +1,7 @@
 # Changelog
 
 ## 2.0.1
-  * Fix reviews stream to also sync deleted reviews  [#54](https://github.com/singer-io/tap-yotpo/pull/54)
+  * Fix reviews stream to also sync deleted reviews  [#55](https://github.com/singer-io/tap-yotpo/pull/55)
 
 ## 2.0.0
   * Code refactoring [#46](https://github.com/singer-io/tap-yotpo/pull/46)
