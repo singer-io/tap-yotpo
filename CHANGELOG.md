@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.2
+  * Dependabot update [#57](https://github.com/singer-io/tap-yotpo/pull/57)
+
 ## 2.0.1
   * Fix reviews stream to also sync deleted reviews  [#55](https://github.com/singer-io/tap-yotpo/pull/55)
 
