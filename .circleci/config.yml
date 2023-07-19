@@ -40,7 +40,19 @@ jobs:
             aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
             source dev_env.sh
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
-            run-test --tap=tap-yotpo tests
+            selected_tests=$(circleci tests glob "tests/*{all,discovery}*")
+            echo -e "Tests running in this batch:\n$selected_tests\n"
+            echo $selected_tests > ./tests-to-run
+            if [ -s ./tests-to-run ]; then
+              for test_file in $(cat ./tests-to-run)
+              do
+                run-test --tap=tap-yotpo $test_file
+              done
+            else
+              echo "ERROR - File not found or file is empty!" >&2
+              exit 5
+            fi
+
 
 
 workflows:
