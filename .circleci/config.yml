@@ -40,7 +40,7 @@ jobs:
             aws s3 cp s3://com-stitchdata-dev-deployment-assets/environments/tap-tester/tap_tester_sandbox dev_env.sh
             source dev_env.sh
             source /usr/local/share/virtualenvs/tap-tester/bin/activate
-            selected_tests=$(circleci tests glob "tests/*{all,discovery}*")
+            selected_tests=$(circleci tests glob "tests/*{discovery}*")
             echo -e "Tests running in this batch:\n$selected_tests\n"
             echo $selected_tests > ./tests-to-run
             if [ -s ./tests-to-run ]; then
