@@ -34,10 +34,7 @@ jobs:
           path: test_output/report.xml
       - store_artifacts:
           path: htmlcov
-      - run: 
-          name : 'slepping for a min'
-          command: |
-            sleep 120
+      - run: sleep 120
       - run:
           name: 'Integration Tests'
           command: |
