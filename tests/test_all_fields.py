@@ -3,9 +3,8 @@ from tap_tester import connections, menagerie, runner
 
 # As we are not able to generate following fields by yotpo post apis, so removed it form expectation list.
 KNOWN_MISSING_FIELDS = {
-    "product_reviews": {"comment", "images_data"},
     "reviews": {"user_reference"},
-    "orders": {"shipping_address", "payment_status", "cancellation", "custom_properties", "billing_address"},
+    "orders": {"shipping_address", "cancellation", "billing_address"},
 }
 
 

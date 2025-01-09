@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.3
+  * Dependabot update [#58](https://github.com/singer-io/tap-yotpo/pull/58)
+
 ## 2.0.2
   * Dependabot update [#57](https://github.com/singer-io/tap-yotpo/pull/57)
 
