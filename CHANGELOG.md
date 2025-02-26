@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.4
+  * Retry ConnectionResetErrors [#59](https://github.com/singer-io/tap-yotpo/pull/59)
+
 ## 2.0.3
   * Dependabot update [#58](https://github.com/singer-io/tap-yotpo/pull/58)
 

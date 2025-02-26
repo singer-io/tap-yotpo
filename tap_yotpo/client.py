@@ -108,7 +108,8 @@ class Client:
         max_tries=5,
     )
     @backoff.on_exception(
-        wait_gen=backoff.expo, exception=errors.Http429RequestError, jitter=None, max_time=60, max_tries=6
+        wait_gen=backoff.expo, exception=(errors.Http429RequestError,
+                                          ConnectionResetError), jitter=None, max_time=60, max_tries=6
     )
     def __make_request(self, method: str, endpoint: str, **kwargs) -> Optional[Mapping[Any, Any]]:
         """
