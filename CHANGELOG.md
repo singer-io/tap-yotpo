@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.5
+  * Bump dependency versions for twistlock compliance [#61](https://github.com/singer-io/tap-yotpo/pull/61)
+
 ## 2.0.4
   * Retry ConnectionResetErrors [#59](https://github.com/singer-io/tap-yotpo/pull/59)
 
