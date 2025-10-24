@@ -118,6 +118,10 @@ class BaseStream(ABC):
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
                 stream_metadata = write(stream_metadata, ("properties", key), "inclusion", "automatic")
+
+        if hasattr(cls, "parent") and cls.parent:
+            stream_metadata = write(stream_metadata, (), 'parent-tap-stream-id', cls.parent)
+
         stream_metadata = to_list(stream_metadata)
         return stream_metadata
 

@@ -33,6 +33,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     # points to the attribute of the config that marks the first-start-date for the stream
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/orders/ORDER_ID/fulfillments"
+    parent = "orders"
 
     def __init__(self, client=None) -> None:
         super().__init__(client)

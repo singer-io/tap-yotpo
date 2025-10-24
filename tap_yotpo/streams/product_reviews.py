@@ -35,6 +35,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     config_start_key = "start_date"
     url_endpoint = "https://api-cdn.yotpo.com/v1/widget/APP_KEY/products/PRODUCT_ID/reviews.json"
     default_page_size = 150
+    parent = "products"
 
     def __init__(self, client=None) -> None:
         super().__init__(client)
