@@ -132,6 +132,7 @@ class IncrementalStream(BaseStream):
     replication_method = "INCREMENTAL"
     forced_replication_method = "INCREMENTAL"
     config_start_key = None
+    parent = ""
 
     def get_bookmark(self, state: dict, key: Any = None) -> int:
         """A wrapper for singer.get_bookmark to deal with compatibility for
@@ -176,6 +177,7 @@ class FullTableStream(BaseStream):
     forced_replication_method = "FULL_TABLE"
     valid_replication_keys = None
     replication_key = None
+    parent = ""
 
     def sync(self, state: Dict, schema: Dict, stream_metadata: Dict, transformer: Transformer) -> Dict:
         """Abstract implementation for `type: Fulltable` stream."""
