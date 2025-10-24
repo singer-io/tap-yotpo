@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.0
+  * Add parent-tap-stream-id metadata for child streams [#65](https://github.com/singer-io/tap-yotpo/pull/65)
+
 ## 2.0.5
   * Bump dependency versions for twistlock compliance [#61](https://github.com/singer-io/tap-yotpo/pull/61)
 
