@@ -119,7 +119,10 @@ class TestParentMetadata(unittest.TestCase):
         self.assertEqual(ProductVariants.parent, 'products')
 
     def test_parent_attribute_not_exists_on_parent_streams(self):
-        """Test that the parent class attribute does not exist on parent streams."""
-        # Products and Orders should not have parent attribute
-        self.assertFalse(hasattr(Products, 'parent'))
-        self.assertFalse(hasattr(Orders, 'parent'))
+        """Test that the parent class attribute is None or empty string on parent streams."""
+        # Products and Orders should have parent attribute as None or empty string
+        self.assertTrue(hasattr(Products, 'parent'))
+        self.assertTrue(hasattr(Orders, 'parent'))
+        # Parent streams should have None or empty parent value
+        self.assertIn(Products.parent, [None, ""])
+        self.assertIn(Orders.parent, [None, ""])
