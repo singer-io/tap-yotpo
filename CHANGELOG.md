@@ -1,5 +1,9 @@
 # Changelog
 
+# 2.0.6
+  * Bump requests to 2.33.0 for security updates [#67](https://github.com/singer-io/tap-yotpo/pull/67)
+
+
 ## 2.0.5
   * Bump dependency versions for twistlock compliance [#61](https://github.com/singer-io/tap-yotpo/pull/61)
 
