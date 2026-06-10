@@ -13,6 +13,8 @@ from singer import (
 from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.utils import strftime, strptime_to_utc
 
+from ..exceptions import Http403RequestError
+
 LOGGER = get_logger()
 
 
@@ -104,6 +106,21 @@ class BaseStream(ABC):
 
     def __init__(self, client=None) -> None:
         self.client = client
+
+    def check_access(self) -> bool:
+        """Checks if the stream is accessible via the API.
+
+        Child streams always return True since their accessibility is
+        determined by their parent stream. For parent streams, a test
+        API call is made; a 403 response means the stream is excluded.
+        """
+        if getattr(self, "parent", ""):
+            return True
+        try:
+            self.client.get(self.get_url_endpoint(), {}, {}, self.api_auth_version)
+            return True
+        except Http403RequestError:
+            return False
 
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
