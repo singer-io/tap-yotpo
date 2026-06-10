@@ -295,7 +295,3 @@ class TestDiscover(unittest.TestCase):
                     "automatic",
                     f"Expected 'automatic' for replication key '{key}' in stream '{stream_entry.tap_stream_id}'",
                 )
-
-
-if __name__ == "__main__":
-    unittest.main()
