@@ -146,7 +146,7 @@ class TestApplyAccessChecks(unittest.TestCase):
             return bool(getattr(self_, "parent", ""))
 
         with patch.object(BaseStream, "check_access", new=only_children_accessible):
-            with self.assertRaises(Exception):
+            with self.assertRaises(RuntimeError):
                 _apply_access_checks(self.mock_client, schemas, field_metadata)
 
     def test_partial_access_warning_logged(self):

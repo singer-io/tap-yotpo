@@ -3,7 +3,7 @@
 ## 2.1.0
   * Add parent-tap-stream-id metadata for child streams [#65](https://github.com/singer-io/tap-yotpo/pull/65)
   * Bump dependency versions: `singer-python` to `6.8.0`
-  * Streams the credentials cannot access (403) are now excluded from the catalog during discovery [#68](https://github.com/singer-io/tap-yotpo/pull/68)
+  * Streams that cannot be accessed due to insufficient permissions (403) are now excluded from the catalog during discovery instead of raising an error [#68](https://github.com/singer-io/tap-yotpo/pull/68)
 
 # 2.0.6
   * Bump requests to 2.33.0 for security updates [#67](https://github.com/singer-io/tap-yotpo/pull/67)

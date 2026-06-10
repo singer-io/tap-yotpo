@@ -4,7 +4,6 @@ import json
 from singer import get_logger
 from singer.catalog import Catalog
 
-from tap_yotpo.exceptions import Http403RequestError
 from tap_yotpo.helpers import get_abs_path
 from tap_yotpo.streams import STREAMS
 
@@ -36,7 +35,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
 
     accessible_parents = [s for s in schemas.values() if not getattr(s, "parent", "")]
     if not accessible_parents:
-        raise Exception("All parent streams are inaccessible. Cannot produce a usable catalog.")
+        raise RuntimeError("All parent streams are inaccessible. Cannot produce a usable catalog.")
 
 
 def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
