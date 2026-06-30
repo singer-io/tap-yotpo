@@ -18,14 +18,14 @@ def main():
     args = utils.parse_args(REQUIRED_CONFIG_KEYS)
     client = Client(args.config)
     if args.discover:
-        discover(args.config).dump()
+        discover(client).dump()
     else:
         with Counter("total_requests", log_interval=sys.maxsize) as req_counter, Timer(
             "total_extraction_time", None
         ) as req_timer:
             client.req_counter = req_counter
             client.req_timer = req_timer
-            sync(client, args.catalog or discover(args.config), args.state)
+            sync(client, args.catalog or discover(client), args.state)
 
 
 if __name__ == "__main__":

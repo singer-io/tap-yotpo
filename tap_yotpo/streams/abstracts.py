@@ -13,6 +13,8 @@ from singer import (
 from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.utils import strftime, strptime_to_utc
 
+from ..exceptions import Http403RequestError
+
 LOGGER = get_logger()
 
 
@@ -104,6 +106,17 @@ class BaseStream(ABC):
 
     def __init__(self, client=None) -> None:
         self.client = client
+
+    def check_access(self) -> bool:
+        """Verify read access to this stream; child streams always return True."""
+        if self.parent:
+            return True
+        try:
+            self.client.get(self.get_url_endpoint(), {}, {}, self.api_auth_version)
+            return True
+        except Http403RequestError as exc:
+            LOGGER.warning("Permission Error: Stream '%s' - %s", self.__class__.__name__, exc)
+            return False
 
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:

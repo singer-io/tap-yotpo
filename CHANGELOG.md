@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.2.0
+  * Streams the credentials cannot access (403) are now excluded from the catalog during discovery instead of raising an error [#feat](https://github.com/singer-io/tap-yotpo/pull/feat)
+  * Added unit tests for discovery access checks
+
 ## 2.1.0
   * Add parent-tap-stream-id metadata for child streams [#65](https://github.com/singer-io/tap-yotpo/pull/65)
   * Bump dependency versions: `singer-python` to `6.8.0`
