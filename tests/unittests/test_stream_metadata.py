@@ -30,8 +30,6 @@ class TestStreamMetadata(unittest.TestCase):
 
         self.assertEqual(root_md.get("forced-replication-method"), "INCREMENTAL")
         self.assertEqual(root_md.get("valid-replication-keys"), ["updated_at"])
-        self.assertIn("selected-by-default", root_md)
-        self.assertFalse(root_md.get("selected-by-default"))
 
     def test_child_stream_includes_parent_metadata(self):
         metadata = OrderFulfillments.get_metadata(self.simple_schema)
@@ -40,10 +38,9 @@ class TestStreamMetadata(unittest.TestCase):
         self.assertEqual(root_md.get("parent-tap-stream-id"), "orders")
         self.assertEqual(root_md.get("forced-replication-method"), "INCREMENTAL")
 
-    def test_full_table_stream_has_selected_by_default(self):
+    def test_full_table_stream_root_metadata(self):
         metadata = Products.get_metadata(self.simple_schema)
         root_md = self._root_metadata(metadata)
 
         self.assertEqual(root_md.get("forced-replication-method"), "FULL_TABLE")
-        self.assertIn("selected-by-default", root_md)
-        self.assertFalse(root_md.get("selected-by-default"))
+        self.assertNotIn("valid-replication-keys", root_md)

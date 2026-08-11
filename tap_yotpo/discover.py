@@ -27,7 +27,6 @@ def discover(config: Dict = None):
         )
         if root_metadata_entry is not None:
             root_metadata = root_metadata_entry.setdefault("metadata", {})
-            root_metadata.setdefault("selected-by-default", stream.selected_by_default)
             if getattr(stream, "parent", ""):
                 root_metadata["parent-tap-stream-id"] = stream.parent
 
