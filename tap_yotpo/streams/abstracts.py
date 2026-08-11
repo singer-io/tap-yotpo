@@ -108,6 +108,13 @@ class BaseStream(ABC):
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
         """Returns a `dict` for generating stream metadata."""
+        selected_by_default = False
+        selected_by_default_prop = getattr(cls, "selected_by_default", None)
+        if isinstance(selected_by_default_prop, property):
+            selected_by_default = bool(selected_by_default_prop.fget(object.__new__(cls)))
+        elif isinstance(selected_by_default_prop, bool):
+            selected_by_default = selected_by_default_prop
+
         stream_metadata = get_standard_metadata(
             **{
                 "schema": schema,
@@ -117,6 +124,11 @@ class BaseStream(ABC):
             }
         )
         stream_metadata = to_map(stream_metadata)
+
+        stream_metadata = write(stream_metadata, (), "selected-by-default", selected_by_default)
+        if not stream_metadata.get((), {}).get("inclusion"):
+            stream_metadata = write(stream_metadata, (), "inclusion", "available")
+
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
                 stream_metadata = write(stream_metadata, ("properties", key), "inclusion", "automatic")

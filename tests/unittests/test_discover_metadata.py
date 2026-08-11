@@ -1,0 +1,39 @@
+import unittest
+
+from tap_yotpo.discover import discover
+
+
+class TestDiscoverMetadata(unittest.TestCase):
+    """Unit tests for metadata emitted by discovery catalog."""
+
+    @staticmethod
+    def _root_metadata(stream_entry):
+        for metadata_entry in stream_entry.get("metadata", []):
+            if metadata_entry.get("breadcrumb") in ((), []):
+                return metadata_entry.get("metadata", {})
+        return {}
+
+    def test_discover_includes_parent_metadata_for_child_streams(self):
+        catalog = discover().to_dict()
+        stream_map = {stream["stream"]: stream for stream in catalog.get("streams", [])}
+
+        self.assertEqual(
+            self._root_metadata(stream_map["order_fulfillments"]).get("parent-tap-stream-id"),
+            "orders",
+        )
+        self.assertEqual(
+            self._root_metadata(stream_map["product_reviews"]).get("parent-tap-stream-id"),
+            "products",
+        )
+        self.assertEqual(
+            self._root_metadata(stream_map["product_variants"]).get("parent-tap-stream-id"),
+            "products",
+        )
+
+    def test_discover_sets_selected_by_default_for_all_stream_roots(self):
+        catalog = discover().to_dict()
+
+        for stream_entry in catalog.get("streams", []):
+            root_metadata = self._root_metadata(stream_entry)
+            self.assertIn("selected-by-default", root_metadata)
+            self.assertFalse(root_metadata["selected-by-default"])

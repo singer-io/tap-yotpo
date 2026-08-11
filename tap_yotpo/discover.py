@@ -19,12 +19,24 @@ def discover(config: Dict = None):
         schema_path = get_abs_path(f"schemas/{stream_name}.json")
         with open(schema_path, encoding="utf-8") as schema_file:
             schema = json.load(schema_file)
+
+        stream_metadata = stream.get_metadata(schema)
+        root_metadata_entry = next(
+            (entry for entry in stream_metadata if entry.get("breadcrumb") in ((), [])),
+            None,
+        )
+        if root_metadata_entry is not None:
+            root_metadata = root_metadata_entry.setdefault("metadata", {})
+            root_metadata.setdefault("selected-by-default", stream.selected_by_default)
+            if getattr(stream, "parent", ""):
+                root_metadata["parent-tap-stream-id"] = stream.parent
+
         streams.append(
             {
                 "stream": stream_name,
                 "tap_stream_id": stream.tap_stream_id,
                 "schema": schema,
-                "metadata": stream.get_metadata(schema),
+                "metadata": stream_metadata,
             }
         )
     return Catalog.from_dict({"streams": streams})
