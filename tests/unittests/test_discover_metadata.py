@@ -36,7 +36,7 @@ class TestDiscoverMetadata(unittest.TestCase):
         for stream_entry in catalog.get("streams", []):
             root_metadata = self._root_metadata(stream_entry)
             self.assertIn("forced-replication-method", root_metadata)
-            self.assertIn("replication-method", root_metadata)
+            self.assertNotIn("replication-method", root_metadata)
 
     def test_discover_includes_key_properties_for_all_streams(self):
         catalog = discover().to_dict()

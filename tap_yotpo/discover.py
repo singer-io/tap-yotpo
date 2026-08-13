@@ -29,7 +29,7 @@ def discover(config: Dict = None):
         if root_metadata_entry is not None:
             root_metadata = root_metadata_entry.setdefault("metadata", {})
             root_metadata.setdefault(
-                "replication-method",
+                "forced-replication-method",
                 stream.replication_method or stream.forced_replication_method,
             )
             if getattr(stream, "parent", ""):
