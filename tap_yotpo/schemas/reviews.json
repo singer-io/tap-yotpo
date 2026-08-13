@@ -107,6 +107,5 @@
         "string"
       ]
     }
-  },
-  "additionalProperties": false
+  }
 }

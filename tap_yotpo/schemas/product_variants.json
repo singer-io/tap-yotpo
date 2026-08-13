@@ -149,6 +149,5 @@
       ],
       "description": "Actual response shows `yotpo_product_id` whereas documentation does not mention it"
     }
-  },
-  "additionalProperties": false
+  }
 }

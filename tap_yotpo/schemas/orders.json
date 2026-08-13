@@ -448,6 +448,5 @@
         "string"
       ]
     }
-  },
-  "additionalProperties": false
+  }
 }

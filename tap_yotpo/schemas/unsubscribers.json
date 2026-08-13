@@ -25,6 +25,5 @@
       ],
       "description": "This field is misspelled in the api response!"
     }
-  },
-  "additionalProperties": false
+  }
 }
