@@ -424,7 +424,6 @@
     },
     "yotpo_id": {
       "type": [
-        "null",
         "integer"
       ]
     },
