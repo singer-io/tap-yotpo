@@ -39,7 +39,7 @@ def discover(config: Dict = None):
             CatalogEntry(
                 stream=stream_name,
                 tap_stream_id=stream.tap_stream_id,
-                key_properties=list(stream.key_properties),
+                # key_properties=list(stream.key_properties),
                 schema=Schema.from_dict(schema_dict),
                 metadata=stream_metadata,
             )
