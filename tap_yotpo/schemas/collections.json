@@ -17,6 +17,7 @@
     },
     "yotpo_id": {
       "type": [
+        "null",
         "integer"
       ]
     },
@@ -34,5 +35,6 @@
       ],
       "format": "date-time"
     }
-  }
+  },
+  "additionalProperties": false
 }

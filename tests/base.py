@@ -308,26 +308,27 @@ class YotpoBaseTest(unittest.TestCase):
             state_format = "%Y-%m-%dT%H:%M:%S-00:00"
             if stream in ["product_reviews", "order_fulfillments", "product_variants"]:
                 new_state = {}
-                for state_key in state.keys():
-                    state_value = next(iter(state.values()))
-                    state_as_datetime = dateutil.parser.parse(state_value)
-
-                    calculated_state_as_datetime = state_as_datetime - timedelta(*timedelta_by_stream[stream])
-                    calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
-
-                    new_state[state_key] = calculated_state_formatted
+                for state_key, state_value in state.items():
+                    try:
+                        state_as_datetime = dateutil.parser.parse(state_value)
+                        calculated_state_as_datetime = state_as_datetime - timedelta(*timedelta_by_stream[stream])
+                        calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+                        new_state[state_key] = calculated_state_formatted
+                    except (TypeError, ValueError, OverflowError):
+                        new_state[state_key] = state_value
                 stream_to_calculated_state[stream] = new_state
             else:
-                state_key, state_value = next(iter(state.keys())), next(iter(state.values()))
-                state_as_datetime = dateutil.parser.parse(state_value)
-
-                days, hours, minutes, seconds = timedelta_by_stream[stream]
-                calculated_state_as_datetime = state_as_datetime - timedelta(
-                    days=days, hours=hours, minutes=minutes, seconds=seconds
-                )
-                calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
-
-                stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}
+                state_key, state_value = next(iter(state.items()))
+                try:
+                    state_as_datetime = dateutil.parser.parse(state_value)
+                    days, hours, minutes, seconds = timedelta_by_stream[stream]
+                    calculated_state_as_datetime = state_as_datetime - timedelta(
+                        days=days, hours=hours, minutes=minutes, seconds=seconds
+                    )
+                    calculated_state_formatted = dt.strftime(calculated_state_as_datetime, state_format)
+                    stream_to_calculated_state[stream] = {state_key: calculated_state_formatted}
+                except (TypeError, ValueError, OverflowError):
+                    stream_to_calculated_state[stream] = {state_key: state_value}
 
         return stream_to_calculated_state
 

@@ -5,6 +5,7 @@
   "properties": {
     "id": {
       "type": [
+        "null",
         "integer"
       ],
       "description": "Actual response displays `id` whereas documentation mention `yotpo_id`"
@@ -113,5 +114,6 @@
         }
       }
     }
-  }
+  },
+  "additionalProperties": false
 }

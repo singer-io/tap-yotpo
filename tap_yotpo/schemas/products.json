@@ -165,5 +165,6 @@
         "object"
       ]
     }
-  }
+  },
+  "additionalProperties": false
 }
