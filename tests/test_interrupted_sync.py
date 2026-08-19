@@ -117,17 +117,24 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
                 if expected_replication_method == self.INCREMENTAL:
 
-                    replication_key = next(iter(expected_replication_keys[stream]))
-
-                    if stream in completed_streams:
-                        # Verify at least 1 record was replicated in the second sync
+                    if first_sync_count > 0:
                         self.assertGreaterEqual(
                             second_sync_count,
                             1,
-                            msg="Incorrect bookmarking for {}, \
-                                                at least one record should be replicated".format(
-                                stream
-                            ),
+                            msg="Incorrect bookmarking for {}, at least one record should be replicated in second "
+                            "sync for incremental streams".format(stream),
+                        )
+
+                    replication_key = next(iter(expected_replication_keys[stream]))
+
+                    if stream in completed_streams:
+                        # Completed streams can legitimately replicate zero records on resume,
+                        # but should not replicate more than the original full sync.
+                        self.assertLessEqual(
+                            second_sync_count,
+                            first_sync_count,
+                            msg="Incorrect bookmarking for {}, second sync record count should be less than "
+                            "or equal to first sync".format(stream),
                         )
 
                     elif stream == interrupted_sync_states.get("currently_syncing", None):
