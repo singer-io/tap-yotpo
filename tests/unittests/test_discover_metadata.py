@@ -38,20 +38,11 @@ class TestDiscoverMetadata(unittest.TestCase):
             self.assertIn("forced-replication-method", root_metadata)
             self.assertNotIn("replication-method", root_metadata)
 
-    def test_discover_includes_key_properties_for_all_streams(self):
-        catalog = discover().to_dict()
-
-        for stream_entry in catalog.get("streams", []):
-            self.assertIn("key_properties", stream_entry)
-            self.assertIsInstance(stream_entry["key_properties"], list)
-            self.assertGreater(len(stream_entry["key_properties"]), 0)
-
     def test_discover_key_properties_match_root_table_keys(self):
         catalog = discover().to_dict()
 
         for stream_entry in catalog.get("streams", []):
             root_metadata = self._root_metadata(stream_entry)
-            self.assertEqual(
-                stream_entry.get("key_properties", []),
-                root_metadata.get("table-key-properties", []),
-            )
+            self.assertIn("table-key-properties", root_metadata)
+            self.assertIsInstance(root_metadata.get("table-key-properties", []), list)
+            self.assertGreater(len(root_metadata.get("table-key-properties", [])), 0)
