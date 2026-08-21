@@ -1,4 +1,5 @@
 from base import YotpoBaseTest
+import os
 from tap_tester import connections, runner
 from tap_tester.logger import LOGGER
 
@@ -8,6 +9,9 @@ class YotpoStartDateTest(YotpoBaseTest):
     test."""
 
     def name(self):
+        ci_suffix = os.getenv("CIRCLE_WORKFLOW_ID") or os.getenv("CIRCLE_BUILD_NUM")
+        if ci_suffix:
+            return f"tap_tester_yotpo_start_date_test_{str(ci_suffix)[-8:]}"
         return "tap_tester_yotpo_start_date_test"
 
     def test_run(self):
