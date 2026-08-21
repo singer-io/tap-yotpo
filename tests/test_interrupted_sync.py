@@ -105,8 +105,16 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
                 second_sync_count = second_sync_record_count.get(stream, 0)
 
                 # Gather results
-                full_records = [message["data"] for message in first_sync_records[stream]["messages"]]
-                interrupted_records = [message["data"] for message in second_sync_records[stream]["messages"]]
+                full_records = [
+                    message["data"]
+                    for message in first_sync_records.get(stream, {}).get("messages", [])
+                    if message.get("action") == "upsert"
+                ]
+                interrupted_records = [
+                    message["data"]
+                    for message in second_sync_records.get(stream, {}).get("messages", [])
+                    if message.get("action") == "upsert"
+                ]
 
                 first_bookmark_value = first_sync_bookmarks.get("bookmarks", {stream: None}).get(stream)
                 second_bookmark_value = second_sync_bookmarks.get("bookmarks", {stream: None}).get(stream)
