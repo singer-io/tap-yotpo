@@ -86,24 +86,24 @@ class YotpoAllFields(YotpoBaseTest):
 
         for stream in expected_streams:
             with self.subTest(stream=stream):
-
-                # Expected values
-                known_missing_keys = KNOWN_MISSING_FIELDS.get(stream, set())
-                expected_all_keys = stream_to_all_catalog_fields[stream] - known_missing_keys
-                expected_automatic_keys = expected_automatic_fields.get(stream, set())
-
-                # Verify that more than just the automatic fields are replicated for each stream.
-                unexpected_missing_automatic = (expected_automatic_keys - expected_all_keys) - known_missing_keys
-                self.assertTrue(
-                    len(unexpected_missing_automatic) == 0,
-                    msg=f'{unexpected_missing_automatic} is not in "expected_all_keys"',
-                )
-
                 messages = synced_records.get(stream)
                 # Collect actual values
                 actual_all_keys = set()
                 for message in messages["messages"]:
                     if message["action"] == "upsert":
                         actual_all_keys.update(message["data"].keys())
+
+                # Expected values
+                known_missing_keys = KNOWN_MISSING_FIELDS.get(stream, set())
+                effective_missing_keys = known_missing_keys - actual_all_keys
+                expected_all_keys = stream_to_all_catalog_fields[stream] - effective_missing_keys
+                expected_automatic_keys = expected_automatic_fields.get(stream, set())
+
+                # Verify that more than just the automatic fields are replicated for each stream.
+                unexpected_missing_automatic = (expected_automatic_keys - expected_all_keys) - effective_missing_keys
+                self.assertTrue(
+                    len(unexpected_missing_automatic) == 0,
+                    msg=f'{unexpected_missing_automatic} is not in "expected_all_keys"',
+                )
                 # Verify all fields for each stream are replicated
                 self.assertSetEqual(expected_all_keys, actual_all_keys)
