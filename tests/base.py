@@ -180,6 +180,15 @@ class YotpoBaseTest(unittest.TestCase):
 
         # Verify check exit codes
         exit_status = menagerie.get_exit_status(conn_id, check_job_name)
+        LOGGER.info("check mode exit_status for %s: %s", check_job_name, exit_status)
+
+        if exit_status and exit_status.get("discovery_exit_status") not in (0, None):
+            LOGGER.error(
+                "check mode discovery failed for %s; discovery_error_message=%s",
+                check_job_name,
+                exit_status.get("discovery_error_message"),
+            )
+
         menagerie.verify_check_exit_status(self, exit_status, check_job_name)
 
         found_catalogs = menagerie.get_catalogs(conn_id)
