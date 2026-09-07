@@ -30,6 +30,8 @@ def discover(config: Dict = None):
                 root_metadata = entry.get("metadata", {})
                 break
 
+        key_properties = root_metadata.get("table-key-properties") or list(stream.key_properties)
+
         LOGGER.info(
             "discover stream=%s tap_stream_id=%s keys=%s root_metadata=%s",
             stream_name,
@@ -42,6 +44,7 @@ def discover(config: Dict = None):
             {
                 "stream": stream_name,
                 "tap_stream_id": stream.tap_stream_id,
+                "key_properties": key_properties,
                 "schema": schema,
                 "metadata": stream_metadata,
             }
