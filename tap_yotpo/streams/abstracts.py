@@ -120,6 +120,10 @@ class BaseStream(ABC):
             self.client.get(self.get_url_endpoint(), {}, {}, self.api_auth_version)
             return True
         except Http403RequestError:
+            LOGGER.warning(
+                "Stream '%s' is not accessible (403 Forbidden). Excluding from catalog.",
+                self.tap_stream_id,
+            )
             return False
 
     @classmethod

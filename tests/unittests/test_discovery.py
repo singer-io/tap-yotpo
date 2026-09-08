@@ -84,6 +84,17 @@ class TestPruneInaccessibleChildren(unittest.TestCase):
 
         self.assertNotIn("order_fulfillments", schemas)
 
+    def test_child_removal_warning_logged(self):
+        """A warning is logged when a child stream is excluded with its parent."""
+        schemas = {"product_reviews": STREAMS["product_reviews"]}
+        field_metadata = {"product_reviews": (SIMPLE_SCHEMA, [])}
+
+        with patch("tap_yotpo.discover.LOGGER") as mock_logger:
+            _prune_inaccessible_children(schemas, field_metadata)
+
+        warning_calls = [str(c) for c in mock_logger.warning.call_args_list]
+        self.assertTrue(any("product_reviews" in c and "products" in c for c in warning_calls))
+
 
 class TestApplyAccessChecks(unittest.TestCase):
     """Tests for _apply_access_checks function."""
@@ -203,7 +214,11 @@ class TestCheckAccess(unittest.TestCase):
 
         self.mock_client.get.side_effect = Http403RequestError()
         stream = Reviews(self.mock_client)
-        self.assertFalse(stream.check_access())
+        with patch("tap_yotpo.streams.abstracts.LOGGER") as mock_logger:
+            self.assertFalse(stream.check_access())
+
+        warning_calls = [str(c) for c in mock_logger.warning.call_args_list]
+        self.assertTrue(any("reviews" in c for c in warning_calls))
 
 
 class TestDiscover(unittest.TestCase):
