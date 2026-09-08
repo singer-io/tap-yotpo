@@ -48,7 +48,7 @@ class ProductReviews(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
         last_sync_index = 0
         if last_synced:
             for pos, (prod_id, _) in enumerate(shared_product_ids):
-                if prod_id == last_synced:
+                if str(prod_id) == str(last_synced):
                     LOGGER.warning("Last Sync was interrupted after product *****%s", str(prod_id)[-4:])
                     last_sync_index = pos
                     break
