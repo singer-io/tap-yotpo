@@ -1,10 +1,19 @@
 import unittest
+from unittest.mock import MagicMock, patch
 
 from tap_yotpo.discover import discover
+from tap_yotpo.streams.abstracts import BaseStream
 
 
 class TestDiscoverMetadata(unittest.TestCase):
     """Unit tests for metadata emitted by discovery catalog."""
+
+    def setUp(self):
+        self.mock_client = MagicMock()
+        self.mock_client.config = {"api_key": "test_key", "api_secret": "test_secret"}
+        self.check_access_patcher = patch.object(BaseStream, "check_access", new=lambda self_: True)
+        self.check_access_patcher.start()
+        self.addCleanup(self.check_access_patcher.stop)
 
     @staticmethod
     def _root_metadata(stream_entry):
@@ -14,7 +23,7 @@ class TestDiscoverMetadata(unittest.TestCase):
         return {}
 
     def test_discover_includes_parent_metadata_for_child_streams(self):
-        catalog = discover().to_dict()
+        catalog = discover(self.mock_client).to_dict()
         stream_map = {stream["stream"]: stream for stream in catalog.get("streams", [])}
 
         self.assertEqual(
@@ -31,7 +40,7 @@ class TestDiscoverMetadata(unittest.TestCase):
         )
 
     def test_discover_sets_replication_metadata_on_stream_roots(self):
-        catalog = discover().to_dict()
+        catalog = discover(self.mock_client).to_dict()
 
         for stream_entry in catalog.get("streams", []):
             root_metadata = self._root_metadata(stream_entry)
@@ -39,7 +48,7 @@ class TestDiscoverMetadata(unittest.TestCase):
             self.assertNotIn("replication-method", root_metadata)
 
     def test_discover_key_properties_match_root_table_keys(self):
-        catalog = discover().to_dict()
+        catalog = discover(self.mock_client).to_dict()
 
         for stream_entry in catalog.get("streams", []):
             root_metadata = self._root_metadata(stream_entry)
@@ -48,7 +57,7 @@ class TestDiscoverMetadata(unittest.TestCase):
             self.assertGreater(len(root_metadata.get("table-key-properties", [])), 0)
 
     def test_discover_emits_stream_key_properties(self):
-        catalog = discover().to_dict()
+        catalog = discover(self.mock_client).to_dict()
 
         for stream_entry in catalog.get("streams", []):
             root_metadata = self._root_metadata(stream_entry)

@@ -30,6 +30,7 @@ class BaseStream(ABC):
     """
 
     parent = ""
+    api_auth_version = ""
 
     @property
     @abstractmethod
@@ -117,7 +118,9 @@ class BaseStream(ABC):
         if getattr(self, "parent", ""):
             return True
         try:
-            self.client.get(self.get_url_endpoint(), {}, {}, self.api_auth_version)
+            # get_url_endpoint/api_auth_version are provided by UrlEndpointMixin
+            # and concrete stream classes respectively.
+            self.client.get(self.get_url_endpoint(), {}, {}, self.api_auth_version)  # pylint: disable=no-member
             return True
         except Http403RequestError as exc:
             LOGGER.warning(
@@ -139,7 +142,6 @@ class BaseStream(ABC):
             }
         )
         stream_metadata = to_map(stream_metadata)
-
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
                 stream_metadata = write(stream_metadata, ("properties", key), "inclusion", "automatic")

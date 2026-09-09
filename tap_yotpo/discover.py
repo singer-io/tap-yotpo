@@ -78,27 +78,19 @@ def discover(client) -> Catalog:
 
     streams = []
     for stream_name, stream_class in schemas.items():
-        stream_metadata = stream.get_metadata(schema)
+        schema, stream_metadata = field_metadata[stream_name]
         root_metadata = {}
         for entry in stream_metadata:
             if entry.get("breadcrumb") in ((), []):
                 root_metadata = entry.get("metadata", {})
                 break
 
-        key_properties = root_metadata.get("table-key-properties") or list(stream.key_properties)
-
-        LOGGER.info(
-            "discover stream=%s tap_stream_id=%s keys=%s root_metadata=%s",
-            stream_name,
-            stream.tap_stream_id,
-            list(schema.get("properties", {}).keys()),
-            root_metadata,
-        )
+        key_properties = root_metadata.get("table-key-properties") or list(stream_class.key_properties)
 
         streams.append(
             {
                 "stream": stream_name,
-                "tap_stream_id": stream.tap_stream_id,
+                "tap_stream_id": stream_class.tap_stream_id,
                 "key_properties": key_properties,
                 "schema": schema,
                 "metadata": stream_metadata,
