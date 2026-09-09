@@ -4,6 +4,7 @@ import json
 from singer import get_logger
 from singer.catalog import Catalog
 
+from tap_yotpo.exceptions import Http403RequestError
 from tap_yotpo.helpers import get_abs_path
 from tap_yotpo.streams import STREAMS
 
@@ -21,43 +22,44 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
     for stream_name, stream_class in list(schemas.items()):
         stream_instance = stream_class(client)
         if not stream_instance.check_access():
-            LOGGER.warning(
-                "Stream '%s' is not accessible (403 Forbidden). Excluding from catalog.",
-                stream_name,
-            )
             inaccessible_streams.append(stream_name)
 
     for stream_name in inaccessible_streams:
-        del schemas[stream_name]
-        del field_metadata[stream_name]
+        schemas.pop(stream_name, None)
+        field_metadata.pop(stream_name, None)
 
-    _prune_inaccessible_children(schemas, field_metadata)
+    inaccessible_streams.extend(_prune_inaccessible_children(schemas, field_metadata))
 
-    accessible_parents = [s for s in schemas.values() if not getattr(s, "parent", "")]
-    if not accessible_parents:
-        raise RuntimeError("All parent streams are inaccessible. Cannot produce a usable catalog.")
+    if not schemas:
+        raise Http403RequestError(
+            "No streams are accessible. Ensure the credentials have read permission for at least one stream."
+        )
+    
+    if inaccessible_streams:
+        LOGGER.warning(
+            "Unauthorized streams excluded from catalog: %s",
+            ", ".join(inaccessible_streams),
+        )
 
 
 def _prune_inaccessible_children(schemas: dict, field_metadata: dict) -> None:
-    """Removes child streams whose parents have been excluded from schemas."""
+    """Remove child streams from the catalog whose parent stream was excluded.
+
+    Mutates schemas and field_metadata in place.
+    """
     to_remove = []
-    for stream_name, stream_class in schemas.items():
+    for stream_name, stream_class in list(STREAMS.items()):
         parent = getattr(stream_class, "parent", "")
-        if parent and parent not in schemas:
+        if stream_name in schemas and parent and parent not in schemas:
             LOGGER.warning(
-                "Stream '%s' is a child of '%s' which is excluded. Excluding child stream too.",
+                "Stream '%s' excluded from catalog because its parent stream '%s' is not accessible.",
                 stream_name,
                 parent,
             )
+            schemas.pop(stream_name, None)
+            field_metadata.pop(stream_name, None)
             to_remove.append(stream_name)
-
-    for stream_name in to_remove:
-        del schemas[stream_name]
-        del field_metadata[stream_name]
-
-    # Recurse to handle multi-level parent-child relationships
-    if to_remove:
-        _prune_inaccessible_children(schemas, field_metadata)
+    return to_remove
 
 
 def discover(client) -> Catalog:

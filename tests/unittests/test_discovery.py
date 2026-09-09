@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from tap_yotpo.discover import _apply_access_checks, _prune_inaccessible_children, discover
+from tap_yotpo.exceptions import Http403RequestError
 from tap_yotpo.streams import STREAMS
 from tap_yotpo.streams.abstracts import BaseStream
 
@@ -157,7 +158,7 @@ class TestApplyAccessChecks(unittest.TestCase):
             return bool(getattr(self_, "parent", ""))
 
         with patch.object(BaseStream, "check_access", new=only_children_accessible):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaises(Http403RequestError):
                 _apply_access_checks(self.mock_client, schemas, field_metadata)
 
     def test_partial_access_warning_logged(self):
