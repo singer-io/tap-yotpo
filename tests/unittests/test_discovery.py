@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from tap_yotpo.discover import _apply_access_checks, _prune_inaccessible_children, discover
-from tap_yotpo.exceptions import Http403RequestError
+from tap_yotpo.exceptions import Http401RequestError, Http403RequestError, Http500RequestError, NoAccessibleStreamsError
 from tap_yotpo.streams import STREAMS
 from tap_yotpo.streams.abstracts import BaseStream
 
@@ -158,8 +158,32 @@ class TestApplyAccessChecks(unittest.TestCase):
             return bool(getattr(self_, "parent", ""))
 
         with patch.object(BaseStream, "check_access", new=only_children_accessible):
-            with self.assertRaises(Http403RequestError):
+            with self.assertRaises(NoAccessibleStreamsError):
                 _apply_access_checks(self.mock_client, schemas, field_metadata)
+
+    def test_invalid_credentials_propagate_without_wrapping(self):
+        """A 401 raised during an access check is not swallowed into an exclusion or empty catalog."""
+        schemas, field_metadata = _build_test_data()
+
+        def raise_401(self_):
+            raise Http401RequestError("Invalid credentials")
+
+        with patch.object(BaseStream, "check_access", new=raise_401):
+            with self.assertRaises(Http401RequestError):
+                _apply_access_checks(self.mock_client, schemas, field_metadata)
+
+    def test_non_403_error_propagates_without_excluding_stream(self):
+        """A non-403 error (e.g. 500) is not misclassified as an access exclusion."""
+        schemas, field_metadata = _build_test_data()
+
+        def raise_500(self_):
+            raise Http500RequestError("Server error")
+
+        with patch.object(BaseStream, "check_access", new=raise_500):
+            with self.assertRaises(Http500RequestError):
+                _apply_access_checks(self.mock_client, schemas, field_metadata)
+
+        self.assertEqual(set(schemas.keys()), set(STREAMS.keys()))
 
     def test_partial_access_warning_logged(self):
         """A warning is logged when a stream is excluded due to inaccessibility."""
@@ -207,6 +231,26 @@ class TestCheckAccess(unittest.TestCase):
         self.mock_client.get.return_value = {}
         stream = Reviews(self.mock_client)
         self.assertTrue(stream.check_access())
+
+    def test_parent_stream_invalid_credentials_propagates(self):
+        """A 401 from the API is not swallowed by check_access; it propagates."""
+        from tap_yotpo.exceptions import Http401RequestError
+        from tap_yotpo.streams.reviews import Reviews
+
+        self.mock_client.get.side_effect = Http401RequestError()
+        stream = Reviews(self.mock_client)
+        with self.assertRaises(Http401RequestError):
+            stream.check_access()
+
+    def test_parent_stream_server_error_propagates(self):
+        """A non-403 error (e.g. 500) from the API is not treated as an exclusion."""
+        from tap_yotpo.exceptions import Http500RequestError
+        from tap_yotpo.streams.reviews import Reviews
+
+        self.mock_client.get.side_effect = Http500RequestError()
+        stream = Reviews(self.mock_client)
+        with self.assertRaises(Http500RequestError):
+            stream.check_access()
 
     def test_parent_stream_inaccessible_on_403(self):
         """Parent stream returns False when API raises Http403RequestError."""

@@ -4,7 +4,7 @@ import json
 from singer import get_logger
 from singer.catalog import Catalog
 
-from tap_yotpo.exceptions import Http403RequestError
+from tap_yotpo.exceptions import NoAccessibleStreamsError
 from tap_yotpo.helpers import get_abs_path
 from tap_yotpo.streams import STREAMS
 
@@ -31,7 +31,7 @@ def _apply_access_checks(client, schemas: dict, field_metadata: dict) -> None:
     inaccessible_streams.extend(_prune_inaccessible_children(schemas, field_metadata))
 
     if not schemas:
-        raise Http403RequestError(
+        raise NoAccessibleStreamsError(
             "No streams are accessible. Ensure the credentials have read permission for at least one stream."
         )
     
