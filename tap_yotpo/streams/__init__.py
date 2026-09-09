@@ -12,11 +12,11 @@ from .unsubscribers import Unsubscribers
 STREAMS = {
     Collections.tap_stream_id: Collections,
     Emails.tap_stream_id: Emails,
-    OrderFulfillments.tap_stream_id: OrderFulfillments,
     Orders.tap_stream_id: Orders,
+    OrderFulfillments.tap_stream_id: OrderFulfillments,
+    Products.tap_stream_id: Products,
     ProductReviews.tap_stream_id: ProductReviews,
     ProductVariants.tap_stream_id: ProductVariants,
-    Products.tap_stream_id: Products,
     Reviews.tap_stream_id: Reviews,
     Unsubscribers.tap_stream_id: Unsubscribers,
 }

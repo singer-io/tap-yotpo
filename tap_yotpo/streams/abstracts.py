@@ -139,6 +139,7 @@ class BaseStream(ABC):
             }
         )
         stream_metadata = to_map(stream_metadata)
+
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
                 stream_metadata = write(stream_metadata, ("properties", key), "inclusion", "automatic")
