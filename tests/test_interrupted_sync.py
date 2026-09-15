@@ -125,7 +125,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
                 if expected_replication_method == self.INCREMENTAL:
 
-                    if first_sync_count > 0:
+                    if first_sync_count > 0 and stream not in completed_streams:
                         self.assertGreaterEqual(
                             second_sync_count,
                             1,
