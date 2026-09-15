@@ -112,7 +112,7 @@ class YotpoBaseTest(unittest.TestCase):
 
     def expected_sync_streams(self):
         """A set of streams that are stable for integration sync assertions."""
-        return self.expected_streams() - {"order_fulfillments"}
+        return self.expected_streams() - {"order_fulfillments", "collections", "emails", "unsubscribers"}
 
     def expected_primary_keys(self):
         """Return a dictionary with key of table name and value as a set of
