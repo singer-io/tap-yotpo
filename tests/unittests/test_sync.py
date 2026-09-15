@@ -65,7 +65,10 @@ class TestSync(unittest.TestCase):
             clear=False,
         ):
             catalog = DummyCatalog([DummyCatalogEntry("stream_1"), DummyCatalogEntry("stream_2")])
-            sync(client=MagicMock(), catalog=catalog, state={"bookmarks": {}})
+            with self.assertRaises(errors.ClientError) as exc:
+                sync(client=MagicMock(), catalog=catalog, state={"bookmarks": {}})
+
+        self.assertIn("stream_1", str(exc.exception))
 
         self.assertEqual(first_stream_obj.sync.call_count, 1)
         self.assertEqual(second_stream_obj.sync.call_count, 1)
