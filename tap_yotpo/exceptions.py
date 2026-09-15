@@ -59,6 +59,10 @@ class Http502RequestError(ClientError):
     message = "Bad Gateway"
 
 
+class NoAccessibleStreamsError(Exception):
+    """Raised during discovery when no streams remain accessible after access checks."""
+
+
 class Http503RequestError(ClientError):
     """class representing 503 status code."""
 
