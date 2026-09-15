@@ -1,5 +1,5 @@
 """tap-yotpo sync."""
-from typing import Dict
+from typing import Dict, List, Tuple
 
 import singer
 
@@ -11,6 +11,8 @@ LOGGER = singer.get_logger()
 
 def sync(client, catalog: singer.Catalog, state: Dict):
     """performs sync for selected streams."""
+    stream_failures: List[Tuple[str, errors.ClientError]] = []
+
     with singer.Transformer() as transformer:
         for stream in catalog.get_selected_streams(state):
             tap_stream_id = stream.tap_stream_id
@@ -28,7 +30,13 @@ def sync(client, catalog: singer.Catalog, state: Dict):
                 singer.write_state(state)
             except errors.ClientError as exc:
                 LOGGER.error("Stream %s failed with API error: %s", tap_stream_id, exc)
-                continue
+                stream_failures.append((tap_stream_id, exc))
 
     state = singer.set_currently_syncing(state, None)
     singer.write_state(state)
+
+    if stream_failures:
+        failed_stream_ids = ", ".join(stream_id for stream_id, _ in stream_failures)
+        raise errors.ClientError(
+            "Sync failed for {} stream(s): {}".format(len(stream_failures), failed_stream_ids)
+        ) from stream_failures[0][1]

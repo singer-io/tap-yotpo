@@ -212,11 +212,11 @@ class YotpoBookMarkTest(YotpoBaseTest):
                         self.assertIsNotNone(second_bookmark_key_value)
                         self.assertIsNotNone(second_bookmark_value)
 
-                        # Verify the second sync bookmark is Equal to the first sync bookmark
+                        # Verify the second sync bookmark does not move backward from the first sync bookmark
                         # assumes no changes to data during test
                         self.assertGreaterEqual(
                             strptime_to_utc(second_bookmark_value),
-                            strptime_to_utc(simulated_bookmark_value),
+                            strptime_to_utc(first_bookmark_value),
                         )
 
                         for record in first_sync_messages:

@@ -5,31 +5,17 @@ from tap_tester import connections, menagerie, runner
 KNOWN_MISSING_FIELDS = {
     "reviews": {"user_reference"},
     "orders": {"cancellation", "landing_site_url"},
-    "collections": {"updated_at", "name", "external_id", "yotpo_id", "created_at"},
-    "unsubscribers": {"user_email", "email_type_id", "id", "unsubscirbed_by_name"},
+    "collections": {"name", "external_id"},
+    "unsubscribers": {"unsubscirbed_by_name"},
     "product_variants": {"description", "image_url"},
     "emails": {
-        "review_form",
-        "email_type",
-        "content_creation_timestamp",
-        "order_id",
-        "sku",
-        "platform",
         "coupon_code",
-        "order_timestamp",
         "failed_timestamp",
-        "trr_bundle_subject",
-        "product_id",
         "marked_spam_timestamp",
-        "email_sent_timestamp",
         "arrived_early_timestamp",
-        "review_type",
-        "reminder_num",
         "invalid_address_timestamp",
         "unsubscribed_timestamp",
         "opened_timestamp",
-        "trr_bundle_id",
-        "email_address",
         "clicked_through_timestamp",
     },
     "products": {"mpn", "group_name"},
@@ -80,15 +66,14 @@ class YotpoAllFields(YotpoBaseTest):
 
         synced_records = runner.get_records_from_target_output()
 
-        # Verify no unexpected streams were replicated
+        # Verify exactly expected streams were replicated
         synced_stream_names = set(synced_records.keys())
-        self.assertTrue(synced_stream_names.issubset(expected_streams))
+        self.assertSetEqual(expected_streams, synced_stream_names)
 
         for stream in expected_streams:
             with self.subTest(stream=stream):
                 messages = synced_records.get(stream, {})
-                if not messages:
-                    continue
+                self.assertTrue(messages, msg=f"No records replicated for stream '{stream}'")
                 # Collect actual values
                 actual_all_keys = set()
                 for message in messages.get("messages", []):

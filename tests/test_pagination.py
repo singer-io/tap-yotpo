@@ -4,7 +4,6 @@ from math import ceil
 
 from base import YotpoBaseTest
 from tap_tester import connections, runner
-from tap_tester.logger import LOGGER
 
 
 class YotpoPaginationTest(YotpoBaseTest):
@@ -101,14 +100,11 @@ class YotpoPaginationTest(YotpoBaseTest):
                     if message.get("action") == "upsert"
                 ]
 
-                if record_count_sync <= page_size:
-                    LOGGER.warning(
-                        "Skipping pagination assertion for stream %s: record_count=%s, page_size=%s",
-                        stream,
-                        record_count_sync,
-                        page_size,
-                    )
-                    continue
+                self.assertGreater(
+                    record_count_sync,
+                    page_size,
+                    msg=f"Not enough test data; add data or reduce page_size={page_size}",
+                )
 
                 stream_records = [message.get("data", {}) for message in stream_messages]
 
@@ -138,12 +134,10 @@ class YotpoPaginationTest(YotpoBaseTest):
 
                     self.assertTrue(self.validate_pagination(page_size, current_product_id_records))
 
-                    if not pagination_records_found:
-                        LOGGER.warning(
-                            "Skipping parent-level pagination strictness for stream %s: no parent group exceeded page_size=%s",
-                            stream,
-                            page_size,
-                        )
+                    self.assertTrue(
+                        pagination_records_found,
+                        msg=f"Not enough parent-group test data for stream {stream}; no group exceeded page_size={page_size}",
+                    )
                 else:
                     primary_keys_list = [
                         tuple(record.get(expected_pk) for expected_pk in expected_primary_keys[stream])
