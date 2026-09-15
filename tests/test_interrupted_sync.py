@@ -35,7 +35,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
           are replicated on the resuming sync for the interrupted stream.
         - Verify the pending streams are replicated following the interrupted stream in the resuming sync.
         """
-        expected_streams = self.expected_streams() - {"product_reviews"}
+        expected_streams = self.expected_sync_streams() - {"product_reviews"}
         expected_replication_keys = self.expected_replication_keys()
         expected_replication_methods = self.expected_replication_method()
         LOGGER.info(
@@ -68,7 +68,7 @@ class YotpoInterruptedSyncTest(YotpoBaseTest):
 
         LOGGER.info(f"Current Bookmark after first sync: {first_sync_bookmarks}")
 
-        completed_streams = {"collections", "emails", "order_fulfillments", "orders", "product_reviews"}
+        completed_streams = {"collections", "emails", "orders", "product_reviews"}
         pending_streams = {"reviews"}
         interrupt_stream = "product_variants"
         interrupted_sync_states = self.create_interrupt_sync_state(

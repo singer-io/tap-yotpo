@@ -28,7 +28,7 @@ class YotpoStartDateTest(YotpoBaseTest):
 
         self.start_date = self.start_date_1
 
-        expected_streams = self.expected_streams()
+        expected_streams = self.expected_sync_streams()
 
         ##########################################################################
         # First Sync

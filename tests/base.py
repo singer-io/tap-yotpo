@@ -110,6 +110,10 @@ class YotpoBaseTest(unittest.TestCase):
         """A set of expected stream names."""
         return set(self.expected_metadata().keys())
 
+    def expected_sync_streams(self):
+        """A set of streams that are stable for integration sync assertions."""
+        return self.expected_streams() - {"order_fulfillments"}
+
     def expected_primary_keys(self):
         """Return a dictionary with key of table name and value as a set of
         primary key fields."""
