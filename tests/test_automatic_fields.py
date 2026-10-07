@@ -21,7 +21,7 @@ class YotpoAutomaticFields(YotpoBaseTest):
         values.
         """
 
-        expected_streams = self.expected_streams()
+        expected_streams = self.expected_sync_streams()
 
         # Instantiate connection
         conn_id = connections.ensure_connection(self)

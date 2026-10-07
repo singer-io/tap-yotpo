@@ -13,6 +13,7 @@ from singer import (
 )
 from singer.utils import strftime, strptime_to_utc
 
+from tap_yotpo import exceptions as errors
 from tap_yotpo.helpers import ApiSpec
 
 from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
@@ -33,6 +34,9 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     # points to the attribute of the config that marks the first-start-date for the stream
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/orders/ORDER_ID/fulfillments"
+    parent = "orders"
+    # safety bound so a misbehaving pagination cursor cannot loop forever
+    max_pages = 1000
 
     def __init__(self, client=None) -> None:
         super().__init__(client)
@@ -58,7 +62,8 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
         filtered_records = []
         page_count, params = 1, {"limit": self.page_size}
-        while True:
+        has_more_pages = True
+        while has_more_pages and page_count <= self.max_pages:
             LOGGER.info("Fetching Page %s", page_count)
 
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
@@ -77,10 +82,17 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
                     filtered_records.append(record)
 
             if not pagination:
-                break
+                has_more_pages = False
             else:
                 params["page_info"] = pagination
-            page_count += 1
+                page_count += 1
+
+        if page_count > self.max_pages:
+            LOGGER.warning(
+                "Reached the max page limit of %s for order *****%s; stopping pagination",
+                self.max_pages,
+                order_id[-4:],
+            )
 
         return (filtered_records, current_max)
 
@@ -92,6 +104,7 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
             orders, start_index = self.get_orders(state)
             LOGGER.info("STARTING SYNC FROM INDEX %s", start_index)
             order_len = len(orders)
+            unavailable_orders = []
 
             with metrics.Counter(self.tap_stream_id) as counter:
                 # pylint: disable=W0612
@@ -101,7 +114,29 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
 
                     # If bookmark value not present in state, refer to the start-date from config
                     bookmark_date = get_bookmark(state, self.tap_stream_id, str(order_id), config_start)
-                    records, max_bookmark = self.get_records(str(order_id), bookmark_date)
+                    try:
+                        records, max_bookmark = self.get_records(str(order_id), bookmark_date)
+                    except (errors.Http404RequestError, errors.Http500RequestError) as exc:
+                        # Yotpo serves a deterministic 500 for the fulfillments sub-resource of a
+                        # small number of orders, even though the parent order itself is readable.
+                        # A 404 happens when an order is removed between the parent prefetch and
+                        # this request. Retries can never succeed for either, so failing here would
+                        # permanently block the stream and discard every remaining order. Record the
+                        # order, keep its bookmark untouched so a later sync retries it, and move on.
+                        LOGGER.error(
+                            "Order *****%s (%s/%s): Yotpo returned a persistent error for %s - %s. "
+                            "Skipping this order; its bookmark is left unchanged so it is retried "
+                            "on the next sync.",
+                            str(order_id)[-4:],
+                            index,
+                            order_len,
+                            self.base_url.replace("ORDER_ID", str(order_id)),
+                            exc,
+                        )
+                        unavailable_orders.append(order_id)
+                        state = self.write_bookmark(state, "currently_syncing", str(order_id))
+                        write_state(state)
+                        continue
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
@@ -113,5 +148,14 @@ class OrderFulfillments(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
                         state = self.write_bookmark(state, str(order_id), strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", str(order_id))
                     write_state(state)
+
+            if unavailable_orders:
+                LOGGER.warning(
+                    "%s of %s orders were skipped because the Yotpo fulfillments endpoint "
+                    "returned a persistent error for them: %s",
+                    len(unavailable_orders),
+                    order_len,
+                    ", ".join("*****{}".format(str(_id)[-4:]) for _id in unavailable_orders),
+                )
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

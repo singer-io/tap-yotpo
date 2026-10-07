@@ -13,6 +13,7 @@ from singer import (
 )
 from singer.utils import strftime, strptime_to_utc
 
+from tap_yotpo import exceptions as errors
 from tap_yotpo.helpers import ApiSpec
 
 from .abstracts import IncrementalStream, PageSizeMixin, UrlEndpointMixin
@@ -33,6 +34,9 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
     # points to the attribute of the config that marks the first-start-date for the stream
     config_start_key = "start_date"
     url_endpoint = "https://api.yotpo.com/core/v3/stores/APP_KEY/products/PRODUCT_ID/variants"
+    parent = "products"
+    # safety bound so a misbehaving pagination cursor cannot loop forever
+    max_pages = 1000
 
     def __init__(self, client=None) -> None:
         super().__init__(client)
@@ -63,7 +67,8 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
         bookmark_date = current_max = strptime_to_utc(bookmark_date)
         filtered_records = []
         page_count, params = 1, {"limit": self.page_size}
-        while True:
+        has_more_pages = True
+        while has_more_pages and page_count <= self.max_pages:
             LOGGER.info("Calling Page %s", page_count)
 
             response = self.client.get(extraction_url, params, {}, self.api_auth_version)
@@ -86,10 +91,17 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
                     filtered_records.append(record)
 
             if not pagination:
-                break
+                has_more_pages = False
             else:
                 params["page_info"] = pagination
-            page_count += 1
+                page_count += 1
+
+        if page_count > self.max_pages:
+            LOGGER.warning(
+                "Reached the max page limit of %s for product *****%s; stopping pagination",
+                self.max_pages,
+                prod_id[-4:],
+            )
 
         return (filtered_records, current_max)
 
@@ -101,6 +113,7 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
             products, start_index = self.get_products(state)
             LOGGER.info("STARTING SYNC FROM INDEX %s", start_index)
             prod_len = len(products)
+            unavailable_products = []
 
             with metrics.Counter(self.tap_stream_id) as counter:
                 # pylint: disable=W0612
@@ -109,7 +122,29 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
                     LOGGER.info("Sync for prod *****%s (%s/%s)", str(prod_id)[-4:], index, prod_len)
 
                     bookmark_date = get_bookmark(state, self.tap_stream_id, str(prod_id), config_start)
-                    records, max_bookmark = self.get_records(str(prod_id), bookmark_date)
+                    try:
+                        records, max_bookmark = self.get_records(str(prod_id), bookmark_date)
+                    except (errors.Http404RequestError, errors.Http500RequestError) as exc:
+                        # Yotpo can serve a deterministic 500 for the variants sub-resource of a
+                        # product even though the parent product itself is readable, and a 404 when
+                        # a product is removed between the parent prefetch and this request. Retries
+                        # can never succeed, so failing here would permanently block the stream and
+                        # discard every remaining product. Leave the bookmark untouched so the
+                        # product is retried on the next sync.
+                        LOGGER.error(
+                            "Product *****%s (%s/%s): Yotpo returned a persistent error for %s - %s. "
+                            "Skipping this product; its bookmark is left unchanged so it is retried "
+                            "on the next sync.",
+                            str(prod_id)[-4:],
+                            index,
+                            prod_len,
+                            self.base_url.replace("PRODUCT_ID", str(prod_id)),
+                            exc,
+                        )
+                        unavailable_products.append(prod_id)
+                        state = self.write_bookmark(state, "currently_syncing", str(prod_id))
+                        write_state(state)
+                        continue
 
                     for _ in records:
                         write_record(self.tap_stream_id, transformer.transform(_, schema, stream_metadata))
@@ -121,5 +156,14 @@ class ProductVariants(IncrementalStream, UrlEndpointMixin, PageSizeMixin):
                         state = self.write_bookmark(state, str(prod_id), strftime(max_bookmark))
                     state = self.write_bookmark(state, "currently_syncing", str(prod_id))
                     write_state(state)
+
+            if unavailable_products:
+                LOGGER.warning(
+                    "%s of %s products were skipped because the Yotpo variants endpoint "
+                    "returned a persistent error for them: %s",
+                    len(unavailable_products),
+                    prod_len,
+                    ", ".join("*****{}".format(str(_id)[-4:]) for _id in unavailable_products),
+                )
             state = clear_bookmark(state, self.tap_stream_id, "currently_syncing")
         return state

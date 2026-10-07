@@ -4,7 +4,21 @@ from tap_tester import connections, menagerie, runner
 # As we are not able to generate following fields by yotpo post apis, so removed it form expectation list.
 KNOWN_MISSING_FIELDS = {
     "reviews": {"user_reference"},
-    "orders": {"shipping_address", "cancellation", "billing_address"},
+    "orders": {"cancellation", "landing_site_url"},
+    "collections": {"name", "external_id"},
+    "unsubscribers": {"unsubscirbed_by_name"},
+    "product_variants": {"description", "image_url"},
+    "emails": {
+        "coupon_code",
+        "failed_timestamp",
+        "marked_spam_timestamp",
+        "arrived_early_timestamp",
+        "invalid_address_timestamp",
+        "unsubscribed_timestamp",
+        "opened_timestamp",
+        "clicked_through_timestamp",
+    },
+    "products": {"mpn", "group_name"},
 }
 
 
@@ -23,7 +37,7 @@ class YotpoAllFields(YotpoBaseTest):
         """
 
         # Streams to verify all fields tests
-        expected_streams = self.expected_streams()
+        expected_streams = self.expected_sync_streams()
 
         expected_automatic_fields = self.expected_automatic_fields()
         conn_id = connections.ensure_connection(self)
@@ -52,28 +66,31 @@ class YotpoAllFields(YotpoBaseTest):
 
         synced_records = runner.get_records_from_target_output()
 
-        # Verify no unexpected streams were replicated
+        # Verify exactly expected streams were replicated
         synced_stream_names = set(synced_records.keys())
         self.assertSetEqual(expected_streams, synced_stream_names)
 
         for stream in expected_streams:
             with self.subTest(stream=stream):
+                messages = synced_records.get(stream, {})
+                self.assertTrue(messages, msg=f"No records replicated for stream '{stream}'")
+                # Collect actual values
+                actual_all_keys = set()
+                for message in messages.get("messages", []):
+                    if message["action"] == "upsert":
+                        actual_all_keys.update(message["data"].keys())
 
                 # Expected values
-                expected_all_keys = stream_to_all_catalog_fields[stream] - KNOWN_MISSING_FIELDS.get(stream, set())
+                known_missing_keys = KNOWN_MISSING_FIELDS.get(stream, set())
+                effective_missing_keys = known_missing_keys - actual_all_keys
+                expected_all_keys = stream_to_all_catalog_fields[stream] - effective_missing_keys
                 expected_automatic_keys = expected_automatic_fields.get(stream, set())
 
                 # Verify that more than just the automatic fields are replicated for each stream.
+                unexpected_missing_automatic = (expected_automatic_keys - expected_all_keys) - effective_missing_keys
                 self.assertTrue(
-                    expected_automatic_keys.issubset(expected_all_keys),
-                    msg=f'{expected_automatic_keys - expected_all_keys} is not in "expected_all_keys"',
+                    len(unexpected_missing_automatic) == 0,
+                    msg=f'{unexpected_missing_automatic} is not in "expected_all_keys"',
                 )
-
-                messages = synced_records.get(stream)
-                # Collect actual values
-                actual_all_keys = set()
-                for message in messages["messages"]:
-                    if message["action"] == "upsert":
-                        actual_all_keys.update(message["data"].keys())
                 # Verify all fields for each stream are replicated
                 self.assertSetEqual(expected_all_keys, actual_all_keys)
