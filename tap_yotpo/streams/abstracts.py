@@ -13,6 +13,8 @@ from singer import (
 from singer.metadata import get_standard_metadata, to_list, to_map, write
 from singer.utils import strftime, strptime_to_utc
 
+from ..exceptions import Http403RequestError
+
 LOGGER = get_logger()
 
 
@@ -28,6 +30,7 @@ class BaseStream(ABC):
     """
 
     parent = ""
+    api_auth_version = ""
 
     @property
     @abstractmethod
@@ -105,6 +108,28 @@ class BaseStream(ABC):
     def __init__(self, client=None) -> None:
         self.client = client
 
+    def check_access(self) -> bool:
+        """Checks if the stream is accessible via the API.
+
+        Child streams always return True since their accessibility is
+        determined by their parent stream. For parent streams, a test
+        API call is made; a 403 response means the stream is excluded.
+        """
+        if getattr(self, "parent", ""):
+            return True
+        try:
+            # get_url_endpoint/api_auth_version are provided by UrlEndpointMixin
+            # and concrete stream classes respectively.
+            self.client.get(self.get_url_endpoint(), {}, {}, self.api_auth_version)  # pylint: disable=no-member
+            return True
+        except Http403RequestError as exc:
+            LOGGER.warning(
+                "Unauthorized Stream: %s, excluding from catalog. HTTP-Error-Message:'%s'",
+                self.tap_stream_id,
+                str(exc),
+            )
+            return False
+
     @classmethod
     def get_metadata(cls, schema) -> Dict[str, str]:
         """Returns a `dict` for generating stream metadata."""
@@ -117,7 +142,6 @@ class BaseStream(ABC):
             }
         )
         stream_metadata = to_map(stream_metadata)
-
         if cls.valid_replication_keys is not None:
             for key in cls.valid_replication_keys:
                 stream_metadata = write(stream_metadata, ("properties", key), "inclusion", "automatic")
